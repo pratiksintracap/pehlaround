@@ -65,6 +65,7 @@ export default async function Dashboard({ searchParams }: P) {
           <div className="kv"><span>Passed</span><b>{myPasses.length}</b></div>
           <div className="kv"><span>Allocations requested</span><b>{indicated.length ? `${indicated.length} · ₹${+totalInd.toFixed(2)} Cr` : "0"}</b></div>
           {firstOpen && <a className="btn primary" href={signed.has(firstOpen.id) ? `/room/${firstOpen.slug}` : `/nda/${firstOpen.slug}`}>{signed.has(firstOpen.id) ? "Open your latest room" : "Open your first room"}</a>}
+          <a className="btn sm ghost dash-app" href="/app" data-hide-standalone="">Get the app</a>
         </div>
       </div>
 
@@ -85,6 +86,16 @@ export default async function Dashboard({ searchParams }: P) {
                 <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div></td>
             </tr>
           ))}</tbody></table></div>
+        <ul className="dash-cards">{deals.map((d) => (
+          <li key={d.id}>
+            <div className="dc-top"><b>{d.company}</b><span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></div>
+            <small>{d.title} · {d.category}</small>
+            <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
+              <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div></dl>
+            <div className="dc-acts">
+              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
+              <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
+          </li>))}</ul>
         <p className="fine">Same fields for every deal so offices can compare quickly. Each room opens with that company&apos;s own NDA.</p>
       </section>
 

@@ -1,1 +1,23 @@
-{"name":"Pehla Round","short_name":"Pehla Round","icons":[{"src":"/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"/icon-512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#0b1730","background_color":"#0b1730","display":"standalone"}
+{
+  "id": "/dashboard",
+  "name": "Pehla Round",
+  "short_name": "Pehla Round",
+  "description": "Your family office's deal desk: IPO-bound companies, deal rooms, NDAs, questions and allocations.",
+  "start_url": "/dashboard?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0b1730",
+  "background_color": "#0b1730",
+  "categories": ["finance", "business"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Deals", "url": "/deals?source=app", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "My rooms", "url": "/dashboard?source=app#Rooms", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Articles", "url": "/articles?source=app", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

@@ -449,3 +449,19 @@
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
 })();
+
+/* Installable app: service worker, install button, and app-only touches. */
+(function () {
+  if ("serviceWorker" in navigator) window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js").catch(function () {}); });
+  var standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  var deferred = null;
+  function run() {
+    var btn = document.querySelector("[data-install]"), done = document.querySelector(".appx-installed");
+    if (standalone && done) done.hidden = false;
+    window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; if (btn) btn.hidden = false; });
+    if (btn) btn.addEventListener("click", function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { deferred = null; btn.hidden = true; }); });
+    var p = location.pathname;
+    Array.prototype.forEach.call(document.querySelectorAll(".appbar a"), function (a) { var h = a.getAttribute("href").split("#")[0]; if (p === h || p.indexOf(h + "/") === 0) a.setAttribute("aria-current", "page"); });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
+})();

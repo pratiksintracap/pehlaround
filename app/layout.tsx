@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
-import { Header, Footer } from "@/components/Chrome";
+import { Header, Footer, AppBar } from "@/components/Chrome";
 import { getUser } from "@/lib/auth";
 import { listDeals, publicData } from "@/lib/deals";
 import { content } from "@/lib/content";
@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   description: DESC,
   icons: { icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/favicon-32.png", type: "image/png", sizes: "32x32" }], apple: "/apple-touch-icon.png" },
   manifest: "/site.webmanifest",
+  appleWebApp: { capable: true, title: "Pehla Round", statusBarStyle: "black-translucent" },
   openGraph: { type: "website", siteName: "Pehla Round", title: "Pehla Round · Pre-IPO deals for family offices", description: DESC,
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Pehla Round: IPO-bound gems, before the crowd finds them." }] },
   twitter: { card: "summary_large_image", images: ["/og.jpg"] },
@@ -35,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Header user={user} />
         {children}
         <Footer />
+        <AppBar user={user} />
         <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
         <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
         <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />

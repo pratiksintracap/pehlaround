@@ -62,6 +62,7 @@ export function Footer() {
           <div className="ft-col"><h4>Explore</h4><ul>
             {NAV.map(([h, t]) => <li key={h}><a href={h}>{t}</a></li>)}
             <li><a href="/articles">Articles</a></li>
+            <li><a href="/app">Get the app</a></li>
           </ul></div>
           <div className="ft-col"><h4>Operated by</h4><ul>
             <li className="kv"><b>SintraCap Advisors LLP</b>LLPIN ACL-6334</li>
@@ -85,4 +86,19 @@ export function Footer() {
 export function Html({ html, as = "main", className }: { html: string; as?: "main" | "div" | "section"; className?: string }) {
   const T = as;
   return <T className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+/** Bottom tab bar, shown only when Pehla Round runs as an installed app. */
+export function AppBar({ user }: { user: SessionUser | null }) {
+  const I = (d: string) => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>;
+  return (
+    <nav className="appbar" aria-label="App">
+      <a href="/dashboard">{I("M4 11 12 4l8 7v9h-5v-6H9v6H4z")}<span>Dashboard</span></a>
+      <a href="/deals">{I("M4 6h16M4 12h16M4 18h10")}<span>Deals</span></a>
+      <a href="/articles">{I("M6 4h12v16H6zM9 8h6M9 12h6M9 16h4")}<span>Articles</span></a>
+      {user?.role === "admin"
+        ? <a href="/admin">{I("M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z")}<span>Admin</span></a>
+        : <a href={user ? "/dashboard#Team" : "/login"}>{I("M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6")}<span>{user ? "Account" : "Sign in"}</span></a>}
+    </nav>
+  );
 }
