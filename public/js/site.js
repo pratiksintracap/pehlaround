@@ -363,15 +363,6 @@
         .catch(function (err) { if (b) { b.disabled = false; b.textContent = "Send"; } okMsg(fo, err.message, true); });
     });
 
-    // ---------- home: market news ----------
-    var ul = $("#newsfeed");
-    if (ul && window.fetch) fetch("/api/news").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
-      if (!d || !d.items || d.items.length < 3) return; var html = "";
-      d.items.slice(0, 10).forEach(function (it) { var li = document.createElement("li"), m = document.createElement("span"), a = document.createElement("a"), s = document.createElement("small");
-        m.className = "mono"; m.textContent = it.date || ""; a.href = it.link; a.target = "_blank"; a.rel = "noopener"; a.textContent = it.title;
-        s.className = "src"; s.textContent = " · " + (it.source || ""); li.appendChild(m); li.appendChild(a); li.appendChild(s); html += li.outerHTML; });
-      ul.innerHTML = html + html; }).catch(function () {});
-
     // ---------- deal room ----------
     var room = $(".room[data-room]"); if (!room) return;
     var slug = room.getAttribute("data-room"), base = "/api/room/" + slug + "/";
@@ -440,6 +431,21 @@
       });
     });
     Array.prototype.forEach.call(document.querySelectorAll("[data-print]"), function (b) { b.addEventListener("click", function () { window.print(); }); });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
+})();
+
+/* Disclaimer "read in full" on phones; About: filter past transactions. */
+(function () {
+  function run() {
+    var m = document.querySelector(".disc-more");
+    if (m) m.addEventListener("click", function () { var c = m.closest(".disc-card"); c.classList.add("full"); m.setAttribute("aria-expanded", "true"); });
+    var chips = document.querySelectorAll("[data-txf]"), stones = document.querySelectorAll(".stone[data-txt]");
+    Array.prototype.forEach.call(chips, function (ch) { ch.addEventListener("click", function () {
+      var f = ch.getAttribute("data-txf");
+      Array.prototype.forEach.call(chips, function (o) { o.setAttribute("aria-pressed", o === ch ? "true" : "false"); });
+      Array.prototype.forEach.call(stones, function (s) { s.hidden = !(f === "All" || s.getAttribute("data-txt") === f); });
+    }); });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
 })();

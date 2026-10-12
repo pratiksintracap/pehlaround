@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
-import { calls, deals, documents, interests, leads, ndas, offices, questions, users } from "@/db/schema";
+import { articles, calls, deals, documents, interests, leads, ndas, offices, questions, users } from "@/db/schema";
 import { requireAdmin, log } from "@/lib/auth";
 import { fromText } from "@/lib/pipes";
 import type { RoomContent } from "@/lib/types";
@@ -205,4 +205,30 @@ export async function saveLead(f: FormData) {
   const db = await getDb();
   await db.update(leads).set({ status: s(f, "status", 40) }).where(eq(leads.id, n(f, "id")));
   back("/admin/activity#leads", "Lead updated.");
+}
+
+// ---------------------------------------------------------------- articles
+export async function saveArticle(f: FormData) {
+  const admin = await requireAdmin();
+  const db = await getDb();
+  const id = n(f, "id");
+  const slug = s(f, "slug", 120).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
+  const title = s(f, "title", 300);
+  if (!slug || !title) back(id ? `/admin/articles/${id}` : "/admin/articles/new", "A title and a web address slug are needed.");
+  const sources = s(f, "sources", 4000).split(/\r?\n/).map((l) => l.split("|").map((x) => x.trim())).filter((x) => x[1]?.startsWith("http")).map(([t, u]) => ({ title: t || u, url: u }));
+  const when = s(f, "publishedAt", 40);
+  const vals = { slug, title, dek: s(f, "dek", 600) || null, body: s(f, "body", 40000), sources, externalUrl: s(f, "externalUrl", 1000) || null,
+    author: s(f, "author", 120) || "Pehla Round desk", published: f.get("published") === "on",
+    publishedAt: when ? new Date(when + (when.length <= 10 ? "T09:00:00+05:30" : "")) : new Date(), updatedAt: new Date() };
+  if (f.get("delete") === "on" && id) {
+    await db.delete(articles).where(eq(articles.id, id));
+    await log(admin, `Desk deleted the article: ${title}`);
+    back("/admin/articles", "Article deleted.");
+  }
+  let rid = id;
+  if (id) await db.update(articles).set(vals).where(eq(articles.id, id));
+  else rid = (await db.insert(articles).values(vals).returning({ id: articles.id }))[0].id;
+  await log(admin, `Desk saved the article: ${title}`);
+  revalidatePath("/", "layout");
+  back(`/admin/articles/${rid}`, "Saved.");
 }

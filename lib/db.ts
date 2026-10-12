@@ -5,6 +5,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import bcrypt from "bcryptjs";
 import * as schema from "@/db/schema";
 import { SEED_DEALS } from "@/lib/seed";
+import { SEED_ARTICLES } from "@/lib/seed-articles";
 
 export type DB = NodePgDatabase<typeof schema>;
 type State = { db: DB; ready: Promise<void>; kind: "postgres" | "pglite" };
@@ -82,6 +83,8 @@ async function bootstrap(db: DB) {
       for (const c of sessions) await db.insert(schema.calls).values({ dealId: row.id, kind: "session", title: c.title, status: c.status, scheduledFor: c.when, summary: c.summary ?? null });
     }
   }
+  const [{ a }] = await db.select({ a: sql<number>`count(*)::int` }).from(schema.articles);
+  if (!a) for (const x of SEED_ARTICLES) await db.insert(schema.articles).values({ ...x, publishedAt: new Date(x.publishedAt) });
   // The admin account comes from the environment, so no password is ever in the code.
   const email = (process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== "production" ? "admin@pehlaround.in" : "")).toLowerCase().trim();
   const pass = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "pehla-local-admin" : "");

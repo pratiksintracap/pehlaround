@@ -61,6 +61,7 @@ export function Footer() {
           </div>
           <div className="ft-col"><h4>Explore</h4><ul>
             {NAV.map(([h, t]) => <li key={h}><a href={h}>{t}</a></li>)}
+            <li><a href="/articles">Articles</a></li>
           </ul></div>
           <div className="ft-col"><h4>Operated by</h4><ul>
             <li className="kv"><b>SintraCap Advisors LLP</b>LLPIN ACL-6334</li>

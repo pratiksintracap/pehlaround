@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="adm-top">
         <div><span className="eyebrow">Desk admin · {me.name}</span></div>
         <nav className="adm-nav">
-          <a href="/admin">Overview</a><a href="/admin/offices">Offices</a><a href="/admin/deals">Deals</a><a href="/admin/activity">Requests and Q&amp;A</a><a href="/admin/log">Log</a>
+          <a href="/admin">Overview</a><a href="/admin/offices">Offices</a><a href="/admin/deals">Deals</a><a href="/admin/articles">Articles</a><a href="/admin/activity">Requests and Q&amp;A</a><a href="/admin/log">Log</a>
         </nav>
       </div>
       {kind !== "postgres" && (

@@ -190,3 +190,18 @@ export const audit = pgTable("audit", {
   ip: text("ip"),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("audit_office_idx").on(t.officeId)]);
+
+// Articles by the desk: the home-page strip and /articles. externalUrl marks a piece published elsewhere.
+export const articles = pgTable("articles", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull(),
+  title: text("title").notNull(),
+  dek: text("dek"),
+  body: text("body").notNull().default(""),     // paragraphs separated by blank lines; "## " headings; "- " bullets
+  sources: jsonb("sources").$type<{ title: string; url: string }[]>().notNull().default([]),
+  externalUrl: text("external_url"),
+  author: text("author").notNull().default("Pehla Round desk"),
+  published: boolean("published").notNull().default(true),
+  publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("articles_slug_uq").on(t.slug)]);
