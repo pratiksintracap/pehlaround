@@ -1,0 +1,33 @@
+{
+  "name": "pehlaround",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:generate": "drizzle-kit generate",
+    "lint": "next lint"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.3.11",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.4",
+    "jose": "^6.2.12",
+    "next": "^15.5.27",
+    "pg": "^8.23.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "5.9"
+  }
+}

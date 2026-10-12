@@ -1,0 +1,45 @@
+import type { Metadata, Viewport } from "next";
+import Script from "next/script";
+import "./globals.css";
+import { Header, Footer } from "@/components/Chrome";
+import { getUser } from "@/lib/auth";
+import { listDeals, publicData } from "@/lib/deals";
+import { content } from "@/lib/content";
+import { SITE_URL } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
+
+const DESC = "Undiscovered, profitable, IPO-bound private companies for family offices. Checked before you see them, each in the same structured deal room.";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: { default: "Pehla Round · Pre-IPO deals for family offices", template: "%s · Pehla Round" },
+  description: DESC,
+  icons: { icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/favicon-32.png", type: "image/png", sizes: "32x32" }], apple: "/apple-touch-icon.png" },
+  manifest: "/site.webmanifest",
+  openGraph: { type: "website", siteName: "Pehla Round", title: "Pehla Round · Pre-IPO deals for family offices", description: DESC,
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Pehla Round: IPO-bound gems, before the crowd finds them." }] },
+  twitter: { card: "summary_large_image", images: ["/og.jpg"] },
+};
+export const viewport: Viewport = { themeColor: "#0b1730", width: "device-width", initialScale: 1, viewportFit: "cover" };
+
+const THEME = `try{var t=JSON.parse(localStorage.getItem("ud_theme")||"null");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [user, deals] = await Promise.all([getUser(), listDeals()]);
+  const data = JSON.stringify(publicData(deals)).replace(/</g, "\\u003c");
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: THEME }} /></head>
+      <body data-user={user ? (user.role === "admin" ? "admin" : "member") : ""}>
+        <Header user={user} />
+        {children}
+        <Footer />
+        <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
+        <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
+        <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />
+        <Script src="/js/site.js?v=31" strategy="afterInteractive" />
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,52 @@
+import { type NextRequest } from "next/server";
+import bcrypt from "bcryptjs";
+import { and, eq, isNull } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { offices, users, invites } from "@/db/schema";
+import { createSession, log } from "@/lib/auth";
+import { readBody, str, safeNext, done, fail } from "@/lib/http";
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export async function POST(req: NextRequest) {
+  const { data, json } = await readBody(req);
+  const next = safeNext(data.next, "/dashboard");
+  const back = "/register" + (data.next ? `?next=${encodeURIComponent(next)}` : "");
+  const name = str(data.name, 120), entity = str(data.entity, 160), email = str(data.email, 200).toLowerCase(), phone = str(data.phone, 40);
+  const password = typeof data.password === "string" ? data.password : "";
+  if (!name || !email || !phone) return fail(req, json, "Please fill in your name, email and mobile.", back);
+  if (!EMAIL.test(email)) return fail(req, json, "Please enter a valid email address.", back);
+  if (password.length < 8) return fail(req, json, "Choose a password of at least 8 characters.", back);
+  if (!(data.privacy === true || data.privacy === "on" || data.privacy === "yes")) return fail(req, json, "Please accept the privacy notice.", back);
+  if (!(data.risk === true || data.risk === "on" || data.risk === "yes")) return fail(req, json, "Please confirm the risk statement.", back);
+
+  const db = await getDb();
+  const [exists] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+  if (exists) return fail(req, json, "This email is already registered. Please sign in.", back, 409);
+
+  // An office can invite its CIO, CFO or CA; they join that office instead of creating a new one.
+  const [inv] = await db.select().from(invites).where(and(eq(invites.email, email), isNull(invites.acceptedAt)));
+  let officeId: number;
+  if (inv) {
+    officeId = inv.officeId;
+    await db.update(invites).set({ acceptedAt: new Date() }).where(eq(invites.id, inv.id));
+  } else {
+    if (!entity) return fail(req, json, "Please enter the family office or family name.", back);
+    const [o] = await db.insert(offices).values({
+      name: entity, category: str(data.category, 60) || null, residency: str(data.residency, 80) || null, ticket: str(data.ticket, 60) || null,
+      consents: { email: true, wa: data.contact === "on" || data.contact === true || data.contact === "yes", calls: data.contact === "on" || data.contact === true || data.contact === "yes" },
+    }).returning({ id: offices.id });
+    officeId = o.id;
+  }
+  const [u] = await db.insert(users).values({
+    email, name, phone, officeId, officeRole: str(data.role, 80) || null, rights: inv ? inv.rights : "View, comment, commit",
+    passwordHash: await bcrypt.hash(password, 10), lastLoginAt: new Date(),
+  }).returning();
+  // viewers named at registration become invites
+  for (const v of str(data.viewers, 600).split(/[\s,;]+/).map((x) => x.toLowerCase()).filter((x) => EMAIL.test(x) && x !== email).slice(0, 10)) {
+    await db.insert(invites).values({ officeId, email: v, rights: "View", invitedBy: u.id });
+  }
+  await createSession(u.id);
+  await log({ id: u.id, name: u.name, officeId }, inv ? "Joined the office by invitation" : "Registered the office");
+  return done(req, json, next);
+}

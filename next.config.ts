@@ -1,0 +1,24 @@
+import type { NextConfig } from "next";
+
+const config: NextConfig = {
+  serverExternalPackages: ["@electric-sql/pglite", "pg"],
+  outputFileTracingIncludes: { "/**": ["./drizzle/**/*", "./content/**/*"] },
+  poweredByHeader: false,
+  async redirects() {
+    return [
+      { source: "/index.html", destination: "/", permanent: true },
+      { source: "/diary", destination: "/dashboard", permanent: true },
+      { source: "/diligence", destination: "/how-it-works", permanent: true },
+      { source: "/nda", destination: "/deals", permanent: false },
+      { source: "/room/:slug/memo", destination: "/room/:slug/summary", permanent: true },
+      { source: "/:path(.+)\\.html", destination: "/:path", permanent: true },
+    ];
+  },
+  async headers() {
+    return [
+      { source: "/(room|dashboard|admin|nda)(.*)", headers: [{ key: "X-Robots-Tag", value: "noindex" }, { key: "Cache-Control", value: "private, no-store" }] },
+      { source: "/(.*)", headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }, { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }, { key: "X-Content-Type-Options", value: "nosniff" }] },
+    ];
+  },
+};
+export default config;
