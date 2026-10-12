@@ -23,7 +23,7 @@ export default async function Register({ searchParams }: P) {
         </ol>
         <span className="eyebrow">Family office registration</span>
         <h1>Register the office</h1>
-        <p className="lede">Register in one form. Once the desk approves your office, usually within a working day, you see every company on the desk with its round and valuation. PAN comes with the first NDA, and KYC only if you commit. No fee for family offices, ever.</p>
+        <p className="lede">Step one takes a minute. Once the desk approves your office, usually within a working day, you see every company on the desk with its round and valuation. PAN comes with the first NDA, and KYC only if you commit. No fee for family offices, ever.</p>
         <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>Approved by the desk</li><li>PAN on record</li><li>NDA per deal</li><li>Rooms unlocked</li></ol>
         <ul className="ticks">
           <li>No fee for the office: not to register, not to open a room, not to commit.</li>

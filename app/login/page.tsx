@@ -57,7 +57,7 @@ export default async function Login({ searchParams }: P) {
           </form>
           <div className="lp-reg">
             <b>New to the desk?</b>
-            <p>Registration is one form and costs your office nothing: not to register, not to open a room, not to commit.</p>
+            <p>Registration takes a minute and costs your office nothing: not to register, not to open a room, not to commit.</p>
             <a className="btn" href={reg}>Register your family office</a>
           </div>
         </div>
