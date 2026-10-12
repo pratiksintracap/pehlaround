@@ -251,7 +251,7 @@ h = sub1(h, '<span class="eyebrow live" style="color:var(--live)">6<!-- --> deal
          '<span class="eyebrow live" style="color:var(--live)">Invitation-only · for family offices</span>', 'hero eyebrow')
 h = sub1(h, '<h1>Undiscovered, profitable, IPO-bound companies. <em></em></h1>', '<h1>Undiscovered, profitable, IPO-bound companies. <em>Checked before you see them.</em></h1>', 'hero h1')
 h = sub1(h, '<p class="lede">Companies no banker has marketed and no other platform has, each found, negotiated and checked by the desk before it is shown, each in a structured deal room that opens the moment you sign the NDA. No call, no analyst.</p>',
-         '<p class="lede">Private companies raising their first real round, sourced by the desk through promoters, CAs and lenders and checked against ten standard checks. Registered family offices see each one in the same structured deal room, after an e-signed NDA.</p>', 'hero lede')
+         '<p class="lede">Private companies raising their first real round. Registered family offices see each one in the same structured deal room, after an e-signed NDA.</p>', 'hero lede')
 h = sub1(h, '<a class="btn onnavy" href="room/naval-defence-secondary.html">See a deal room</a>', '<a class="btn onnavy" href="diligence.html">How we check</a>', 'hero cta2')
 # hero mock: realistic illustrative numbers
 def bars(m):
