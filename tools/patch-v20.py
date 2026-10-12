@@ -4,7 +4,7 @@ Run from the repo root on the v19 build."""
 import re, glob
 
 FILES = sorted(glob.glob('*.html') + glob.glob('*/*.html') + glob.glob('*/*/*.html'))
-ADDR = "B/3501, World View, Lodha World Towers, S.B. Marg, Lower Parel, Mumbai 400013"
+ADDR = "602 Lodha Supremus, Lower Parel, Mumbai 400013"
 ENT = "SintraCap Advisors LLP"
 LLPIN = "LLPIN ACL-6334"
 
