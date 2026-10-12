@@ -60,7 +60,7 @@ def dilv(d):
     if d['slug'] == 'naval-defence-secondary':
         return ('<div class="dil" aria-label="Diligence status, visible to everyone"><span class="dots">' +
                '<i class="done"></i>'*3 + '<i class="in-progress"></i>'*2 + '<i class="pending"></i>'*4 + '<i class="in-progress"></i>' +
-               '</span><span><b>3/10</b> checks done · <b>7</b> risks flagged</span></div>')
+               '</span><span><b>3/10</b> checks done · <b>6</b> risks flagged</span></div>')
     if d.get('notopen'):
         return '<div class="dil"><span class="fine">Not open: no listing scheduled, so it fails the IPO-bound test.</span></div>'
     return '<div class="dil"><span class="fine">Illustrative sample: no real company or room behind it.</span></div>'
@@ -337,7 +337,7 @@ for d in DEALS:
                  '<li>Audit not complete: FY26 figures unaudited and two sources disagree by about 9%.</li>'
                  '<li>Secondary only: no capital goes to the company.</li>'
                  '<li>Customer concentration: revenue almost entirely Ministry of Defence, Navy and Coast Guard.</li>'
-                 '<li>Listing timeline: no merchant banker appointed yet.</li>'
+                 ''
                  '<li>Consolidated PAT is about 75% higher than standalone.</li>'
                  '<li>Defence is a licensed sector with FDI limits; non-resident offices need the FEMA route confirmed.</li>'
                  '<li>Exit through an IPO offer for sale needs a one-year holding before the DRHP, then a six-month lock-in.</li></ul>')
@@ -385,7 +385,7 @@ h = sub1(h, 'understand which entities carry the margin before pricing on 18x FY
          'understand which entities carry the margin before pricing on 18x FY27E.</li>'
          '<li><b>Foreign investors.</b> Defence is a licensed sector with FDI limits. Non-resident offices need the FEMA route, pricing basis and filings confirmed before committing.</li>'
          '<li><b>Exit through an IPO offer for sale.</b> Shares offered in an IPO must have been held for a year before the DRHP is filed, and pre-IPO shares are locked in for six months after listing. Plan to hold through both.</li></ul>', 'room risks')
-h = h.replace('5<!-- --> flagged, see Overview', '7<!-- --> flagged, see Overview')
+h = h.replace('5<!-- --> flagged, see Overview', '6<!-- --> flagged, see Overview')
 h = sub1(h, '<p class="fine">Indicative only. We confirm availability with the seller and send the term sheet within two working days.</p>',
          '<p class="fine">Non-binding indication. The desk confirms availability with the seller. A commitment is made only on signed documents after KYC, with a summary of terms, the desk\'s fee and the risks to confirm first.</p>', 'room interest note')
 h = sub1(h, '<span class="eyebrow">Express interest</span><h3>Reserve an allocation</h3>', '<span class="eyebrow">Indicate interest</span><h3>Request an allocation</h3>', 'room interest head')
