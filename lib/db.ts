@@ -87,8 +87,14 @@ async function bootstrap(db: DB) {
       for (const c of sessions) await db.insert(schema.calls).values({ dealId: row.id, kind: "session", title: c.title, status: c.status, scheduledFor: c.when, summary: c.summary ?? null });
     }
   }
-  const [{ a }] = await db.select({ a: sql<number>`count(*)::int` }).from(schema.articles);
-  if (!a) for (const x of SEED_ARTICLES) await db.insert(schema.articles).values({ ...x, publishedAt: new Date(x.publishedAt) });
+  // Articles shipped with the code are added once each (by slug); one the desk deletes later stays deleted.
+  const [mark] = await db.select().from(schema.settings).where(eq(schema.settings.key, "seeded_articles"));
+  const done = new Set<string>(mark ? JSON.parse(mark.value) : []);
+  const have = new Set((await db.select({ slug: schema.articles.slug }).from(schema.articles)).map((r) => r.slug));
+  for (const x of SEED_ARTICLES) if (!done.has(x.slug) && !have.has(x.slug)) await db.insert(schema.articles).values({ ...x, publishedAt: new Date(x.publishedAt) });
+  const all = JSON.stringify(SEED_ARTICLES.map((x) => x.slug));
+  if (!mark) await db.insert(schema.settings).values({ key: "seeded_articles", value: all }).onConflictDoNothing();
+  else if (mark.value !== all) await db.update(schema.settings).set({ value: JSON.stringify([...new Set([...done, ...SEED_ARTICLES.map((x) => x.slug)])]) }).where(eq(schema.settings.key, "seeded_articles"));
   // The admin account comes from the environment, so no password is ever in the code.
   const email = (process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== "production" ? "admin@pehlaround.in" : "")).toLowerCase().trim();
   const pass = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "pehla-local-admin" : "");
