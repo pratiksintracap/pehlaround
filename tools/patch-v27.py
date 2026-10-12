@@ -73,7 +73,7 @@ a = '<a class="btn onnavy" href="diligence.html">How we check</a>'
 if a in idx: idx = idx.replace(a, '')
 else: MISS.append('hero btn')
 a = '<h2 style="margin-top:10px">Raising ₹10–100 Cr before an IPO? Put it on the desk.</h2>'
-if a in idx: idx = idx.replace(a, a + '<p style="color:var(--ink2);margin-top:10px;max-width:62ch">More than 50 family offices are registered with us, and we contribute 5% to every deal ourselves.</p>')
+if a in idx: idx = idx.replace(a, a + '<p style="color:var(--ink2);margin-top:10px;max-width:62ch">Put your round in front of 50+ family offices already on the desk, with a partner that backs every deal with its own capital.</p>')
 else: MISS.append('founders cta')
 open('index.html', 'w').write(idx)
 print('MISSES', MISS)
