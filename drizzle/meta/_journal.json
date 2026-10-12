@@ -15,6 +15,13 @@
       "when": 1791815969555,
       "tag": "0001_articles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791818500280,
+      "tag": "0002_article_image",
+      "breakpoints": true
     }
   ]
 }

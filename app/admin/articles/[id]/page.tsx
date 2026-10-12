@@ -27,6 +27,7 @@ export default async function EditArticle({ params, searchParams }: { params: Pr
           <label>Date<input type="date" name="publishedAt" defaultValue={date} /><span className="hint">A future date schedules it.</span></label></div>
         <div className="row"><label>Author<input name="author" defaultValue={a?.author ?? "Pehla Round desk"} /></label>
           <label>Published elsewhere? Link (optional)<input name="externalUrl" defaultValue={a?.externalUrl ?? ""} placeholder="https://…" /></label></div>
+        <label>Cover picture (optional link to an image)<input name="image" defaultValue={a?.image ?? ""} placeholder="https://… .jpg or .png" /><span className="hint">Leave empty and the site draws a cover from the article&apos;s subject.</span></label>
         <label>Article<textarea name="body" rows={22} defaultValue={a?.body ?? ""} /><span className="hint">Leave a blank line between paragraphs. Start a line with ## for a heading and - for a bullet. **bold**, [link text](https://…).</span></label>
         <label>Sources: title | link (one per line)<textarea name="sources" rows={4} defaultValue={(a?.sources ?? []).map((x) => `${x.title} | ${x.url}`).join("\n")} /></label>
         <label className="chk"><input type="checkbox" name="published" defaultChecked={a ? a.published : true} /> Published</label>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { listArticles, artDate, artHref } from "@/lib/articles";
+import { Cover } from "@/components/Cover";
 
 const D = "Notes from the desk on IPOs, private rounds and the market, for family offices.";
 export const metadata: Metadata = { title: "Articles", description: D, openGraph: { title: "Articles · Pehla Round", description: D } };
@@ -13,6 +14,7 @@ export default async function Articles() {
       <section className="sec tight"><div className="wrap">
         <div className="art-list">{list.map((a) => (
           <a key={a.id} className="art-card rv inview" href={artHref(a)} {...(a.externalUrl ? { target: "_blank", rel: "noopener" } : {})}>
+            <Cover a={a} />
             <span className="mono">{artDate(a.publishedAt, true)}{a.externalUrl ? " · published elsewhere" : ""}</span>
             <h2>{a.title}</h2>{a.dek && <p>{a.dek}</p>}<span className="art-more">Read →</span>
           </a>))}

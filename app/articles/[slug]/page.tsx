@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getArticle, listArticles, artDate, artHref } from "@/lib/articles";
 import { md } from "@/lib/md";
+import { Cover } from "@/components/Cover";
 
 type P = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: P): Promise<Metadata> {
@@ -22,6 +23,7 @@ export default async function Article({ params }: P) {
         <span className="eyebrow">{artDate(a.publishedAt, true)} · {a.author}</span>
         <h1>{a.title}</h1>
         {a.dek && <p className="lede">{a.dek}</p>}
+        <Cover a={a} className="cover-hero" />
         <div className="art-body" dangerouslySetInnerHTML={{ __html: md(a.body) }} />
         {a.sources.length > 0 && <div className="art-src"><span className="k">Sources</span><ul>{a.sources.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noopener">{s.title}</a></li>)}</ul></div>}
         <p className="fine">For information only. Not an offer, advice or a recommendation to buy or sell any security.</p>
