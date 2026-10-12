@@ -26,6 +26,7 @@ export default async function Register({ searchParams }: P) {
         <p className="lede">Step one takes a minute. Once the desk approves your office, usually within a working day, you see every company on the desk with its round and valuation. PAN comes with the first NDA, and KYC only if you commit. No fee for family offices, ever.</p>
         <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>Approved by the desk</li><li>PAN on record</li><li>NDA per deal</li><li>Rooms unlocked</li></ol>
         <ul className="ticks">
+          <li>A new deal reaches the desk about every fortnight; you are told the day it does.</li>
           <li>No fee for the office: not to register, not to open a room, not to commit.</li>
           <li>Each deal has its own NDA, signed directly with that company; it opens that company&apos;s room only.</li>
           <li>Add your CIO, CFO or CA as viewers; they join your office when they register with that email.</li>
