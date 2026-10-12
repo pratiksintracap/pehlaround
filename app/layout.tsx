@@ -6,6 +6,8 @@ import { getUser } from "@/lib/auth";
 import { listDeals, publicData } from "@/lib/deals";
 import { content } from "@/lib/content";
 import { SITE_URL } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
+import { unreadCount } from "@/lib/notify";
 
 export const dynamic = "force-dynamic";
 
@@ -27,13 +29,16 @@ export const viewport: Viewport = { themeColor: "#0b1730", width: "device-width"
 const THEME = `try{var t=JSON.parse(localStorage.getItem("ud_theme")||"null");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [user, deals] = await Promise.all([getUser(), listDeals()]);
+  const [user, deals, st] = await Promise.all([getUser(), listDeals(), getSettings()]);
+  const unread = await unreadCount(user);
   const data = JSON.stringify(publicData(deals)).replace(/</g, "\\u003c");
   return (
     <html lang="en" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: THEME }} /></head>
       <body data-user={user ? (user.role === "admin" ? "admin" : "member") : ""}>
-        <Header user={user} />
+        {st.announcement && (
+          <div className="annc"><div className="wrap">{st.announcementLink ? <a href={st.announcementLink}>{st.announcement} <span aria-hidden="true">→</span></a> : st.announcement}</div></div>)}
+        <Header user={user} unread={unread} />
         {children}
         <Footer />
         <AppBar user={user} />

@@ -5,6 +5,7 @@ import { getDb } from "@/lib/db";
 import { offices, users, invites } from "@/db/schema";
 import { createSession, log } from "@/lib/auth";
 import { readBody, str, safeNext, done, fail } from "@/lib/http";
+import { notifyDesk } from "@/lib/notify";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -48,5 +49,6 @@ export async function POST(req: NextRequest) {
   }
   await createSession(u.id);
   await log({ id: u.id, name: u.name, officeId }, inv ? "Joined the office by invitation" : "Registered the office");
+  if (!inv) await notifyDesk({ title: `New family office registered: ${entity}`, body: `${name} · ${email} · ${phone} · ${str(data.role, 80)} · ${str(data.ticket, 60)}. Approve or hold it in the admin.`, link: "/admin/offices?show=pending" });
   return done(req, json, next);
 }

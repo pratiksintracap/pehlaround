@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getUser, maskPan } from "@/lib/auth";
-import { getDeal, signedDealIds } from "@/lib/deals";
+import { getDeal, signedDealIds, roomAccess } from "@/lib/deals";
 import { NdaText } from "@/components/NdaText";
 
 export const metadata: Metadata = { title: "NDA", robots: { index: false } };
@@ -16,6 +16,8 @@ export default async function Nda({ params, searchParams }: P) {
   if (!d || !d.published) notFound();
   if (user.role === "admin" || (await signedDealIds(user.officeId)).has(d.id)) redirect(`/room/${slug}`);
   if (!d.open) redirect(`/deals/${slug}`);
+  const acc = await roomAccess(user, d);
+  if (acc.state === "pending-approval" || acc.state === "blocked") redirect(`/room/${slug}`);
   const office = user.office;
   return (
     <main><div className="wrap split" style={{ padding: "clamp(40px,6vw,72px) var(--gutter)" }}>

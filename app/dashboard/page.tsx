@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import { requireUser, maskPan, REQUIRE_VERIFIED } from "@/lib/auth";
+import { requireUser, maskPan } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
 import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, users } from "@/db/schema";
-import { listDeals } from "@/lib/deals";
+import { listDeals, canSeeNames } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
 import { GRIEVANCE } from "@/lib/site";
 
@@ -21,7 +22,9 @@ export default async function Dashboard({ searchParams }: P) {
   const { msg, error } = await searchParams;
   const office = user.office!;
   const db = await getDb();
-  const deals = await listDeals();
+  const [allDeals, names, st] = await Promise.all([listDeals(), canSeeNames(user), getSettings()]);
+  const deals = names ? allDeals : allDeals.map((d) => ({ ...d, company: d.title, roundLabel: "After approval", preMoney: "After approval", peLabel: "After approval" }));
+  const pendingApproval = !names;
   const byId = new Map(deals.map((d) => [d.id, d]));
   const [myNdas, myInterests, myPasses, myCalls, myQs, team, pending, log, views] = await Promise.all([
     db.select().from(ndas).where(and(eq(ndas.officeId, office.id), isNull(ndas.revokedAt))).orderBy(desc(ndas.signedAt)),
@@ -43,7 +46,7 @@ export default async function Dashboard({ searchParams }: P) {
   const totalInd = indicated.reduce((s, i) => s + Number(i.amountCr), 0);
   const firstOpen = deals.find((d) => signed.has(d.id)) || deals.find((d) => d.open);
   const rail = [
-    ["Registered", "done"], ["PAN on record", office.pan ? "done" : "now"],
+    ["Registered", "done"], ...(st.requireApproval ? [["Approved by the desk", names ? "done" : "now"]] : []), ["PAN on record", office.pan ? "done" : names ? "now" : ""],
     ["NDA per deal", signed.size ? "done" : office.pan ? "now" : ""], ["Rooms unlocked", signed.size ? "done" : ""],
   ];
   const canCommit = /commit/i.test(user.rights);
@@ -56,6 +59,7 @@ export default async function Dashboard({ searchParams }: P) {
           <h1>{office.name}</h1>
           <p className="lede">Everything your office does on the desk, in one place: the shelf, the rooms you opened, calls, documents, what you hold, your team, and a log of who saw what.</p>
           <ol className="statusrail" aria-label="Your status">{rail.map(([t, c]) => <li key={t} className={c}>{t}</li>)}</ol>
+          {pendingApproval && <p className="notice" style={{ marginTop: 12 }}><b>Your office is being reviewed.</b> The desk approves new offices, usually within a working day. Once approved you will see every company by name with its round and valuation, and can sign NDAs to open the rooms. We will tell you here and by email.</p>}
           {msg && <p className="notice" style={{ marginTop: 12 }}>{msg}</p>}
           {error && <p className="notice" style={{ marginTop: 12, borderColor: "var(--warn, #c0392b)" }}>{error}</p>}
         </div>
@@ -64,7 +68,7 @@ export default async function Dashboard({ searchParams }: P) {
           <div className="kv"><span>Questions asked</span><b>{myQs.length}</b></div>
           <div className="kv"><span>Passed</span><b>{myPasses.length}</b></div>
           <div className="kv"><span>Allocations requested</span><b>{indicated.length ? `${indicated.length} · ₹${+totalInd.toFixed(2)} Cr` : "0"}</b></div>
-          {firstOpen && <a className="btn primary" href={signed.has(firstOpen.id) ? `/room/${firstOpen.slug}` : `/nda/${firstOpen.slug}`}>{signed.has(firstOpen.id) ? "Open your latest room" : "Open your first room"}</a>}
+          {firstOpen && names && <a className="btn primary" href={signed.has(firstOpen.id) ? `/room/${firstOpen.slug}` : `/nda/${firstOpen.slug}`}>{signed.has(firstOpen.id) ? "Open your latest room" : "Open your first room"}</a>}
           <a className="btn sm ghost dash-app" href="/app" data-hide-standalone="">Get the app</a>
         </div>
       </div>
@@ -78,22 +82,22 @@ export default async function Dashboard({ searchParams }: P) {
         <div className="cmpwrap"><table className="cmp plain" id="shelf-t"><thead><tr><th>Deal</th><th>Structure</th><th>Target listing</th><th>Round</th><th>Pre-money</th><th>P/E trailing · forward</th><th>Min ticket</th><th /></tr></thead>
           <tbody>{deals.map((d) => (
             <tr key={d.id} data-struct={d.category} data-months={monthsTo(d.listingMonth) ?? 999}>
-              <th scope="row">{d.company}<br /><small className="fine">{d.title}</small><br />
+              <th scope="row">{d.company}{names && <><br /><small className="fine">{d.title}</small></>}<br />
                 <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></th>
               <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td>
               <td><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
+                {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
                 <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div></td>
             </tr>
           ))}</tbody></table></div>
         <ul className="dash-cards">{deals.map((d) => (
           <li key={d.id}>
             <div className="dc-top"><b>{d.company}</b><span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></div>
-            <small>{d.title} · {d.category}</small>
+            <small>{names ? `${d.title} · ` : ""}{d.category}</small>
             <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
               <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div></dl>
             <div className="dc-acts">
-              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
+              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
               <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
           </li>))}</ul>
         <p className="fine">Same fields for every deal so offices can compare quickly. Each room opens with that company&apos;s own NDA.</p>
@@ -164,7 +168,7 @@ export default async function Dashboard({ searchParams }: P) {
             <div className="kv"><span>Invests as</span><b>{office.category || "—"}</b></div>
             <div className="kv"><span>Residency</span><b>{office.residency || "—"}</b></div>
             <div className="kv"><span>Ticket band</span><b>{office.ticket || "—"}</b></div>
-            {REQUIRE_VERIFIED && office.status !== "verified" && <p className="fine">Rooms open once the desk has checked the PAN.</p>}
+            {st.requirePan && office.status !== "verified" && <p className="fine">Rooms open once the desk has checked the PAN.</p>}
           </div>
           <div className="chart"><span className="k">People with access</span>
             <div className="cmpwrap"><table className="cmp plain" style={{ minWidth: 0 }}><thead><tr><th>Name</th><th>Role</th><th>Rights</th></tr></thead><tbody>

@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { ndas, offices } from "@/db/schema";
 import { getUser, log, clientIp, PAN_RE } from "@/lib/auth";
-import { getDeal, signedDealIds } from "@/lib/deals";
+import { getDeal, signedDealIds, canSeeNames } from "@/lib/deals";
+import { notifyDesk } from "@/lib/notify";
 import { readBody, str, done, fail } from "@/lib/http";
 
 export async function POST(req: NextRequest) {
@@ -17,6 +18,7 @@ export async function POST(req: NextRequest) {
   const d = await getDeal(slug);
   if (!d || !d.published || !d.open) return fail(req, json, "This room is not open.", "/deals", 404);
   if ((await signedDealIds(user.office.id)).has(d.id)) return done(req, json, `/room/${slug}`);
+  if (!(await canSeeNames(user))) return fail(req, json, "Your office is still being approved by the desk.", back, 403);
 
   const sig = str(data.sig, 120);
   if (!sig) return fail(req, json, "Please type your full name to sign.", back);
@@ -32,5 +34,6 @@ export async function POST(req: NextRequest) {
   await db.insert(ndas).values({ officeId: user.office.id, dealId: d.id, userId: user.id, signerName: sig, version: d.ndaVersion,
     ip: await clientIp(), userAgent: str(req.headers.get("user-agent"), 300) }).onConflictDoNothing();
   await log(user, `Signed the NDA with ${d.company} (version ${d.ndaVersion})`, d.id);
+  await notifyDesk({ title: `${user.office.name} signed the NDA with ${d.company}`, body: `Signed by ${sig}.`, link: "/admin/offices" });
   return done(req, json, `/room/${slug}`);
 }

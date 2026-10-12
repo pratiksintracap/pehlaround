@@ -5,6 +5,7 @@ import { calls, dealPrefs, interests, passes, questions } from "@/db/schema";
 import { getUser, log } from "@/lib/auth";
 import { getDeal, roomAccess } from "@/lib/deals";
 import { readBody, str, jerr } from "@/lib/http";
+import { notifyDesk } from "@/lib/notify";
 
 type P = { params: Promise<{ slug: string; action: string }> };
 
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest, { params }: P) {
       if (!/commit/i.test(user.rights)) return jerr("Your access is view-only. Ask your office's principal to request an allocation.", 403);
       await db.insert(interests).values({ ...base, amountCr: String(amount), colead: !!data.colead });
       await log(user, `Requested an allocation of ₹${amount} Cr${data.colead ? " (co-lead interest)" : ""}: ${d.company}`, d.id);
+      await notifyDesk({ title: `Allocation request: ₹${amount} Cr in ${d.company}`, body: `${user.office?.name} · ${user.name}${data.colead ? " · co-lead interest" : ""}`, link: "/admin/activity" });
       break;
     }
     case "pass": {
@@ -43,6 +45,7 @@ export async function POST(req: NextRequest, { params }: P) {
       if (q.length < 5) return jerr("Please write the question in full.");
       await db.insert(questions).values({ ...base, question: q });
       await log(user, `Asked the promoter a question: ${d.company}`, d.id);
+      await notifyDesk({ title: `New question on ${d.company}`, body: q, link: "/admin/activity#qs" });
       break;
     }
     case "call": {
@@ -50,6 +53,7 @@ export async function POST(req: NextRequest, { params }: P) {
       if (!slot || !who) return jerr("Choose a slot and say who will attend.");
       await db.insert(calls).values({ ...base, slot, attendees: who, questions: str(data.qs, 1500) || null });
       await log(user, `Requested a management call: ${d.company}`, d.id);
+      await notifyDesk({ title: `Call request: ${d.company}`, body: `${user.office?.name} · ${slot} · ${who}`, link: "/admin/activity#calls" });
       break;
     }
     case "prefs": {

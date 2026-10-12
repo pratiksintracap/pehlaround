@@ -6,7 +6,7 @@ const NAV = [
   ["/founders", "List your company"], ["/dashboard", "Dashboard"],
 ] as const;
 
-export function Header({ user }: { user: SessionUser | null }) {
+export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?: number }) {
   return (
     <header className="hdr">
       <div className="wrap in">
@@ -19,6 +19,11 @@ export function Header({ user }: { user: SessionUser | null }) {
           <button type="button" className="iconbtn" id="shortlist-btn" aria-label="Your shortlist" title="Your shortlist" aria-expanded="false" aria-controls="shortlist">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14l-5-3.5L5 17z" /></svg><span className="badge" id="shortlist-count" hidden>0</span>
           </button>
+          {user && (
+            <a className="iconbtn" href="/notifications" aria-label={unread ? `${unread} unread notifications` : "Notifications"} title="Notifications">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a5 5 0 0 0-5 5v3.2L3.5 13.5h13L15 10.7V7.5a5 5 0 0 0-5-5zM8 16a2 2 0 0 0 4 0" /></svg>
+              {unread > 0 && <span className="badge">{unread > 9 ? "9+" : unread}</span>}
+            </a>)}
           <button type="button" className="iconbtn" id="theme-btn" aria-label="Switch light or dark" title="Light / dark">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path className="sun" d="M10 4.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM10 1v2M10 17v2M1 10h2M17 10h2M3.6 3.6l1.4 1.4M15 15l1.4 1.4M3.6 16.4L5 15M15 5l1.4-1.4" /><path className="moon" d="M16 12.5A7 7 0 0 1 7.5 4a7 7 0 1 0 8.5 8.5z" /></svg>
           </button>
@@ -40,6 +45,7 @@ export function Header({ user }: { user: SessionUser | null }) {
             <div id="mnav-panel" role="navigation" className="mnav-panel" aria-label="Site">
               {NAV.map(([h, t]) => <a key={h} href={h}>{t}</a>)}
               {user?.role === "admin" && <a href="/admin">Admin</a>}
+              {user && <a href="/notifications">Notifications{unread ? ` (${unread})` : ""}</a>}
               {user ? <a href="/logout">Sign out</a> : <><a href="/login">Sign in</a><a href="/register">Register</a></>}
             </div>
           </div>

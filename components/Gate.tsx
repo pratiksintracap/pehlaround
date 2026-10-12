@@ -21,6 +21,9 @@ export function GateCard({ deal, state }: { deal: Deal; state: Exclude<Access["s
         <div><a className="btn primary" href={`/nda/${deal.slug}`}>Sign this company&apos;s NDA</a></div>
       </>;
       break;
+    case "pending-approval":
+      body = <p>Thank you for registering. The desk is reviewing your office, usually within a working day. Once approved you will see every company by name and can sign this company&apos;s NDA; we will let you know in your dashboard and by email.</p>;
+      break;
     case "pending-pan":
       body = <p>Your office has signed this company&apos;s NDA. The desk is checking the PAN against the name on it; the room opens as soon as that is done, usually within a working day.</p>;
       break;

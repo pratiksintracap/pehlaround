@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getUser } from "@/lib/auth";
-import { getDeal, listDeals, signedDealIds, trackerCounts } from "@/lib/deals";
+import { getDeal, listDeals, signedDealIds, trackerCounts, canSeeNames } from "@/lib/deals";
 import { runwayHtml } from "@/lib/render";
 
 type P = { params: Promise<{ slug: string }> };
@@ -17,7 +17,7 @@ export default async function Overview({ params }: P) {
   const [user, d, all] = await Promise.all([getUser(), getDeal(slug), listDeals()]);
   if (!d || (!d.published && user?.role !== "admin")) notFound();
   const signed = (await signedDealIds(user?.officeId)).has(d.id) || user?.role === "admin";
-  const registered = !!user;
+  const registered = await canSeeNames(user);
   const c = trackerCounts(d);
   const stages = ["Overview", "Room open", "Closing"];
   const now = d.open ? "Room open" : "Overview";
@@ -74,7 +74,8 @@ export default async function Overview({ params }: P) {
                   <li>Financials and documents<span className="v">in the room</span></li>
                 </ul>
               </div>
-              <a className="btn primary" href={`/register?next=${encodeURIComponent(`/deals/${d.slug}`)}`}>Register to see the company</a>
+              {user ? <span className="btn" aria-disabled="true">Your office is being approved</span>
+                : <a className="btn primary" href={`/register?next=${encodeURIComponent(`/deals/${d.slug}`)}`}>Register to see the company</a>}
             </>
           )}
           <p className="fine">No fee for family offices, on any deal. Register once; each company&apos;s room opens with its own NDA.</p>

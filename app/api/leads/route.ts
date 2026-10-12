@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getDb } from "@/lib/db";
 import { leads } from "@/db/schema";
 import { readBody, str, jerr } from "@/lib/http";
+import { notifyDesk } from "@/lib/notify";
 
 export async function POST(req: NextRequest) {
   const { data } = await readBody(req);
@@ -11,5 +12,6 @@ export async function POST(req: NextRequest) {
   for (const [k, v] of Object.entries(data)) if (!["name", "email", "phone", "entity"].includes(k)) rest[k] = str(v, 1000);
   const db = await getDb();
   await db.insert(leads).values({ kind: "founder", name, company: str(data.entity, 200) || null, email: email || null, phone: phone || null, data: rest });
+  await notifyDesk({ title: `New company lead: ${str(data.entity, 200) || name}`, body: `${name} · ${email} · ${phone}`, link: "/admin/activity#leads" });
   return NextResponse.json({ ok: true });
 }

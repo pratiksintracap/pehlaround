@@ -11,8 +11,11 @@ export const offices = pgTable("offices", {
   entityName: text("entity_name"),              // investing entity, as on PAN
   pan: text("pan"),                             // full PAN, visible to admins only
   panName: text("pan_name"),
-  // registered -> pan_submitted -> verified | rejected
+  // registered -> pan_submitted -> verified | rejected  (PAN check)
   status: text("status").notNull().default("registered"),
+  // pending -> approved | rejected  (the desk's approval of the office)
+  approval: text("approval").notNull().default("pending"),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
   verifiedAt: timestamp("verified_at", { withTimezone: true }),
   consents: jsonb("consents").$type<Record<string, boolean>>().default({}),
   sectors: jsonb("sectors").$type<string[]>().default([]),
@@ -206,3 +209,37 @@ export const articles = pgTable("articles", {
   publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("articles_slug_uq").on(t.slug)]);
+
+// Messages to offices (and to the desk). One row per recipient office; officeId null + toAdmin = for the desk.
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id"),
+  toAdmin: boolean("to_admin").notNull().default(false),
+  title: text("title").notNull(),
+  body: text("body"),
+  link: text("link"),
+  broadcastId: integer("broadcast_id"),
+  readAt: timestamp("read_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("notifications_office_idx").on(t.officeId)]);
+
+// Messages the desk sent from the admin, with their audience.
+export const broadcasts = pgTable("broadcasts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  body: text("body"),
+  link: text("link"),
+  audience: text("audience").notNull(),
+  dealId: integer("deal_id"),
+  recipients: integer("recipients").notNull().default(0),
+  emailed: integer("emailed").notNull().default(0),
+  sentBy: text("sent_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Site settings the desk changes from the admin.
+export const settings = pgTable("settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

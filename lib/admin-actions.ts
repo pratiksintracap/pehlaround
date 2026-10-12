@@ -1,10 +1,12 @@
 "use server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { eq, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
-import { articles, calls, deals, documents, interests, leads, ndas, offices, questions, users } from "@/db/schema";
+import { articles, broadcasts, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
+import { notifyOffices, ndaOffices } from "@/lib/notify";
+import { saveSettings } from "@/lib/settings";
 import { requireAdmin, log } from "@/lib/auth";
 import { fromText } from "@/lib/pipes";
 import type { RoomContent } from "@/lib/types";
@@ -29,6 +31,23 @@ export async function setOfficeStatus(f: FormData) {
   await log(admin, `Desk set office #${id} to ${status}`);
   revalidatePath("/admin/offices");
   back("/admin/offices", "Office updated.");
+}
+
+export async function setApproval(f: FormData) {
+  const admin = await requireAdmin();
+  const id = n(f, "id"), approval = s(f, "approval");
+  if (!["approved", "pending", "rejected"].includes(approval)) return;
+  const db = await getDb();
+  const [o] = await db.select().from(offices).where(eq(offices.id, id));
+  if (!o) return;
+  await db.update(offices).set({ approval, approvedAt: approval === "approved" ? new Date() : null }).where(eq(offices.id, id));
+  await log(admin, `Desk set ${o.name} to ${approval}`);
+  if (approval === "approved" && o.approval !== "approved")
+    await notifyOffices([id], { title: "Your office is approved", body: "Every company on Pehla Round is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: "/deals" });
+  if (approval === "rejected" && o.approval !== "rejected" && f.get("tell") === "on")
+    await notifyOffices([id], { title: "Your access is on hold", body: s(f, "reason", 1000) || "Please write to the desk and we will help.", link: "/dashboard" });
+  revalidatePath("/admin/offices");
+  back(s(f, "back") || "/admin/offices", approval === "approved" ? `${o.name} approved and told.` : "Office updated.");
 }
 
 export async function saveOfficeNotes(f: FormData) {
@@ -151,9 +170,15 @@ export async function saveDocument(f: FormData) {
   const dealId = n(f, "dealId"), id = n(f, "id");
   const db = await getDb();
   const vals = { title: s(f, "title", 300), kind: s(f, "kind", 80) || null, status: s(f, "status", 20) || "available", url: s(f, "url", 2000) || null, sort: n(f, "sort") || 100 };
+  const [prev] = id ? await db.select().from(documents).where(eq(documents.id, id)) : [];
   if (f.get("delete") === "on" && id) await db.delete(documents).where(eq(documents.id, id));
   else if (id) await db.update(documents).set(vals).where(eq(documents.id, id));
   else if (vals.title) await db.insert(documents).values({ ...vals, dealId });
+  const nowAvailable = f.get("delete") !== "on" && vals.title && vals.status === "available" && vals.url && (!prev || prev.status !== "available" || !prev.url);
+  if (nowAvailable && f.get("tell") !== "off") {
+    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, dealId));
+    await notifyOffices(await ndaOffices(dealId), { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` });
+  }
   await log(admin, `Desk updated documents`, dealId);
   back(`/admin/deals/${dealId}#docs`, "Documents saved.");
 }
@@ -170,6 +195,12 @@ export async function answerQuestion(f: FormData) {
     answeredAt: answer ? (q.answeredAt ?? new Date()) : null, hidden: f.get("hidden") === "on",
   }).where(eq(questions.id, id));
   await log(admin, `Desk ${answer ? "answered" : "updated"} a question`, q.dealId);
+  if (answer && !q.answer && f.get("hidden") !== "on") {
+    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, q.dealId));
+    const to = await ndaOffices(q.dealId);
+    if (q.officeId) to.push(q.officeId);
+    await notifyOffices(to, { title: `${d?.company}: a question is answered`, body: q.question.slice(0, 280), link: `/room/${d?.slug}` });
+  }
   back(s(f, "back") || "/admin/activity", "Question saved.");
 }
 
@@ -186,8 +217,17 @@ export async function saveCall(f: FormData) {
   const db = await getDb();
   const id = n(f, "id");
   const vals = { status: s(f, "status", 40) || "Requested", scheduledFor: s(f, "scheduledFor", 120) || null, summary: s(f, "summary", 4000) || null, title: s(f, "title", 200) || null };
+  const [prev] = id ? await db.select().from(calls).where(eq(calls.id, id)) : [];
   if (id) await db.update(calls).set(vals).where(eq(calls.id, id));
   else await db.insert(calls).values({ ...vals, dealId: n(f, "dealId"), kind: "session" });
+  const dealId = prev?.dealId ?? n(f, "dealId");
+  const changed = !prev || prev.status !== vals.status || prev.scheduledFor !== vals.scheduledFor || (!!vals.summary && prev.summary !== vals.summary);
+  if (changed && dealId && vals.status !== "Requested") {
+    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, dealId));
+    const to = prev?.officeId ? [prev.officeId] : await ndaOffices(dealId);
+    await notifyOffices(to, { title: `${d?.company}: ${vals.title || "promoter call"} · ${vals.status}${vals.scheduledFor ? ` · ${vals.scheduledFor}` : ""}`,
+      body: vals.summary, link: `/room/${d?.slug}` });
+  }
   await log(admin, "Desk updated a call");
   back(s(f, "back") || "/admin/activity", "Call saved.");
 }
@@ -195,7 +235,12 @@ export async function saveCall(f: FormData) {
 export async function saveInterest(f: FormData) {
   const admin = await requireAdmin();
   const db = await getDb();
+  const [prev] = await db.select().from(interests).where(eq(interests.id, n(f, "id")));
   await db.update(interests).set({ status: s(f, "status", 40), note: s(f, "note", 1000) || null }).where(eq(interests.id, n(f, "id")));
+  if (prev && prev.status !== s(f, "status", 40)) {
+    const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, prev.dealId));
+    await notifyOffices([prev.officeId], { title: `${d?.company}: your allocation request is ${s(f, "status", 40).toLowerCase()}`, body: s(f, "note", 1000) || null, link: "/dashboard" });
+  }
   await log(admin, `Desk set allocation #${n(f, "id")} to ${s(f, "status", 40)}`);
   back("/admin/activity", "Allocation updated.");
 }
@@ -231,4 +276,43 @@ export async function saveArticle(f: FormData) {
   await log(admin, `Desk saved the article: ${title}`);
   revalidatePath("/", "layout");
   back(`/admin/articles/${rid}`, "Saved.");
+}
+
+// ---------------------------------------------------------------- notifications and settings
+export async function sendBroadcast(f: FormData) {
+  const admin = await requireAdmin();
+  const title = s(f, "title", 200), body = s(f, "body", 4000), link = s(f, "link", 500), audience = s(f, "audience", 40);
+  if (!title) back("/admin/notify", "A title is needed.");
+  const db = await getDb();
+  let ids: number[] = [];
+  let dealId: number | null = null;
+  if (audience === "approved") ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id);
+  else if (audience === "all") ids = (await db.select({ id: offices.id }).from(offices).where(ne(offices.approval, "rejected"))).map((r) => r.id);
+  else if (audience === "pending") ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "pending"))).map((r) => r.id);
+  else if (audience === "deal") { dealId = n(f, "dealId"); ids = await ndaOffices(dealId); }
+  else if (audience === "office") ids = [n(f, "officeId")].filter(Boolean);
+  if (!ids.length) back("/admin/notify", "Nobody is in that audience yet.");
+  const [b] = await db.insert(broadcasts).values({ title, body: body || null, link: link || null, audience, dealId, sentBy: admin.name }).returning({ id: broadcasts.id });
+  const r = await notifyOffices(ids, { title, body, link, broadcastId: b.id }, f.get("email") === "on");
+  await db.update(broadcasts).set({ recipients: r.recipients, emailed: r.emailed }).where(eq(broadcasts.id, b.id));
+  await log(admin, `Desk sent "${title}" to ${r.recipients} offices`);
+  back("/admin/notify", `Sent to ${r.recipients} ${r.recipients === 1 ? "office" : "offices"}${r.emailed ? `, ${r.emailed} emails` : ""}.`);
+}
+
+export async function saveSiteSettings(f: FormData) {
+  const admin = await requireAdmin();
+  await saveSettings({
+    requireApproval: f.get("requireApproval") === "on", requirePan: f.get("requirePan") === "on",
+    announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
+  });
+  await log(admin, "Desk changed the site settings");
+  revalidatePath("/", "layout");
+  back("/admin/settings", "Settings saved.");
+}
+
+export async function markDeskRead() {
+  await requireAdmin();
+  const db = await getDb();
+  await db.update(notifications).set({ readAt: new Date() }).where(sql`to_admin = true and read_at is null`);
+  back("/admin", "Alerts marked read.");
 }
