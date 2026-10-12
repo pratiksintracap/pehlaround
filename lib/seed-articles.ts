@@ -1,6 +1,124 @@
 // The desk's opening articles. Edit or add more in /admin/articles.
 export const SEED_ARTICLES = [
   {
+    slug: "jio-platforms-mega-ipo-season",
+    title: "Jio Platforms and the mega-IPO season: where early money actually earns its return",
+    dek: "A reported ₹30,200 Cr offer at a valuation of up to ₹10.3 lakh crore is the biggest book of the year. The return in companies like this was made long before the book opened.",
+    publishedAt: "2026-10-12T18:00:00+05:30",
+    body: `Jio Platforms is reported to be weighing a price band of ₹1,065–1,119 a share for an offer of about ₹30,200 Cr, valuing the company at up to ₹10.3 lakh crore, with subscriptions expected to open on 21 October. Zetwerk's ₹5,012 Cr book opens a week earlier. October is shaping up as the month of the mega-IPO.
+
+## Big books, priced for the crowd
+
+A listing of this size is priced to clear: bankers set the band where the largest institutions, mutual funds and millions of retail applicants will fill it. That is good for the sellers, and fair for buyers who want a liquid, well-known stock. It is rarely where the large multiples are made. September showed the pattern: the median main-board IPO was priced at 42.5x earnings and the median listing gain fell to under 6%.
+
+## Where the return was made
+
+For most companies that list, the step change in value happens much earlier: when the company is profitable but small, before any banker is building a book, and when the round is priced against listed peers rather than against demand in a listing week. An investor who came in at that stage owns the gap between a private multiple and a public one.
+
+## What this means for a family office
+
+- Mega-IPOs are a liquidity event for earlier holders. Ask what the sellers paid, and when.
+- The early-stage version of the same story is a profitable company two or three years from listing, raising its first serious round.
+- That stage carries different risks: illiquidity until listing, projection risk, and a lock-in after listing. They have to be priced in, which is why each room on the desk sets trailing and forward P/E against the listed peer set.
+
+The market also turned more cautious this month. Foreign exchange reserves fell by $12.95 billion to $734.61 billion in the week to 2 October, and foreign investors kept selling. Big books will still fill; the question for an office is where in a company's life it wants to be buying.`,
+    sources: [
+      { title: "India IPO daily market and IPO updates, 10 October 2026 (indiaipo.in)", url: "https://www.indiaipo.in/daily-reporter/india-ipo-daily-market-ipo-updates-10th-october-2026" },
+      { title: "India IPO daily market and IPO updates, 12 October 2026 (indiaipo.in)", url: "https://www.indiaipo.in/daily-reporter/india-ipo-daily-market-ipo-updates-12th-october-2026" },
+    ],
+  },
+  {
+    slug: "defence-order-books-execution-test",
+    title: "Defence after the order-book boom: execution is the next test",
+    dek: "With order books full and fresh approvals of about ₹1.6 lakh crore, analysts expect Q2 to be judged on deliveries. The same lens applies to unlisted defence suppliers.",
+    publishedAt: "2026-10-11T09:00:00+05:30",
+    body: `India's listed defence companies go into their September-quarter results with order books that have rarely been fuller. Choice Institutional Equities, in a preview published on 9 October, expects Q2 FY27 to be "execution-led": production and deliveries should improve across missiles, defence electronics, aerospace and shipbuilding, but quarterly numbers may stay uneven because revenue is recognised on milestones.
+
+## The demand is there
+
+- Recent Defence Acquisition Council approvals total about ₹1.1 lakh crore, on top of an earlier package of about ₹52,000 Cr.
+- The pipeline includes QRSAM, P-75(I) submarines, next-generation corvettes, missile vessels and offshore patrol vessels.
+- Defence exports reached a record ₹38,424 Cr in FY26, up 62.7%.
+
+## Why the focus shifts to delivery
+
+When order books are many times annual revenue, new orders stop moving the story. What matters is how fast a company turns them into revenue and cash: capacity, imported components, customer acceptance trials and milestone timing. That is where analysts expect earnings to diverge in the second half of the year.
+
+## The same questions for an unlisted supplier
+
+Private defence suppliers, often Tier I vendors to the Ministry of Defence, the Navy or the shipyards, ride the same cycle with less scrutiny. Before investing in one, a family office should be able to answer:
+
+- How much of the order book is signed, and how much is pipeline?
+- How many years of revenue does the signed book represent, and what is the delivery schedule?
+- How concentrated is revenue in one ministry, service or shipyard?
+- Do consolidated and standalone profits differ, and why?
+- For non-resident investors: what are the sector's FDI limits and the route for the investment?
+
+Strong demand is necessary but not sufficient. The value is in companies that can deliver what they have already won.`,
+    sources: [
+      { title: "HAL, Mazagon, BEL, GRSE, Cochin Shipyard: Q2 previews and targets (Business Today, 9 October 2026)", url: "https://www.businesstoday.in/markets/stocks/story/hal-mazagon-bel-unimech-grse-cochin-shipyard-top-defence-stocks-to-buy-targets-q-previews-560599-2026-10-09" },
+    ],
+  },
+  {
+    slug: "rbi-rate-hike-private-rounds",
+    title: "The RBI raises the repo rate to 5.5%. What dearer money means for private rounds",
+    dek: "A 25 bp hike and a shift to 'calibrated tightening' on 7 October. Rate cuts are off the table for now, and that changes the arithmetic for working-capital-heavy companies.",
+    publishedAt: "2026-10-08T09:00:00+05:30",
+    body: `On 7 October the Monetary Policy Committee raised the repo rate by 25 basis points to 5.50% and changed its stance to "calibrated tightening". The reasons given were familiar ones for a hard year: crude at about $116 a barrel for the Indian basket in September, a monsoon about 13% below normal, core inflation broadening, and bank credit growing at about 18%. Inflation is projected to peak at about 6% in the December quarter; growth for FY27 is still projected at about 7.1%.
+
+## Who feels it first
+
+Higher policy rates reach companies through their bank lines. The businesses that feel it most are the ones that carry large working capital: commodity processors, jewellers holding gold, distilleries buying grain in season, contractors waiting on milestone payments. For them, a quarter-point rise in borrowing costs comes straight out of thin margins.
+
+## What it does to valuations
+
+Higher rates also raise the return investors demand, which pulls listed multiples down, and they have already fallen this year. Private rounds tend to reprice more slowly, so a round priced against last year's peers can look cheap on paper and still be expensive against the market today.
+
+## What to ask in a room
+
+- How much of the company's debt is floating-rate working capital, and what does a 25–50 bp rise do to profit?
+- Is growth funded by the round itself, or by more borrowing?
+- Is the entry multiple set against where listed peers trade now?
+- Does the projection assume interest costs at today's rates?
+
+Each room on the desk sets out the company's debt and the use of the money raised. In a tightening cycle those two lines matter as much as the revenue chart.
+
+The next policy meeting is on 2–4 December.`,
+    sources: [
+      { title: "RBI hikes repo rate by 25 bps to 5.50% (CorpLawUpdates, summary of RBI press releases)", url: "https://www.corplawupdates.in/updates/rbi-repo-rate-hike-5-50-percent-october-2026" },
+      { title: "RBI repo rate hike to 5.50% in October 2026 (SCC Online)", url: "https://www.scconline.com/blog/post/2026/10/09/rbi-hikes-repo-rate-to-5-50-percent-october-2026/" },
+    ],
+  },
+  {
+    slug: "e20-reached-what-next-grain-distilleries",
+    title: "India reached E20. What comes next for grain distilleries",
+    dek: "Blending hit 20% five years early, and capacity has run ahead of demand. With no decision yet beyond E20, the distilleries that win will be the ones with more than one buyer.",
+    publishedAt: "2026-10-04T09:00:00+05:30",
+    body: `India's petrol now carries 20% ethanol, a target first set for 2030. Average blending rose from about 1.5% in 2013-14 to 19.2% in 2024-25, and ran at 20% from November 2025 to June 2026. Ethanol procurement by oil marketing companies is projected above 1,200 crore litres in 2025-26, up from about 38 crore litres a decade earlier.
+
+## Capacity has run ahead
+
+Production capacity reached about 2,000 crore litres in 2026, well above what a 20% blend needs. In July 2026 the government said no decision had been taken to go beyond E20 nationwide; any higher blend will follow technical studies and consultation with carmakers and oil companies. Earlier talk of E27 or E30 is not policy.
+
+## What that means for a distillery
+
+- **Price is administered.** Oil marketing companies buy at set prices, and grain-based ethanol competes with sugar-based ethanol for allocations.
+- **Feedstock is seasonal.** Grain distilleries buy maize and rice in season, which ties up working capital, and they are exposed to grain prices and to the availability of surplus FCI rice.
+- **Diversification matters.** A distillery that also sells extra neutral alcohol to liquor, pharma and personal-care buyers, plus by-products such as DDGS and CO₂, is less dependent on one buyer and one price.
+
+## How to read a distillery round
+
+- What share of revenue is fuel ethanol, and what share is ENA and by-products?
+- How much capacity is contracted with oil companies, and for how long?
+- What does the working-capital cycle look like through the grain season, and how is it funded?
+- How do margins move if the procurement price is held while grain prices rise?
+
+Blending was a policy success, and it built an industry. The next phase rewards distilleries with diversified buyers and disciplined balance sheets, not just more capacity.`,
+    sources: [
+      { title: "After E20, India's ethanol blending policy faces a harder test (Policy Circle, 30 September 2026)", url: "https://www.policycircle.org/policy/e20-indias-ethanol-blending-policy/" },
+    ],
+  },
+  {
     slug: "eight-ipos-one-week-october-calendar",
     title: "Eight IPOs and ₹11,000 Cr in one week: reading the October calendar",
     dek: "Zetwerk, Bonfiglioli, Tonbo and Sahajanand open together on 15 October. Most of the money goes to selling shareholders.",
