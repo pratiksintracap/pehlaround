@@ -4,10 +4,12 @@ import { revalidatePath } from "next/cache";
 import { eq, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
-import { articles, broadcasts, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
-import { notifyOffices, ndaOffices } from "@/lib/notify";
+import { articles, broadcasts, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
+import { notifyOffices, ndaOffices, sendEmail, emailReady } from "@/lib/notify";
+import { randomBytes } from "node:crypto";
+import { SITE_URL } from "@/lib/site";
 import { saveSettings } from "@/lib/settings";
-import { requireAdmin, log } from "@/lib/auth";
+import { requireAdmin, log, signOutEverywhere } from "@/lib/auth";
 import { fromText } from "@/lib/pipes";
 import type { RoomContent } from "@/lib/types";
 import ART from "@/lib/deal-art.json";
@@ -63,6 +65,7 @@ export async function resetPassword(f: FormData) {
   if (pw.length < 8) back("/admin/offices", "Password must be at least 8 characters.");
   const db = await getDb();
   await db.update(users).set({ passwordHash: await bcrypt.hash(pw, 10) }).where(eq(users.id, n(f, "id")));
+  await signOutEverywhere(n(f, "id"));
   await log(admin, `Desk reset the password for user #${n(f, "id")}`);
   back("/admin/offices", "Password reset. Share it with the user privately.");
 }
@@ -72,7 +75,7 @@ export async function toggleUser(f: FormData) {
   const db = await getDb();
   const id = n(f, "id");
   const [u] = await db.select().from(users).where(eq(users.id, id));
-  if (u && u.role !== "admin") await db.update(users).set({ disabled: !u.disabled }).where(eq(users.id, id));
+  if (u && u.role !== "admin") { await db.update(users).set({ disabled: !u.disabled }).where(eq(users.id, id)); await signOutEverywhere(id); }
   back("/admin/offices", "User updated.");
 }
 
@@ -135,6 +138,7 @@ export async function saveDeal(f: FormData) {
   await db.update(deals).set({
     company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80), stage: s(f, "stage", 80), status: s(f, "status", 200),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
+    score: (() => { const v = parseFloat(s(f, "score", 10)); return isFinite(v) ? Math.round(Math.min(10, Math.max(0, v)) * 10) / 10 : null; })(),
     roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null, minTicket: s(f, "minTicket", 80) || null,
     open: f.get("open") === "on", published: f.get("published") === "on", sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
@@ -143,6 +147,11 @@ export async function saveDeal(f: FormData) {
     room, updatedAt: new Date(),
   }).where(eq(deals.id, id));
   await log(admin, `Desk updated the deal: ${s(f, "company", 200)}`, id);
+  // Newly published: tell approved offices, if the desk ticked the box.
+  if (!cur.published && f.get("published") === "on" && f.get("announce") === "on") {
+    const ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id);
+    await notifyOffices(ids, { title: `New on the desk: ${s(f, "company", 200)}`, body: `${s(f, "title", 200)} · ${s(f, "category", 80)}. ${s(f, "headline", 600)}`, link: `/deals/${cur.slug}` });
+  }
   revalidatePath("/", "layout");
   back(path, "Saved. The site shows the change now.");
 }
@@ -315,4 +324,30 @@ export async function markDeskRead() {
   const db = await getDb();
   await db.update(notifications).set({ readAt: new Date() }).where(sql`to_admin = true and read_at is null`);
   back("/admin", "Alerts marked read.");
+}
+
+// ---------------------------------------------------------------- invitations to family offices
+export async function createInvites(f: FormData) {
+  const admin = await requireAdmin();
+  const db = await getDb();
+  const lines = s(f, "list", 20000).split(/\r?\n/).map((l) => l.split(/[,\t|]/).map((x) => x.trim())).filter((l) => l.some(Boolean));
+  const EM = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let made = 0, mailed = 0;
+  const send = f.get("send") === "on" && emailReady();
+  for (const parts of lines.slice(0, 300)) {
+    const email = parts.find((x) => EM.test(x))?.toLowerCase();
+    if (!email) continue;
+    const rest = parts.filter((x) => x.toLowerCase() !== email);
+    const [name = "", officeName = ""] = rest;
+    const [used] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+    if (used) continue;
+    const token = randomBytes(18).toString("base64url");
+    await db.insert(deskInvites).values({ token, email, name: name || null, officeName: officeName || null, createdBy: admin.name });
+    made++;
+    if (send) mailed += await sendEmail([email], { title: "Your invitation to Pehla Round",
+      body: `${name ? `Dear ${name.split(" ")[0]},\n\n` : ""}The desk has invited ${officeName || "your family office"} to Pehla Round: undiscovered, profitable, IPO-bound companies, checked before you see them. Your invitation registers the office already approved, so every company on the desk opens to you by name.`,
+      link: `${SITE_URL}/invite/${token}` });
+  }
+  await log(admin, `Desk created ${made} invitations`);
+  back("/admin/invites", made ? `${made} invitation${made === 1 ? "" : "s"} ready${mailed ? `, ${mailed} emailed` : ""}. Copy a link to send it yourself.` : "No new emails found (already registered, or no email on the line).");
 }

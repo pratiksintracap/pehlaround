@@ -10,7 +10,7 @@ type Msg = { title: string; body?: string | null; link?: string | null; broadcas
 /** True when an email provider is configured (Resend). */
 export const emailReady = () => !!process.env.RESEND_API_KEY;
 
-async function sendEmail(to: string[], m: Msg) {
+export async function sendEmail(to: string[], m: Msg) {
   if (!emailReady() || !to.length) return 0;
   const from = process.env.EMAIL_FROM || "Pehla Round <desk@pehlaround.in>";
   const url = m.link ? (m.link.startsWith("http") ? m.link : SITE_URL + m.link) : SITE_URL + "/dashboard";

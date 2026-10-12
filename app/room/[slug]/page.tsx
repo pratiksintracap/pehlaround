@@ -5,7 +5,8 @@ import { getUser, log } from "@/lib/auth";
 import { getDeal, roomAccess, trackerCounts, type Deal } from "@/lib/deals";
 import { getDb } from "@/lib/db";
 import { audit, dealPrefs, documents, interests, passes, questions } from "@/db/schema";
-import { Donut, Ring, StatusBar, Bars, HBars, Timeline } from "@/components/Charts";
+import { Donut, Ring, StatusBar, Bars, HBars, Timeline, barSeries } from "@/components/Charts";
+import { ScoreBadge } from "@/components/Score";
 import { GateCard } from "@/components/Gate";
 
 type P = { params: Promise<{ slug: string }> };
@@ -67,7 +68,7 @@ export default async function Room({ params }: P) {
               <div className="kv"><span>Family office ticket</span><b>{r.ticket}</b></div>
               {r.committed && <div className="kv"><span>Committed</span><b>{r.committed}</b></div>}
               <div className="kv"><span>Status</span><b>{d.status}</b></div>
-              <div className="kv"><span>Desk checks · risks</span><b>{c.done} done · {r.risks.length} flagged</b></div>
+              {d.score != null && <div className="kv"><span>Pehla Score</span><b>{d.score.toFixed(1)} / 10</b></div>}
               <a className="btn primary" href={`/room/${d.slug}/summary`}>Deal summary (one page)</a>
             </div>
           </div>
@@ -89,11 +90,10 @@ export default async function Room({ params }: P) {
                   <p className="fine">{r.highlight.note}</p>
                 </div>
               ) : r.fin ? (
-                <div className="chart"><span className="k">{r.fin.rows.filter((x) => !/%|growth|margin/i.test(x.label)).slice(0, 3).map((x) => x.label).join(" and ")} · {r.fin.unit}</span><Bars fin={r.fin} /></div>
+                <div className="chart"><span className="k">{barSeries(r.fin).map((x) => x.label).join(" and ")} · {r.fin.unit}</span><Bars fin={r.fin} /></div>
               ) : null}
-              <div className="chart"><span className="k">Diligence by the desk</span>
-                <div style={{ display: "flex", gap: 16, alignItems: "center" }}><Ring done={c.done} total={c.total} />
-                  <div style={{ flex: 1, minWidth: 0 }}><StatusBar done={c.done} prog={c.prog} pend={c.pend} /></div></div>
+              <div className="chart"><span className="k">Pehla Score</span>
+                {d.score != null ? <ScoreBadge score={d.score} size="lg" /> : <p className="fine">The desk is completing its assessment.</p>}
                 {r.stake && (
                   <div className="stake" style={{ marginTop: 6 }}><span className="k">Stake on offer</span>
                     <div className="bar" role="img" aria-label={`${((r.stake.sizeCr / r.stake.postCr) * 100).toFixed(1)} percent of the company`}><i style={{ width: `${(r.stake.sizeCr / r.stake.postCr) * 100}%` }} /></div>

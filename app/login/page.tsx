@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { listDeals } from "@/lib/deals";
-import { DESK_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Sign in", description: "Your family office's shelf, deal rooms, calls, documents and log, in one place." };
 type P = { searchParams: Promise<{ next?: string; error?: string }> };
@@ -54,11 +53,11 @@ export default async function Login({ searchParams }: P) {
             <label>Email<input type="email" required autoComplete="email" name="email" /></label>
             <label>Password<input type="password" required autoComplete="current-password" name="password" /></label>
             <div><button className="btn primary" type="submit">Sign in</button></div>
-            <p className="fine">Forgotten your password? Write to <a href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a> from your registered email.</p>
+            <p className="fine"><a href="/forgot">Forgotten your password?</a></p>
           </form>
           <div className="lp-reg">
             <b>New to the desk?</b>
-            <p>Registration takes a minute and costs your office nothing: not to register, not to open a room, not to commit.</p>
+            <p>Registration is one form and costs your office nothing: not to register, not to open a room, not to commit.</p>
             <a className="btn" href={reg}>Register your family office</a>
           </div>
         </div>

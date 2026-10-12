@@ -18,7 +18,7 @@ type Session = { title: string; status: string; when: string; summary?: string }
 export type SeedDeal = {
   slug: string; company: string; title: string; category: string; stage: string; status: string; headline: string;
   listingLabel: string; listingMonth: string | null; listingNote: string; roundLabel: string; preMoney: string; peLabel: string;
-  minTicket: string; open: boolean; published: boolean; sort: number; art: string; publicRisks: string[]; asOf: string;
+  minTicket: string; open: boolean; published: boolean; sort: number; art: string; publicRisks: string[]; asOf: string; score?: number;
   room: RoomContent; documents: Doc[]; questions: Q[]; sessions: Session[];
 };
 

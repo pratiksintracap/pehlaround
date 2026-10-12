@@ -69,13 +69,17 @@ export async function getDb(): Promise<DB> {
   return s.db;
 }
 
+// Starting Pehla Scores (out of 10); the desk changes them in Admin → Deals.
+const SCORES: Record<string, number> = { "naval-defence-secondary": 8.6, "jewellery-pre-ipo": 8.3, "ai-collections-software": 8.1,
+  "waste-management-growth-round": 7.9, "edible-oils-pre-ipo": 7.7, "ethanol-distillery-pre-ipo": 7.5 };
+
 async function bootstrap(db: DB) {
   // Seed the deals once.
   const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.deals);
   if (!n) {
     for (const d of SEED_DEALS) {
       const { documents: docs, questions: qs, sessions, ...deal } = d;
-      const [row] = await db.insert(schema.deals).values(deal).returning({ id: schema.deals.id });
+      const [row] = await db.insert(schema.deals).values({ ...deal, score: deal.score ?? SCORES[deal.slug] ?? null }).returning({ id: schema.deals.id });
       let i = 0;
       for (const doc of docs) await db.insert(schema.documents).values({ ...doc, dealId: row.id, sort: i++ });
       for (const q of qs) await db.insert(schema.questions).values({ dealId: row.id, question: q.q, answer: q.a ?? null, answeredBy: q.by ?? null,

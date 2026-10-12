@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
-import { listDeals, trackerCounts } from "@/lib/deals";
+import { getDb } from "@/lib/db";
+import { listDeals } from "@/lib/deals";
 import { createDeal } from "@/lib/admin-actions";
 import { Msg } from "@/components/AdminBits";
 
@@ -7,13 +9,23 @@ export default async function AdminDeals({ searchParams }: { searchParams: Promi
   await requireAdmin();
   const { msg } = await searchParams;
   const deals = await listDeals(true);
+  const db = await getDb();
+  // Funnel per deal over the last 30 days: overview views → offices that opened the room → NDAs → allocation requests.
+  type Row = { deal_id: number; n: number };
+  const q = async (s: ReturnType<typeof sql>) => new Map(((await db.execute(s)) as unknown as { rows: Row[] }).rows.map((r) => [Number(r.deal_id), Number(r.n)]));
+  const [views, rooms, ndaN, asks] = await Promise.all([
+    q(sql`select deal_id, count(*)::int as n from deal_views where at > now() - interval '30 days' group by deal_id`),
+    q(sql`select deal_id, count(distinct office_id)::int as n from audit where deal_id is not null and office_id is not null and action like 'Opened the room:%' and at > now() - interval '30 days' group by deal_id`),
+    q(sql`select deal_id, count(*)::int as n from ndas where revoked_at is null group by deal_id`),
+    q(sql`select deal_id, count(*)::int as n from interests group by deal_id`),
+  ]);
   return (
     <>
       <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>Deals</h1>
-      <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Checks</th><th>Shown</th><th /></tr></thead><tbody>
-        {deals.map((d) => { const c = trackerCounts(d); return (
-          <tr key={d.id}><th scope="row">{d.company}</th><td>{d.title}</td><td>{d.category}</td><td>{d.listingLabel}</td><td>{c.done} done · {c.prog} in progress · {c.pend} pending</td>
+      <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Pehla Score</th><th title="Last 30 days">Overview views</th><th title="Offices, last 30 days">Rooms opened</th><th>NDAs</th><th>Allocation requests</th><th>Shown</th><th /></tr></thead><tbody>
+        {deals.map((d) => { return (
+          <tr key={d.id}><th scope="row">{d.company}</th><td>{d.title}</td><td>{d.category}</td><td>{d.listingLabel}</td><td>{d.score != null ? d.score.toFixed(1) : "—"}</td><td>{views.get(d.id) ?? 0}</td><td>{rooms.get(d.id) ?? 0}</td><td>{ndaN.get(d.id) ?? 0}</td><td>{asks.get(d.id) ?? 0}</td>
             <td>{d.published ? (d.open ? "Live · room open" : "Live · room closed") : "Hidden"}</td>
             <td><div style={{ display: "flex", gap: 6 }}><a className="btn sm primary" href={`/admin/deals/${d.id}`}>Edit</a><a className="btn sm" href={`/room/${d.slug}`}>Room</a></div></td></tr>); })}
       </tbody></table></div>

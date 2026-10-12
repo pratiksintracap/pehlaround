@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getUser } from "@/lib/auth";
-import { getDeal, roomAccess, trackerCounts } from "@/lib/deals";
-import { Bars, StatusBar } from "@/components/Charts";
+import { getDeal, roomAccess } from "@/lib/deals";
+import { Bars, barSeries } from "@/components/Charts";
+import { ScoreBadge } from "@/components/Score";
 import { GateCard } from "@/components/Gate";
 
 type P = { params: Promise<{ slug: string }> };
@@ -17,7 +18,7 @@ export default async function Summary({ params }: P) {
   if (access.state !== "open") {
     return <main><div className="wrap" style={{ paddingTop: 24, paddingBottom: 56 }}><GateCard deal={d} state={access.state} /></div></main>;
   }
-  const r = d.room, c = trackerCounts(d);
+  const r = d.room;
   const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
   return (
     <main><div className="wrap" style={{ paddingTop: 24, paddingBottom: 56 }}>
@@ -30,9 +31,8 @@ export default async function Summary({ params }: P) {
         <section><h2>The transaction</h2><dl className="terms compact">{r.terms.slice(0, 6).map((t, i) => <div key={i}><dt>{t.k}</dt><dd>{t.v}</dd></div>)}</dl></section>
         <section><h2>Numbers</h2>
           <div className="charts even" style={{ marginBottom: 12 }}>
-            {r.fin && <div className="chart"><span className="k">Revenue and PAT · {r.fin.unit}</span><Bars fin={r.fin} /></div>}
-            <div className="chart"><span className="k">Diligence status</span><StatusBar done={c.done} prog={c.prog} pend={c.pend} />
-              <p className="fine">{c.done} done, {c.prog} in progress and {c.pend} pending as at {today}.</p></div>
+            {r.fin && <div className="chart"><span className="k">{barSeries(r.fin).map((x) => x.label).join(" and ")} · {r.fin.unit}</span><Bars fin={r.fin} /></div>}
+            {d.score != null && <div className="chart"><span className="k">Pehla Score</span><ScoreBadge score={d.score} /></div>}
           </div>
           <div className="snap compact">{r.snapshot.map((s, i) => <div key={i} className="snapcell"><span className="k">{s.k}</span><b>{s.v}</b>{s.s && <small>{s.s}</small>}</div>)}</div>
           {r.multiples.length > 0 && <div className="snap compact" style={{ marginTop: 10 }}>{r.multiples.map((s, i) => <div key={i} className="snapcell"><span className="k">{s.k}</span><b>{s.v}</b></div>)}</div>}

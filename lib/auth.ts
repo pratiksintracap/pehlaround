@@ -3,7 +3,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { createHash, randomBytes } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { users, offices, audit } from "@/db/schema";
 
@@ -20,7 +20,9 @@ function secret() {
 }
 
 export async function createSession(userId: number) {
-  const token = await new SignJWT({ uid: userId }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime(`${MAX_AGE}s`).sign(secret());
+  const db = await getDb();
+  const [u] = await db.select({ v: users.sessionVersion }).from(users).where(eq(users.id, userId));
+  const token = await new SignJWT({ uid: userId, v: u?.v ?? 0 }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime(`${MAX_AGE}s`).sign(secret());
   (await cookies()).set(COOKIE, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: MAX_AGE });
 }
 
@@ -39,11 +41,18 @@ export async function getUser(): Promise<SessionUser | null> {
     const db = await getDb();
     const [u] = await db.select().from(users).where(eq(users.id, uid));
     if (!u || u.disabled) return null;
+    if (Number(payload.v ?? 0) !== u.sessionVersion) return null; // signed out everywhere since this sign-in
     const office = u.officeId ? (await db.select().from(offices).where(eq(offices.id, u.officeId)))[0] ?? null : null;
     return { ...u, office };
   } catch {
     return null;
   }
+}
+
+/** Ends every existing sign-in of this user (after a password change, or when the desk disables them). */
+export async function signOutEverywhere(userId: number) {
+  const db = await getDb();
+  await db.update(users).set({ sessionVersion: sql`${users.sessionVersion} + 1` }).where(eq(users.id, userId));
 }
 
 export async function requireUser(next = "/dashboard") {
@@ -68,9 +77,6 @@ export async function log(u: { id: number; name: string; officeId: number | null
   const db = await getDb();
   await db.insert(audit).values({ userId: u?.id ?? null, officeId: u?.officeId ?? null, who: u?.name ?? null, action, dealId: dealId ?? null, ip: await clientIp() });
 }
-
-/** Whether the office's PAN must be verified by the desk before any room opens. */
-export const REQUIRE_VERIFIED = process.env.REQUIRE_PAN_VERIFIED === "1";
 
 export const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 export function maskPan(p?: string | null) { return p ? p.slice(0, 5) + "••••" + p.slice(9) : "—"; }

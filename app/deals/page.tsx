@@ -3,7 +3,7 @@ import { getUser } from "@/lib/auth";
 import { listDeals, signedDealIds, canSeeNames } from "@/lib/deals";
 import { shelfHtml } from "@/lib/render";
 
-const D = "Pre-IPO and growth rounds on the desk, shown without company names. Register to see the company, valuation and data room.";
+const D = "Pre-IPO and growth rounds on the desk, shown without company names. Registered offices see the company and valuation once the desk approves them.";
 export const metadata: Metadata = { title: "Deals", description: D, openGraph: { title: "Deals · Pehla Round", description: D } };
 
 export default async function DealsPage() {

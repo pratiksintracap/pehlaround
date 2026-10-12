@@ -79,12 +79,12 @@ export default async function Dashboard({ searchParams }: P) {
       </div>
 
       <section className="panel" data-panel="Shelf">
-        <div className="cmpwrap"><table className="cmp plain" id="shelf-t"><thead><tr><th>Deal</th><th>Structure</th><th>Target listing</th><th>Round</th><th>Pre-money</th><th>P/E trailing · forward</th><th>Min ticket</th><th /></tr></thead>
+        <div className="cmpwrap"><table className="cmp plain" id="shelf-t"><thead><tr><th>Deal</th><th>Structure</th><th>Target listing</th><th>Round</th><th>Pre-money</th><th>P/E trailing · forward</th><th>Min ticket</th><th>Pehla Score</th><th /></tr></thead>
           <tbody>{deals.map((d) => (
             <tr key={d.id} data-struct={d.category} data-months={monthsTo(d.listingMonth) ?? 999}>
               <th scope="row">{d.company}{names && <><br /><small className="fine">{d.title}</small></>}<br />
                 <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></th>
-              <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td>
+              <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td><td>{d.score != null ? <b>{d.score.toFixed(1)}</b> : "—"}</td>
               <td><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
                 <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div></td>
@@ -95,7 +95,7 @@ export default async function Dashboard({ searchParams }: P) {
             <div className="dc-top"><b>{d.company}</b><span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></div>
             <small>{names ? `${d.title} · ` : ""}{d.category}</small>
             <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
-              <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div></dl>
+              <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Pehla Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
             <div className="dc-acts">
               {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
               <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
@@ -192,6 +192,7 @@ export default async function Dashboard({ searchParams }: P) {
           </form>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
             <a className="btn sm" href="/api/office/export">Download my data</a>
+            <form method="post" action="/api/auth/signout-all"><button className="btn sm ghost" type="submit">Sign out other devices</button></form>
             <form method="post" action="/api/office/deletion"><button className="btn sm ghost" type="submit">Request deletion</button></form>
           </div>
           <p className="fine">Grievance officer and data-protection contact: {GRIEVANCE.name}, <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>.</p>

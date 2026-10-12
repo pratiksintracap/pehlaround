@@ -2,40 +2,48 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { GRIEVANCE } from "@/lib/site";
+import { and, eq, isNull } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { deskInvites } from "@/db/schema";
 
-export const metadata: Metadata = { title: "Register your family office", description: "Register once to see every company on the desk; each company's room opens with its own NDA." };
-type P = { searchParams: Promise<{ next?: string; error?: string }> };
+export const metadata: Metadata = { title: "Register your family office", description: "Register your family office. Once the desk approves it, every company on the desk opens by name; each company's room opens with its own NDA." };
+type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string }> };
 
 export default async function Register({ searchParams }: P) {
-  const { next = "", error } = await searchParams;
+  const { next = "", error, invite = "" } = await searchParams;
   if (await getUser()) redirect(next.startsWith("/") ? next : "/dashboard");
+  const inv = invite ? (await (await getDb()).select().from(deskInvites).where(and(eq(deskInvites.token, invite), isNull(deskInvites.usedAt))))[0] : undefined;
   return (
     <main><div className="wrap split" style={{ padding: "clamp(40px,6vw,72px) var(--gutter)" }}>
       <div className="rv inview">
         <ol className="stepper" aria-label="Step 1 of 3">
           <li className="now"><span className="dot">1</span><span className="t">Register the office</span><span className="s">one form</span></li>
-          <li><span className="dot">2</span><span className="t">PAN and deal NDA</span><span className="s">one NDA per company</span></li>
-          <li><span className="dot">3</span><span className="t">Deal room open</span><span className="s">at once</span></li>
+          <li><span className="dot">2</span><span className="t">Approved by the desk</span><span className="s">usually a working day</span></li>
+          <li><span className="dot">3</span><span className="t">PAN and deal NDA</span><span className="s">opens that room</span></li>
         </ol>
         <span className="eyebrow">Family office registration</span>
         <h1>Register the office</h1>
-        <p className="lede">Step one takes a minute and shows you every company on the desk, with its round and valuation. PAN comes at step two, with the first NDA, and KYC only if you commit. No fee for family offices, ever.</p>
-        <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>PAN on record</li><li>NDA per deal</li><li>Rooms unlocked</li></ol>
+        <p className="lede">Register in one form. Once the desk approves your office, usually within a working day, you see every company on the desk with its round and valuation. PAN comes with the first NDA, and KYC only if you commit. No fee for family offices, ever.</p>
+        <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>Approved by the desk</li><li>PAN on record</li><li>NDA per deal</li><li>Rooms unlocked</li></ol>
         <ul className="ticks">
           <li>No fee for the office: not to register, not to open a room, not to commit.</li>
           <li>Each deal has its own NDA, signed directly with that company; it opens that company&apos;s room only.</li>
           <li>Add your CIO, CFO or CA as viewers; they join your office when they register with that email.</li>
-          <li>Step 2 asks for the investing entity&apos;s PAN; step 3, only at commitment, asks for KYC, bank account, demat and the authorised signatory.</li>
+          <li>The first NDA asks for the investing entity&apos;s PAN; KYC, bank account, demat and the authorised signatory come only at commitment.</li>
           <li>The family&apos;s money moves directly to the company or seller, never through the desk.</li>
         </ul>
       </div>
       <div className="rv inview" style={{ ["--d" as string]: ".1s" }}>
         <form className="form" method="post" action="/api/auth/register" data-api="">
           <input type="hidden" name="next" value={next} />
+          {inv && <input type="hidden" name="invite" value={inv.token} />}
+          {inv && <div className="ok show" role="status">You were invited by the desk. Your office is approved as soon as you register.</div>}
+          {invite && !inv && <div className="ok show bad" role="alert">This invitation link was already used or is not valid. You can still register; the desk approves new offices within a working day.</div>}
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
           {error && <div className="ok show bad" role="alert">{error}</div>}
-          <div className="row"><label>Your name<input required autoComplete="name" name="name" /></label>
-            <label>Family office or family name<input required autoComplete="organization" placeholder="e.g. Mehta Family Office" name="entity" /></label></div>
-          <div className="row"><label>Email<input type="email" required autoComplete="email" name="email" /></label>
+          <div className="row"><label>Your name<input required autoComplete="name" name="name" defaultValue={inv?.name || ""} /></label>
+            <label>Family office or family name<input required autoComplete="organization" placeholder="e.g. Mehta Family Office" name="entity" defaultValue={inv?.officeName || ""} /></label></div>
+          <div className="row"><label>Email<input type="email" required autoComplete="email" name="email" defaultValue={inv?.email || ""} /></label>
             <label>Mobile<input type="tel" required autoComplete="tel" placeholder="+91" name="phone" /></label></div>
           <div className="row"><label>Password<input type="password" required minLength={8} autoComplete="new-password" name="password" /><span className="hint">At least 8 characters.</span></label>
             <label>Your role<select name="role" required defaultValue=""><option value="" disabled>Select</option><option>Principal / family member</option><option>CIO or investment head</option><option>CFO, CA or adviser to the family</option><option>Analyst or associate</option></select></label></div>

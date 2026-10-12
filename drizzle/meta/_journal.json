@@ -29,6 +29,20 @@
       "when": 1791822689434,
       "tag": "0003_approvals_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791828680539,
+      "tag": "0004_score_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791829065669,
+      "tag": "0005_funnel",
+      "breakpoints": true
     }
   ]
 }

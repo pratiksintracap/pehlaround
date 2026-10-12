@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex, index, numeric } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex, index, numeric, doublePrecision } from "drizzle-orm/pg-core";
 import type { RoomContent } from "@/lib/types";
 
 // A family office (the investing entity). Several users can belong to one office.
@@ -34,6 +34,7 @@ export const users = pgTable("users", {
   officeId: integer("office_id").references(() => offices.id),
   passwordHash: text("password_hash").notNull(),
   disabled: boolean("disabled").notNull().default(false),
+  sessionVersion: integer("session_version").notNull().default(0), // bump to sign the user out everywhere
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
 }, (t) => [uniqueIndex("users_email_uq").on(t.email)]);
@@ -69,6 +70,7 @@ export const deals = pgTable("deals", {
   published: boolean("published").notNull().default(true),
   sort: integer("sort").notNull().default(100),
   art: text("art"),                             // inline SVG for the card
+  score: doublePrecision("score"),               // Pehla Score out of 10, set by the desk (proprietary)
   publicRisks: jsonb("public_risks").$type<string[]>().notNull().default([]),
   asOf: text("as_of"),                          // "11 Oct 2026"
   ndaVersion: text("nda_version").notNull().default("2026-10-12"),
@@ -243,3 +245,41 @@ export const settings = pgTable("settings", {
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Invitations the desk sends to family offices: the link registers the office already approved.
+export const deskInvites = pgTable("desk_invites", {
+  id: serial("id").primaryKey(),
+  token: text("token").notNull(),
+  email: text("email").notNull(),
+  name: text("name"),
+  officeName: text("office_name"),
+  createdBy: text("created_by"),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  officeId: integer("office_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("desk_invites_token_uq").on(t.token)]);
+
+// Self-serve password reset links (stored hashed, valid for a short time, used once).
+export const passwordResets = pgTable("password_resets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  tokenHash: text("token_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("password_resets_token_uq").on(t.tokenHash)]);
+
+// Attempts per key (action + IP or email) for rate limiting.
+export const rateHits = pgTable("rate_hits", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull(),
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("rate_hits_key_at_idx").on(t.key, t.at)]);
+
+// Public deal-overview views, for the desk's per-deal funnel (no personal data for visitors who are not signed in).
+export const dealViews = pgTable("deal_views", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  officeId: integer("office_id"),
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("deal_views_deal_at_idx").on(t.dealId, t.at)]);

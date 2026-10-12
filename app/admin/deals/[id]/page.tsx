@@ -43,7 +43,8 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <TA name="headline" label="One-line description (anonymised, public)" value={d.headline} rows={2} />
         <div className="row"><label>Structure<select name="category" defaultValue={d.category}><option>Pre-IPO primary</option><option>Pre-IPO secondary</option><option>Growth round</option><option>SME IPO anchor</option></select></label>
           <IN name="stage" label="Tag on the card" value={d.stage} ph="Room open" /></div>
-        <div className="row"><IN name="status" label="Status line" value={d.status} /><IN name="asOf" label="Tracker as of" value={d.asOf} ph="12 Oct 2026" /></div>
+        <div className="row"><IN name="status" label="Status line" value={d.status} /><IN name="asOf" label="Score and tracker as of" value={d.asOf} ph="12 Oct 2026" /></div>
+        <div className="row"><IN name="score" label="Pehla Score (out of 10)" value={d.score ?? ""} ph="8.4" hint="Shown on the card and overview; leave empty to show 'assessment in progress'" /><span /></div>
         <div className="row"><IN name="listingLabel" label="Target listing (label)" value={d.listingLabel} ph="Sept 2028" /><IN name="listingMonth" label="Target listing month" value={d.listingMonth} ph="2028-09" hint="YYYY-MM; leave empty if not set" /></div>
         <div className="row"><IN name="listingNote" label="Listing note" value={d.listingNote} ph="main board" /><IN name="sort" label="Order on the shelf" value={d.sort} /></div>
         <div className="row"><IN name="roundLabel" label="Round (registered offices)" value={d.roundLabel} /><IN name="preMoney" label="Pre-money" value={d.preMoney} /></div>
@@ -51,8 +52,9 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><label>Card illustration<select name="artKey" defaultValue={artKey}>{Object.keys(ART).map((k) => <option key={k} value={k}>{k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
         <label className="chk"><input type="checkbox" name="published" defaultChecked={d.published} /> Published (shown on the site)</label>
+        {!d.published && <label className="chk"><input type="checkbox" name="announce" defaultChecked /> When I publish it, tell every approved office (in the app, and by email once email is set up)</label>}
         <label className="chk"><input type="checkbox" name="open" defaultChecked={d.open} /> Room open (offices can sign the NDA and enter)</label>
-        <TA name="publicRisks" label="Risks shown publicly in the overview (one per line, anonymised)" value={toText.list(d.publicRisks)} rows={5} />
+        <TA name="publicRisks" label="Short risk list (kept for the desk; no longer shown publicly, the room's risks are under In the room)" value={toText.list(d.publicRisks)} rows={3} />
 
         <h2>In the room</h2>
         <TA name="lede" label="Lede under the company name" value={r.lede} rows={2} />

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Header, Footer, AppBar } from "@/components/Chrome";
 import { getUser } from "@/lib/auth";
@@ -45,7 +46,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
         <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
         <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />
-        <Script src="/js/site.js?v=31" strategy="afterInteractive" />
+        <Script src="/js/site.js?v=32" strategy="afterInteractive" />
+        <Analytics />
       </body>
     </html>
   );

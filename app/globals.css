@@ -315,3 +315,29 @@ a.iconbtn{text-decoration:none}
 .note-list li.new>a::before,.note-list li.new>div::before{content:"";position:absolute;left:2px;top:22px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .note-list .when{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink3);margin-bottom:2px}
 .note-list p{margin:4px 0 0;color:var(--ink2);font-size:14.5px;line-height:1.5;white-space:pre-line}
+
+/* ---- v36: Pehla Score, projected bars ---- */
+.pscore{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
+.pscore .sring{flex:none}
+.pscore .sring .track{stroke:var(--line2)}
+.pscore .sring .arc{stroke:var(--live)}
+.pscore .sring text{font-family:var(--sans);font-weight:700;font-size:13px;fill:var(--ink)}
+.pscore .pk{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.pscore .ps{display:block;font-size:13.5px;color:var(--ink2)}
+.pscore .ps b{color:var(--ink);font-size:15px}
+.pscore.none .ps{font-style:italic}
+.pscore.lg{align-items:flex-start;gap:18px;margin:4px 0}
+.pscore.lg .sring text{font-size:11px}
+.pscore.lg .ps b{font-size:22px}
+.pscore.lg .fine{margin:6px 0 0;max-width:560px}
+.viz .bar.proj{opacity:.45}
+.nf{padding-top:clamp(56px,10vw,120px);padding-bottom:clamp(56px,10vw,120px);max-width:760px}
+.nf h1{font-size:clamp(32px,5vw,52px);margin:8px 0 12px}
+.nf .ctas{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.hp{position:absolute!important;left:-10000px!important;width:1px;height:1px;opacity:0}
+.authpage{padding-top:clamp(40px,7vw,80px);padding-bottom:clamp(48px,8vw,96px);max-width:560px}.authpage h1{font-size:clamp(30px,4vw,40px);margin:6px 0 14px}
+.feed.inv input.copy{width:100%;margin-top:4px;font-size:11.5px;padding:5px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--bg3);color:var(--ink2)}
+.mock .pscore{grid-column:1/-1}
+.mock .pscore .sring text,.mock .pscore .ps b{fill:#fff;color:#fff}
+.mock .pscore .sring .track{stroke:rgba(255,255,255,.18)}
+.mock .pscore .ps,.mock .pscore .fine{color:var(--onnavy2)!important;opacity:1!important}

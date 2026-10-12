@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getUser } from "@/lib/auth";
-import { getDeal, listDeals, signedDealIds, trackerCounts, canSeeNames } from "@/lib/deals";
+import { getDeal, listDeals, signedDealIds, canSeeNames } from "@/lib/deals";
+import { ScoreBadge } from "@/components/Score";
+import { getDb } from "@/lib/db";
+import { dealViews } from "@/db/schema";
 import { runwayHtml } from "@/lib/render";
 
 type P = { params: Promise<{ slug: string }> };
@@ -18,7 +21,7 @@ export default async function Overview({ params }: P) {
   if (!d || (!d.published && user?.role !== "admin")) notFound();
   const signed = (await signedDealIds(user?.officeId)).has(d.id) || user?.role === "admin";
   const registered = await canSeeNames(user);
-  const c = trackerCounts(d);
+  if (user?.role !== "admin") await (await getDb()).insert(dealViews).values({ dealId: d.id, officeId: user?.officeId ?? null }).catch(() => {});
   const stages = ["Overview", "Room open", "Closing"];
   const now = d.open ? "Room open" : "Overview";
   const others = all.filter((x) => x.id !== d.id);
@@ -78,20 +81,19 @@ export default async function Overview({ params }: P) {
                 : <a className="btn primary" href={`/register?next=${encodeURIComponent(`/deals/${d.slug}`)}`}>Register to see the company</a>}
             </>
           )}
-          <p className="fine">No fee for family offices, on any deal. Register once; each company&apos;s room opens with its own NDA.</p>
+          <p className="fine">No fee for family offices, on any deal. Register once; after the desk approves your office, each company&apos;s room opens with its own NDA.</p>
         </aside>
       </article>
 
-      <section className="sec tight" style={{ paddingTop: 0 }} id="public-diligence">
+      <section className="sec tight" style={{ paddingTop: 0 }} id="pehla-score">
         <div className="sec-head rv inview"><div>
-          <span className="eyebrow">Published for everyone</span>
-          <h2 style={{ fontSize: 26 }}>What the desk has checked, and the risks it sees</h2>
-          <p>The tracker and the risks are public in this overview. The findings, documents and the company&apos;s name open in the room.</p>
+          <span className="eyebrow">Curated by the desk</span>
+          <h2 style={{ fontSize: 26 }}>How this company scores</h2>
+          <p>Every company on the desk goes through Pehla Round&apos;s proprietary diligence and curation before it gets a room. The findings, the risks and the documents behind the score open in the room, under NDA.</p>
         </div></div>
         <div className="chart rv inview">
-          <span className="k">Diligence tracker</span>
-          <p style={{ color: "var(--ink2)" }}><b>{c.done}</b> checks done, {c.prog} in progress, {c.pend} pending{d.asOf ? ` · as of ${d.asOf}` : ""}.</p>
-          <ul className="ticks">{d.publicRisks.map((r, i) => <li key={i}>{r}</li>)}</ul>
+          {d.score != null ? <ScoreBadge score={d.score} /> : <p className="fine">The desk is completing its assessment of this company.</p>}
+          {d.asOf && <p className="fine" style={{ marginTop: 10 }}>As of {d.asOf}.</p>}
         </div>
       </section>
 

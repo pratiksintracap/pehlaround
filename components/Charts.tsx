@@ -43,12 +43,19 @@ export function StatusBar({ done, prog, pend }: { done: number; prog: number; pe
 }
 
 /** Grouped bars of the money rows in the financials table (revenue and profit lines, not ratios). */
-export function Bars({ fin }: { fin: NonNullable<RoomContent["fin"]> }) {
+/** The rows the bar chart draws (so the chart's title can name exactly those). */
+export function barSeries(fin: NonNullable<RoomContent["fin"]>) {
   const money = fin.rows.filter((r) => !/%|growth|margin/i.test(r.label) && r.vals.some((v) => num(v) != null));
   // with many years, show revenue and the first profit line only, so labels stay readable
-  const series = fin.cols.length > 3
+  return fin.cols.length > 3
     ? [money.find((r) => /revenue|sales/i.test(r.label)), money.find((r) => /pat|profit/i.test(r.label))].filter((r): r is typeof money[number] => !!r)
     : money.slice(0, 3);
+}
+/** Projected years (FY27E, FY28P, "Proj", "Est") are drawn lighter than audited ones. */
+export const isProjected = (col: string) => /\d\s*[EP]\b|proj|est|forecast/i.test(col);
+
+export function Bars({ fin }: { fin: NonNullable<RoomContent["fin"]> }) {
+  const series = barSeries(fin);
   if (!series.length) return null;
   const cls = ["c1", "c2", "cm"];
   const cols = fin.cols, W = 520, L = 16, R = 504, base = 186, top = 52;
@@ -69,7 +76,7 @@ export function Bars({ fin }: { fin: NonNullable<RoomContent["fin"]> }) {
               const h = Math.max(2, ((base - top) * v) / max);
               return (
                 <g key={si} className="bargrp"><title>{`${s.label} ${c}: ₹${s.vals[ci]} Cr`}</title>
-                  <rect className={`bar ${cls[si]}`} x={x} y={base - h} width={bw} height={h} rx="3" style={{ ["--i" as string]: k++ }} />
+                  <rect className={`bar ${cls[si]}${isProjected(c) ? " proj" : ""}`} x={x} y={base - h} width={bw} height={h} rx="3" style={{ ["--i" as string]: k++ }} />
                   <text className="tv" x={x + bw / 2} y={base - h - 7} textAnchor="middle">{s.vals[ci]}</text>
                 </g>
               );
@@ -81,6 +88,7 @@ export function Bars({ fin }: { fin: NonNullable<RoomContent["fin"]> }) {
       {series.map((s, si) => (
         <g key={s.label}><rect className={`lg ${cls[si]}`} style={{ fill: "var(--" + (cls[si] === "c1" ? "accent" : cls[si] === "c2" ? "live" : "ink3") + ")" }} x={L + si * 170} y={8} width="10" height="10" rx="2" /><text className="tk" x={L + si * 170 + 16} y={17}>{s.label}</text></g>
       ))}
+      {cols.some(isProjected) && <text className="tk" x={R} y={17} textAnchor="end">Lighter bars: projected</text>}
     </svg>
   );
 }
