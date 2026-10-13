@@ -5,6 +5,7 @@ import { ndas, offices } from "@/db/schema";
 import { getUser, log, clientIp, PAN_RE } from "@/lib/auth";
 import { getDeal, signedDealIds, canSeeNames } from "@/lib/deals";
 import { notifyDesk } from "@/lib/notify";
+import { emailSignedNda } from "@/lib/nda-mail";
 import { readBody, str, done, fail } from "@/lib/http";
 
 export async function POST(req: NextRequest) {
@@ -31,8 +32,9 @@ export async function POST(req: NextRequest) {
     await db.update(offices).set({ pan, entityName: entity, panName: sig, status: user.office.status === "verified" ? "verified" : "pan_submitted" }).where(eq(offices.id, user.office.id));
     await log(user, "Submitted PAN for verification");
   }
-  await db.insert(ndas).values({ officeId: user.office.id, dealId: d.id, userId: user.id, signerName: sig, version: d.ndaVersion,
-    ip: await clientIp(), userAgent: str(req.headers.get("user-agent"), 300) }).onConflictDoNothing();
+  const [signed] = await db.insert(ndas).values({ officeId: user.office.id, dealId: d.id, userId: user.id, signerName: sig, version: d.ndaVersion,
+    ip: await clientIp(), userAgent: str(req.headers.get("user-agent"), 300) }).onConflictDoNothing().returning({ id: ndas.id });
+  if (signed) await emailSignedNda(signed.id).catch(() => 0);
   await log(user, `Signed the NDA with ${d.company} (version ${d.ndaVersion})`, d.id);
   await notifyDesk({ title: `${user.office.name} signed the NDA with ${d.company}`, body: `Signed by ${sig}.`, link: "/admin/offices" });
   return done(req, json, `/room/${slug}`);

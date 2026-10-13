@@ -3,28 +3,16 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { ndas, notifications, offices, users } from "@/db/schema";
 import { getSettings } from "@/lib/settings";
-import { SITE_URL } from "@/lib/site";
+import { emailReady, sendRaw, layout, E, esc } from "@/lib/email";
 
 type Msg = { title: string; body?: string | null; link?: string | null; broadcastId?: number };
 
-/** True when an email provider is configured (Resend). */
-export const emailReady = () => !!process.env.RESEND_API_KEY;
+export { emailReady } from "@/lib/email";
 
 export async function sendEmail(to: string[], m: Msg) {
-  if (!emailReady() || !to.length) return 0;
-  const from = process.env.EMAIL_FROM || "Pehla Round <desk@pehlaround.in>";
-  const url = m.link ? (m.link.startsWith("http") ? m.link : SITE_URL + m.link) : SITE_URL + "/dashboard";
-  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
-  const html = `<div style="font-family:Arial,sans-serif;max-width:560px;color:#0b1730"><p style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b7590">Pehla Round</p><h2 style="margin:0 0 10px">${esc(m.title)}</h2>${m.body ? `<p style="line-height:1.55">${esc(m.body).replace(/\n/g, "<br>")}</p>` : ""}<p><a href="${url}" style="background:#1f4fff;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open Pehla Round</a></p><p style="font-size:12px;color:#6b7590">You receive this because your family office is registered on Pehla Round. Manage email alerts in your dashboard under Team and profile.</p></div>`;
-  let sent = 0;
-  for (const addr of to) {
-    try {
-      const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json" },
-        body: JSON.stringify({ from, to: addr, subject: m.title, html }) });
-      if (r.ok) sent++;
-    } catch { /* email is best-effort; the in-app notification is the record */ }
-  }
-  return sent;
+  const link = m.link || "/dashboard";
+  const body = E.h(m.title) + (m.body ? E.p(esc(m.body).replace(/\n/g, "<br>")) : "") + E.btn("Open Pehla Round", link);
+  return sendRaw(to, m.title, layout(body, { preheader: m.body?.slice(0, 120) || "" }));
 }
 
 /** Notify offices in the app and, if they allow it and email is set up, by email. Returns counts. */

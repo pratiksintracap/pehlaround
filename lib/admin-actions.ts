@@ -1,11 +1,13 @@
 "use server";
+import { startSeries, backfill, preview } from "@/lib/onboarding";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { eq, ne, sql } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
 import { articles, broadcasts, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
 import { notifyOffices, ndaOffices, sendEmail, emailReady } from "@/lib/notify";
+import { sendRaw } from "@/lib/email";
 import { randomBytes } from "node:crypto";
 import { SITE_URL } from "@/lib/site";
 import { saveSettings } from "@/lib/settings";
@@ -47,8 +49,12 @@ export async function setApproval(f: FormData) {
   if (!o) return;
   await db.update(offices).set({ approval, approvedAt: approval === "approved" ? new Date() : null }).where(eq(offices.id, id));
   await log(admin, `Desk set ${o.name} to ${approval}`);
-  if (approval === "approved" && o.approval !== "approved")
-    await notifyOffices([id], { title: "Your office is approved", body: "Every company on Pehla Round is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: "/deals" });
+  if (approval === "approved" && o.approval !== "approved") {
+    // In-app notice only: the "You're in" email of the onboarding series does the emailing.
+    await notifyOffices([id], { title: "Your office is approved", body: "Every company on Pehla Round is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: "/deals" }, false);
+    const team = await db.select({ id: users.id }).from(users).where(and(eq(users.officeId, id), eq(users.disabled, false)));
+    for (const t of team) await startSeries(t.id, "approved").catch(() => 0);
+  }
   if (approval === "rejected" && o.approval !== "rejected" && f.get("tell") === "on")
     await notifyOffices([id], { title: "Your access is on hold", body: s(f, "reason", 1000) || "Please write to the desk and we will help.", link: "/dashboard" });
   revalidatePath("/admin/offices");
@@ -361,4 +367,31 @@ export async function createInvites(f: FormData) {
   }
   await log(admin, `Desk created ${made} invitations`);
   back("/admin/invites", made ? `${made} invitation${made === 1 ? "" : "s"} ready${mailed ? `, ${mailed} emailed` : ""}. Copy a link to send it yourself.` : "No new emails found (already registered, or no email on the line).");
+}
+
+// ---------------------------------------------------------------- onboarding email series
+export async function setOnboardingEmails(f: FormData) {
+  const admin = await requireAdmin();
+  const on = f.get("on") === "1";
+  await saveSettings({ onboardingEmails: on });
+  await log(admin, `Desk turned the onboarding emails ${on ? "on" : "off"}`);
+  back("/admin/emails", on ? "Onboarding emails are on." : "Onboarding emails are paused. Nothing is sent until you switch them back on.");
+}
+
+export async function sendTestOnboarding(f: FormData) {
+  const admin = await requireAdmin();
+  if (!emailReady()) back("/admin/emails", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
+  const p = await preview(s(f, "key"));
+  if (!p) back("/admin/emails", "No such email.");
+  const db = await getDb();
+  const [me] = await db.select({ email: users.email }).from(users).where(eq(users.id, admin.id));
+  const ok = await sendRaw([me?.email || process.env.ADMIN_EMAIL || ""], "[Test] " + p!.subject, p!.html);
+  back("/admin/emails#" + p!.step.key, ok ? `Test of "${p!.step.name}" sent to ${me?.email}.` : "The test could not be sent. Check the Resend key and sender.");
+}
+
+export async function backfillOnboarding() {
+  const admin = await requireAdmin();
+  const n = await backfill();
+  await log(admin, `Desk queued ${n} onboarding emails for existing offices`);
+  back("/admin/emails", n ? `${n} upcoming emails queued for offices approved before the series existed. Past steps are not sent.` : "Nothing to queue: every approved office is already past the series or already queued.");
 }

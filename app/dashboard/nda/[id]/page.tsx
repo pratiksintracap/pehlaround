@@ -28,7 +28,8 @@ export default async function SignedNda({ params }: { params: Promise<{ id: stri
         <div><dt>Recorded from</dt><dd>{n.ip || "—"}</dd></div>
         <div><dt>Agreement version</dt><dd>{n.version}</dd></div>
       </dl>
-      <div style={{ marginTop: 14 }}><button type="button" className="btn" data-print="">Print or save as PDF</button></div>
+      <div style={{ marginTop: 14, display: "flex", gap: 8, flexWrap: "wrap" }}><a className="btn primary" href={`/dashboard/nda/${n.id}/pdf`} target="_blank" rel="noopener">Download the signed PDF</a><button type="button" className="btn" data-print="">Print</button></div>
+      <p className="fine">A copy of this PDF was emailed to the signatory when the agreement was signed.</p>
     </div></main>
   );
 }

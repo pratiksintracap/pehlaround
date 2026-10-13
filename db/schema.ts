@@ -287,3 +287,16 @@ export const dealViews = pgTable("deal_views", {
   officeId: integer("office_id"),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("deal_views_deal_at_idx").on(t.dealId, t.at)]);
+
+// Onboarding email series: one row per person per step, sent by the daily 9 AM IST run.
+export const emailQueue = pgTable("email_queue", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  officeId: integer("office_id"),
+  step: text("step").notNull(),
+  sendAt: timestamp("send_at", { withTimezone: true }).notNull(),
+  status: text("status").notNull().default("pending"),   // pending | sent | skipped
+  reason: text("reason"),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("email_queue_user_step_uq").on(t.userId, t.step), index("email_queue_due_idx").on(t.status, t.sendAt)]);

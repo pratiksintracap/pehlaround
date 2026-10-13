@@ -8,8 +8,9 @@ export type Settings = {
   announcement: string;       // banner across the top of the site; empty for none
   announcementLink: string;
   notifyDeskEmail: string;    // where desk alerts are emailed (if email is set up)
+  onboardingEmails: boolean;  // send the onboarding email series to new offices
 };
-const DEFAULTS: Settings = { requireApproval: true, requirePan: process.env.REQUIRE_PAN_VERIFIED === "1", announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "" };
+const DEFAULTS: Settings = { requireApproval: true, requirePan: process.env.REQUIRE_PAN_VERIFIED === "1", announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true };
 
 export async function getSettings(): Promise<Settings> {
   const db = await getDb();

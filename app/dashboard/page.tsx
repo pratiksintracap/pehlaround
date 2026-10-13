@@ -137,7 +137,7 @@ export default async function Dashboard({ searchParams }: P) {
         <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Document</th><th>Deal</th><th>Status</th><th>Date</th><th /></tr></thead><tbody>
           {myNdas.map((n) => (
             <tr key={`n${n.id}`}><th scope="row">NDA with {byId.get(n.dealId)?.company}</th><td>{byId.get(n.dealId)?.title}</td>
-              <td><span className="pill ok">Signed · version {n.version}</span></td><td>{fmtD(n.signedAt)}</td><td><a className="btn sm" href={`/dashboard/nda/${n.id}`}>View</a></td></tr>
+              <td><span className="pill ok">Signed · version {n.version}</span></td><td>{fmtD(n.signedAt)}</td><td><div style={{ display: "flex", gap: 6 }}><a className="btn sm" href={`/dashboard/nda/${n.id}`}>View</a><a className="btn sm" href={`/dashboard/nda/${n.id}/pdf`} target="_blank" rel="noopener">PDF</a></div></td></tr>
           ))}
           <tr><th scope="row">PAN of the investing entity</th><td>Office</td><td><span className={`pill ${office.status === "verified" ? "ok" : ""}`}>{office.pan ? (office.status === "verified" ? "Verified" : "Submitted") : "Not yet"}</span></td><td>{office.verifiedAt ? fmtD(office.verifiedAt) : "—"}</td><td /></tr>
           <tr><th scope="row">KYC pack: address, bank, demat, authorised signatory</th><td>Office</td><td><span className="pill">At commitment</span></td><td>—</td><td /></tr>
