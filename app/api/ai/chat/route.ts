@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
         }
       } catch (e) {
         const m = e instanceof Error ? e.message : "";
+        console.error("analyst", m.slice(0, 300));
         send({ t: "error", d: /credit balance|billing/i.test(m) ? "The analyst has used this month's allowance and is back when the new month's credits arrive." : /overloaded|529/i.test(m) ? "The analyst is busy. Please try again in a minute." : "The analyst could not answer just now. Please try again." });
       }
       if (usage.inputTokens || usage.outputTokens) await db.insert(aiUsage).values({ chatId: chat.id, userId: user.id, officeId: user.officeId, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, searches: usage.searches }).catch(() => 0);

@@ -1,5 +1,6 @@
 import "server-only";
 import path from "node:path";
+import fs from "node:fs";
 import { eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import bcrypt from "bcryptjs";
@@ -12,6 +13,10 @@ type State = { db: DB; ready: Promise<void>; kind: "postgres" | "pglite" };
 const g = globalThis as unknown as { __pr_db?: State };
 
 const MIGRATIONS = path.join(process.cwd(), "drizzle");
+/** How many migrations this build ships (from drizzle's journal). */
+function journalCount() {
+  try { return (JSON.parse(fs.readFileSync(path.join(MIGRATIONS, "meta", "_journal.json"), "utf8")).entries as unknown[]).length; } catch { return 0; }
+}
 
 /** True when the site is running on a real Postgres (Neon) database. */
 export function dbKind() { return connect().kind; }
@@ -31,15 +36,27 @@ function connect(): State {
     state = { db, kind: "postgres", ready: Promise.resolve() };
     state.ready = (async () => {
       const { migrate } = await import("drizzle-orm/node-postgres/migrator");
-      // Several serverless instances can cold-start together; one migrates and seeds at a time.
-      const lock = await pool.connect();
+      // Fast path: every migration shipped with this build is already applied, so no lock is needed.
+      const shipped = journalCount();
+      const applied = await pool.query("select count(*)::int as n from drizzle.__drizzle_migrations").then((r) => Number(r.rows[0]?.n ?? 0)).catch(() => 0);
+      if (shipped && applied >= shipped) { await bootstrap(db).catch((e) => console.error("bootstrap", e)); return; }
+      // Otherwise one instance migrates at a time. The lock lives on a direct (unpooled) connection: through the pooler a
+      // session lock can be taken on one server connection and never released, which once hung every cold start.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { Client } = require("pg") as typeof import("pg");
+      const direct = process.env.DATABASE_URL_UNPOOLED || process.env.POSTGRES_URL_NON_POOLING || url;
+      const lock = new Client({ connectionString: direct, ssl: /localhost|127\.0\.0\.1/.test(direct) ? undefined : { rejectUnauthorized: false } });
+      await lock.connect();
       try {
-        await lock.query("select pg_advisory_lock(7262001)");
+        let got = false;
+        for (let i = 0; i < 40 && !got; i++) { // up to ~20 s, then go ahead anyway: a held lock may be orphaned
+          got = (await lock.query("select pg_try_advisory_lock(7262002) as ok")).rows[0]?.ok === true;
+          if (!got) await new Promise((r) => setTimeout(r, 500));
+        }
         await migrate(db, { migrationsFolder: MIGRATIONS });
         await bootstrap(db);
       } finally {
-        await lock.query("select pg_advisory_unlock(7262001)").catch(() => {});
-        lock.release();
+        await lock.end().catch(() => {}); // closing the session always releases the lock
       }
     })();
   } else {

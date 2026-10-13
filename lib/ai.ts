@@ -50,7 +50,7 @@ export const TOOLS: Anthropic.Messages.ToolUnion[] = [
   { name: "get_questions", description: "Questions offices asked in a room this office has opened, with the promoter's or desk's answers.", input_schema: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "get_documents", description: "Documents listed in a room this office has opened (titles and types; the analyst cannot read their contents).", input_schema: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "get_office_profile", description: "This family office's investment profile: how it invests, ticket size, AUM band, sectors, structures, horizon, thesis, and the allocations it has requested on the desk.", input_schema: { type: "object", properties: {} } },
-  { type: "web_search_20250305", name: "web_search", max_uses: 4, user_location: { type: "approximate", country: "IN", timezone: "Asia/Kolkata" } },
+  { type: "web_search_20250305", name: "web_search", max_uses: 3, user_location: { type: "approximate", country: "IN", timezone: "Asia/Kolkata" } },
 ];
 
 function room(d: Deal, sections: Section[]) {
@@ -141,12 +141,15 @@ Style
 
 // ---------------------------------------------------------------- the conversation
 export async function* converse(c: Ctx, history: { role: "user" | "assistant"; text: string }[], question: string): AsyncGenerator<AiEvent> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, baseURL: process.env.ANTHROPIC_BASE_URL || undefined, maxRetries: 1, timeout: 55_000 });
+  // The page's function may run for 60 s; leave room to save the answer.
+  const started = Date.now(), BUDGET = Number(process.env.AI_TIME_BUDGET_MS || 50_000), left = () => BUDGET - (Date.now() - started);
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, baseURL: process.env.ANTHROPIC_BASE_URL || undefined, maxRetries: 0 });
   const messages: Anthropic.Messages.MessageParam[] = [...history.slice(-12).map((h) => ({ role: h.role, content: h.text })), { role: "user", content: question }];
   let inputTokens = 0, outputTokens = 0, searches = 0, wrote = false, needGap = false;
   const seen = new Set<string>();
   for (let turn = 0; turn < 8; turn++) {
-    const stream = client.messages.stream({ model: MODEL(), max_tokens: 2000, system: system(c), tools: TOOLS, messages });
+    if (left() < 8_000) { yield { t: "text", d: (wrote ? "\n\n" : "") + "*I ran out of time on this one. Ask a narrower question, or ask me to continue.*" }; break; }
+    const stream = client.messages.stream({ model: MODEL(), max_tokens: 2000, system: system(c), tools: TOOLS, messages }, { timeout: Math.max(5_000, left()) });
     for await (const ev of stream) {
       if (ev.type === "content_block_start") {
         const b = ev.content_block;

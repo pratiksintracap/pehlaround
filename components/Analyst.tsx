@@ -75,14 +75,18 @@ export function Analyst({ deal, starters, who }: { deal: { slug: string; company
     const patch = (f: (a: Msg) => Msg) => setMsgs((m) => { const c = [...m]; c[c.length - 1] = f(c[c.length - 1]); return c; });
     try {
       const r = await fetch("/api/ai/chat", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json", accept: "application/x-ndjson" }, body: JSON.stringify({ q: t, deal: deal?.slug || "", id }) });
-      if (!r.ok || !r.body) { const j = await r.json().catch(() => ({})); throw new Error(j.error || "The analyst could not answer just now."); }
+      if (!r.ok || !r.body) {
+        const j = await r.json().catch(() => ({}));
+        const msg = typeof j.error === "string" ? j.error : r.status === 504 ? "The analyst took too long to answer. Please try again, or ask a narrower question." : "The analyst could not answer just now. Please try again.";
+        throw new Error(msg);
+      }
       const rd = r.body.getReader(), dec = new TextDecoder(); let buf = "";
       for (;;) {
         const { value, done } = await rd.read(); if (done) break;
         buf += dec.decode(value, { stream: true });
         let n; while ((n = buf.indexOf("\n")) >= 0) {
           const line = buf.slice(0, n); buf = buf.slice(n + 1); if (!line.trim()) continue;
-          const ev = JSON.parse(line);
+          let ev; try { ev = JSON.parse(line); } catch { continue; }
           if (ev.t === "chat") setId(ev.id);
           else if (ev.t === "status") setStatus(ev.d);
           else if (ev.t === "text") { setStatus(""); patch((a) => ({ ...a, text: a.text + ev.d })); }
