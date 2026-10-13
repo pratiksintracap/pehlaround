@@ -10,7 +10,7 @@ export function AppPromo({ variant = "card", text }: { variant?: "card" | "bar";
   return (
     <div className={`app-promo ${variant}`} data-app-promo="">
       <span className="ap-ic">{PHONE}</span>
-      <div className="ap-t"><b>Get the Pehla Round app</b><span>{text || "Your dashboard on your home screen: new deals, answers and approvals the moment they land."}</span></div>
+      <div className="ap-t"><b>Get the Off Market Desk app</b><span>{text || "Your dashboard on your home screen: new deals, answers and approvals the moment they land."}</span></div>
       <a className="btn primary sm" href="/app?install=1" data-get-app="">Get the app</a>
       {variant === "bar" && <button type="button" className="ap-x" aria-label="Dismiss" data-ap-dismiss="">×</button>}
     </div>
@@ -25,13 +25,13 @@ export async function InstallGuide() {
     <div className="ig" id="install-guide" hidden role="dialog" aria-modal="true" aria-labelledby="ig-h">
       <div className="ig-card">
         <button type="button" className="ig-x" data-ig-close="" aria-label="Close">×</button>
-        <span className="eyebrow">Pehla Round app</span>
+        <span className="eyebrow">Off Market Desk app</span>
         <h2 id="ig-h">Add it to your home screen</h2>
         <div data-ig="ios">
           <ol className="ig-steps">
             <li><span className="ig-n">1</span><span>Tap the <b>Share</b> button {share} in Safari&apos;s toolbar</span></li>
             <li><span className="ig-n">2</span><span>Scroll down and tap <b>Add to Home Screen</b></span></li>
-            <li><span className="ig-n">3</span><span>Tap <b>Add</b>. Pehla Round opens straight to your dashboard</span></li>
+            <li><span className="ig-n">3</span><span>Tap <b>Add</b>. Off Market Desk opens straight to your dashboard</span></li>
           </ol>
           <div className="ig-arrow" aria-hidden="true"><span>Share is down here</span><svg viewBox="0 0 24 24"><path d="M12 3v16M6 13l6 6 6-6" /></svg></div>
         </div>
@@ -48,7 +48,7 @@ export async function InstallGuide() {
           <ol className="ig-steps">
             <li><span className="ig-n">1</span><span>Tap Chrome&apos;s <b>⋮</b> menu, top right</span></li>
             <li><span className="ig-n">2</span><span>Tap <b>Install app</b> (or <b>Add to Home screen</b>)</span></li>
-            <li><span className="ig-n">3</span><span>Open Pehla Round from your home screen. It lands on your dashboard</span></li>
+            <li><span className="ig-n">3</span><span>Open Off Market Desk from your home screen. It lands on your dashboard</span></li>
           </ol>
         </div>
         <div data-ig="desktop" hidden>

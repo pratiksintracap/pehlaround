@@ -51,7 +51,7 @@ export async function setApproval(f: FormData) {
   await log(admin, `Desk set ${o.name} to ${approval}`);
   if (approval === "approved" && o.approval !== "approved") {
     // In-app notice only: the "You're in" email of the onboarding series does the emailing.
-    await notifyOffices([id], { title: "Your office is approved", body: "Every company on Pehla Round is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: "/deals" }, false);
+    await notifyOffices([id], { title: "Your office is approved", body: "Every company on Off Market Desk is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: "/deals" }, false);
     const team = await db.select({ id: users.id }).from(users).where(and(eq(users.officeId, id), eq(users.disabled, false)));
     for (const t of team) await startSeries(t.id, "approved").catch(() => 0);
   }
@@ -289,7 +289,7 @@ export async function saveArticle(f: FormData) {
   const sources = s(f, "sources", 4000).split(/\r?\n/).map((l) => l.split("|").map((x) => x.trim())).filter((x) => x[1]?.startsWith("http")).map(([t, u]) => ({ title: t || u, url: u }));
   const when = s(f, "publishedAt", 40);
   const vals = { slug, title, dek: s(f, "dek", 600) || null, body: s(f, "body", 40000), sources, externalUrl: s(f, "externalUrl", 1000) || null, image: s(f, "image", 1000) || null,
-    author: s(f, "author", 120) || "Pehla Round desk", published: f.get("published") === "on",
+    author: s(f, "author", 120) || "Off Market Desk team", published: f.get("published") === "on",
     publishedAt: when ? new Date(when + (when.length <= 10 ? "T09:00:00+05:30" : "")) : new Date(), updatedAt: new Date() };
   if (f.get("delete") === "on" && id) {
     await db.delete(articles).where(eq(articles.id, id));
@@ -361,8 +361,8 @@ export async function createInvites(f: FormData) {
     const token = randomBytes(18).toString("base64url");
     await db.insert(deskInvites).values({ token, email, name: name || null, officeName: officeName || null, createdBy: admin.name });
     made++;
-    if (send) mailed += await sendEmail([email], { title: "Your invitation to Pehla Round",
-      body: `${name ? `Dear ${name.split(" ")[0]},\n\n` : ""}The desk has invited ${officeName || "your family office"} to Pehla Round: undiscovered, profitable, IPO-bound companies, checked before you see them. Your invitation registers the office already approved, so every company on the desk opens to you by name.`,
+    if (send) mailed += await sendEmail([email], { title: "Your invitation to Off Market Desk",
+      body: `${name ? `Dear ${name.split(" ")[0]},\n\n` : ""}The desk has invited ${officeName || "your family office"} to Off Market Desk: undiscovered, profitable, IPO-bound companies, checked before you see them. Your invitation registers the office already approved, so every company on the desk opens to you by name.`,
       link: `${SITE_URL}/invite/${token}` });
   }
   await log(admin, `Desk created ${made} invitations`);

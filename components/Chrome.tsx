@@ -1,4 +1,5 @@
 import type { SessionUser } from "@/lib/auth";
+import { Mark } from "@/components/Mark";
 import { DESK_EMAIL, GRIEVANCE } from "@/lib/site";
 
 const NAV = [
@@ -10,7 +11,7 @@ export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?
   return (
     <header className="hdr">
       <div className="wrap in">
-        <a className="logo" aria-label="Pehla Round home" href="/"><span className="mk" aria-hidden="true">1</span>Pehla Round</a>
+        <a className="logo" aria-label="Off Market Desk home" href="/"><Mark />Off Market Desk</a>
         <nav aria-label="Main">
           {NAV.map(([h, t]) => <a key={h} href={h}>{t}</a>)}
           {user?.role === "admin" && <a href="/admin">Admin</a>}
@@ -61,8 +62,8 @@ export function Footer() {
       <div className="wrap">
         <div className="ft-grid">
           <div className="ft-brand">
-            <a className="logo" href="/"><span className="mk" aria-hidden="true">1</span>Pehla Round</a>
-            <p>IPO-bound gems for family offices, checked before you see them.</p>
+            <a className="logo" href="/"><Mark />Off Market Desk</a>
+            <p><b>A front-row seat before the listing.</b> IPO-bound companies for family offices, checked before you see them.</p>
             <a className="mail" href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a>
           </div>
           <div className="ft-col"><h4>Explore</h4><ul>
@@ -81,8 +82,8 @@ export function Footer() {
             <li className="kv"><b>Grievance officer</b>{GRIEVANCE.name} · <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a></li>
           </ul></div>
         </div>
-        <p className="ft-disc">Pehla Round is a deal desk. It is not a stock exchange, trading platform, broker, merchant banker or investment adviser, and is not registered with SEBI. Nothing on this website is an offer or invitation to subscribe for or buy securities. Any offer is made privately, only to identified family offices, through a private placement offer letter or a share purchase agreement under the Companies Act, 2013. Deal overviews on this site are anonymised. Investments in unlisted companies are illiquid, may not list on the expected timeline or at all, and can lose their entire value. The desk charges family offices nothing.</p>
-        <div className="ft-bottom"><span>© 2026 Pehla Round · SintraCap Advisors LLP</span><span>Mumbai, India</span></div>
+        <p className="ft-disc">Off Market Desk is a deal desk. It is not a stock exchange, trading platform, broker, merchant banker or investment adviser, and is not registered with SEBI. Nothing on this website is an offer or invitation to subscribe for or buy securities. Any offer is made privately, only to identified family offices, through a private placement offer letter or a share purchase agreement under the Companies Act, 2013. Deal overviews on this site are anonymised. Investments in unlisted companies are illiquid, may not list on the expected timeline or at all, and can lose their entire value. The desk charges family offices nothing.</p>
+        <div className="ft-bottom"><span>© 2026 Off Market Desk · SintraCap Advisors LLP</span><span>Mumbai, India</span></div>
       </div>
     </footer>
   );
@@ -94,7 +95,7 @@ export function Html({ html, as = "main", className }: { html: string; as?: "mai
   return <T className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-/** Bottom tab bar, shown only when Pehla Round runs as an installed app. */
+/** Bottom tab bar, shown only when Off Market Desk runs as an installed app. */
 export function AppBar({ user }: { user: SessionUser | null }) {
   const I = (d: string) => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>;
   return (

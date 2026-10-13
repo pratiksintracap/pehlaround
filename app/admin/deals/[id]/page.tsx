@@ -45,7 +45,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><label>Structure<select name="category" defaultValue={d.category}><option>Pre-IPO primary</option><option>Pre-IPO secondary</option><option>Growth round</option><option>SME IPO anchor</option></select></label>
           <IN name="stage" label="Tag on the card" value={d.stage} ph="Room open" /></div>
         <div className="row"><IN name="status" label="Status line" value={d.status} /><IN name="asOf" label="Score and tracker as of" value={d.asOf} ph="12 Oct 2026" /></div>
-        <div className="row"><IN name="score" label="Pehla Score (out of 10)" value={d.score ?? ""} ph="8.4" hint="Shown on the card and overview; leave empty to show 'assessment in progress'" /><span /></div>
+        <div className="row"><IN name="score" label="Desk Score (out of 10)" value={d.score ?? ""} ph="8.4" hint="Shown on the card and overview; leave empty to show 'assessment in progress'" /><span /></div>
         <div className="row"><IN name="listingLabel" label="Target listing (label)" value={d.listingLabel} ph="Sept 2028" /><IN name="listingMonth" label="Target listing month" value={d.listingMonth} ph="2028-09" hint="YYYY-MM; leave empty if not set" /></div>
         <div className="row"><IN name="listingNote" label="Listing note" value={d.listingNote} ph="main board" /><IN name="sort" label="Order on the shelf" value={d.sort} /></div>
         <div className="row"><IN name="roundLabel" label="Round (registered offices)" value={d.roundLabel} /><IN name="preMoney" label="Pre-money" value={d.preMoney} /></div>

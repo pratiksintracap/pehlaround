@@ -1,4 +1,4 @@
-/* Pehla Round app: caches the site's static files for speed and shows an offline page.
+/* Off Market Desk app: caches the site's static files for speed and shows an offline page.
    Pages with office data are never stored on the device. */
 const V = "pr-v1";
 const STATIC = ["/offline", "/icon-192.png", "/icon-512.png", "/js/site.js?v=31"];

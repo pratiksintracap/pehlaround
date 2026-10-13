@@ -1,6 +1,6 @@
-# Pehla Round
+# Off Market Desk
 
-Pre-IPO deal desk for family offices — pehlaround.in. Operated by SintraCap Advisors LLP.
+Pre-IPO deal desk for family offices — offmarketdesk.in. Operated by SintraCap Advisors LLP.
 
 Next.js (App Router) with a Postgres database through Drizzle ORM.
 
@@ -23,7 +23,7 @@ Deal content lives in the database and is edited in `/admin/deals`. `lib/seed.ts
 2. **Settings → Environment Variables**:
    - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` — the first desk admin (created on start; more admins can be added in `/admin`).
    - `SESSION_SECRET` — a long random string (e.g. `openssl rand -hex 32`).
-   - `NEXT_PUBLIC_SITE_URL` — `https://pehlaround.in` once the domain points here.
+   - `NEXT_PUBLIC_SITE_URL` — `https://offmarketdesk.in` once the domain points here.
    - Optional `REQUIRE_PAN_VERIFIED=1` — rooms open only after the desk marks the office's PAN verified (default: the room opens on signing; the desk checks PAN after).
 3. Redeploy.
 
@@ -33,7 +33,7 @@ Without `DATABASE_URL` the site runs on a temporary built-in database (PGlite) a
 
 ```
 npm install
-npm run dev          # PGlite in .pglite/, admin@pehlaround.in / pehla-local-admin
+npm run dev          # PGlite in .pglite/, admin@offmarketdesk.in / omd-local-admin
 ```
 
 After changing `db/schema.ts`: `npm run db:generate` and commit the new file in `drizzle/`.

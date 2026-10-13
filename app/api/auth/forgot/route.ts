@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
   const token = randomBytes(32).toString("base64url");
   await db.insert(passwordResets).values({ userId: u.id, tokenHash: createHash("sha256").update(token).digest("hex"), expiresAt: new Date(Date.now() + 3600e3) });
-  await sendEmail([u.email], { title: "Reset your Pehla Round password",
+  await sendEmail([u.email], { title: "Reset your Off Market Desk password",
     body: "Someone (hopefully you) asked to reset the password for this email. The link works once, for one hour. If it wasn't you, ignore this email; your password stays as it is.",
     link: `${SITE_URL}/reset?token=${token}` });
   return done(req, json, SENT);

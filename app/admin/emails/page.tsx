@@ -30,7 +30,7 @@ export default async function Emails({ searchParams }: { searchParams: Promise<{
       <p className="fine" style={{ marginBottom: 14, maxWidth: 760 }}>
         Every new family office gets this series. Welcome goes on registration; the rest are timed from approval and go at 9 AM IST.
         A step is skipped when the office has already done what it asks (signed an NDA, requested an allocation) or has turned email off.
-        Emails name no company: deals appear with their anonymised titles and Pehla Score.</p>
+        Emails name no company: deals appear with their anonymised titles and Desk Score.</p>
       <div className="chart" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
         <span><b>{st.onboardingEmails ? "On" : "Paused"}</b> · {mail ? "email is set up" : "email is not set up yet: emails wait in the queue until RESEND_API_KEY is added in Vercel (anything over 4 days old is then skipped)"}</span>
         <form action={setOnboardingEmails}><input type="hidden" name="on" value={st.onboardingEmails ? "0" : "1"} />

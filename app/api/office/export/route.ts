@@ -20,5 +20,5 @@ export async function GET(req: NextRequest) {
     log: await db.select().from(audit).where(eq(audit.officeId, id)),
   };
   await log(user, "Downloaded the office's data");
-  return new NextResponse(JSON.stringify(out, null, 2), { headers: { "content-type": "application/json", "content-disposition": `attachment; filename="pehla-round-${id}.json"` } });
+  return new NextResponse(JSON.stringify(out, null, 2), { headers: { "content-type": "application/json", "content-disposition": `attachment; filename="off-market-desk-${id}.json"` } });
 }

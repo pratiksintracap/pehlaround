@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 const page = (title: string, body: string) => new Response(
   `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
 <body style="margin:0;background:#f4f6fb;font-family:Georgia,serif;color:#141c33"><div style="max-width:520px;margin:12vh auto;background:#fff;border-radius:14px;padding:32px 28px;box-shadow:0 4px 24px rgba(20,28,51,.08)">
-<p style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#8a6d2f;margin:0 0 14px">Pehla Round</p>
+<p style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#8a6d2f;margin:0 0 14px">Off Market Desk</p>
 <h1 style="font-size:26px;margin:0 0 12px">${title}</h1><p style="font:16px/1.6 system-ui,sans-serif;color:#3b4663">${body}</p>
 <p style="margin:22px 0 0"><a href="/dashboard" style="font:600 15px system-ui,sans-serif;color:#1d3a8a">Open your dashboard</a></p></div></body>`,
   { headers: { "content-type": "text/html; charset=utf-8" } });

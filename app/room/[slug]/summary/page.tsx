@@ -25,14 +25,14 @@ export default async function Summary({ params }: P) {
       <p className="crumb"><a href={`/room/${d.slug}`}>← Back to the deal room</a></p>
       <article className="memo">
         <header>
-          <div><span className="eyebrow">Deal summary · prepared by Pehla Round</span><h1>{d.company}</h1><p>{r.lede}</p></div>
+          <div><span className="eyebrow">Deal summary · prepared by Off Market Desk</span><h1>{d.company}</h1><p>{r.lede}</p></div>
           <div className="memometa"><span>{today}</span><span>Confidential · for {user?.office?.name || "the registered office"} only</span></div>
         </header>
         <section><h2>The transaction</h2><dl className="terms compact">{r.terms.slice(0, 6).map((t, i) => <div key={i}><dt>{t.k}</dt><dd>{t.v}</dd></div>)}</dl></section>
         <section><h2>Numbers</h2>
           <div className="charts even" style={{ marginBottom: 12 }}>
             {r.fin && <div className="chart"><span className="k">{barSeries(r.fin).map((x) => x.label).join(" and ")} · {r.fin.unit}</span><Bars fin={r.fin} /></div>}
-            {d.score != null && <div className="chart"><span className="k">Pehla Score</span><ScoreBadge score={d.score} /></div>}
+            {d.score != null && <div className="chart"><span className="k">Desk Score</span><ScoreBadge score={d.score} /></div>}
           </div>
           <div className="snap compact">{r.snapshot.map((s, i) => <div key={i} className="snapcell"><span className="k">{s.k}</span><b>{s.v}</b>{s.s && <small>{s.s}</small>}</div>)}</div>
           {r.multiples.length > 0 && <div className="snap compact" style={{ marginTop: 10 }}>{r.multiples.map((s, i) => <div key={i} className="snapcell"><span className="k">{s.k}</span><b>{s.v}</b></div>)}</div>}

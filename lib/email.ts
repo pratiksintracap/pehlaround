@@ -27,16 +27,16 @@ export const E = {
 
 /** The house email: header, body, signature, footer with unsubscribe for series emails. */
 export function layout(body: string, opts: { preheader?: string; unsubscribeFor?: number; signature?: string } = {}) {
-  const sig = opts.signature ?? `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">The Pehla Round desk<br><a href="mailto:${DESK_EMAIL}" style="color:#1f4fff">${DESK_EMAIL}</a> · <a href="${SITE_URL}" style="color:#1f4fff">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>`;
+  const sig = opts.signature ?? `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">The Off Market Desk team<br><a href="mailto:${DESK_EMAIL}" style="color:#1f4fff">${DESK_EMAIL}</a> · <a href="${SITE_URL}" style="color:#1f4fff">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>`;
   const unsub = opts.unsubscribeFor ? ` · <a href="${SITE_URL}/api/unsubscribe?t=${unsubToken(opts.unsubscribeFor)}" style="color:#6b7590">Stop these emails</a>` : "";
   return `<!doctype html><html><body style="margin:0;padding:0;background:#f3f5f9">
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(opts.preheader || "")}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f5f9"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;background:#ffffff;border-radius:16px;overflow:hidden;font-family:Arial,Helvetica,sans-serif">
-<tr><td style="background:#0b1730;padding:18px 24px"><span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;background:#ffffff;color:#0b1730;border-radius:6px;font-weight:bold;font-size:13px">1</span>
-<span style="color:#ffffff;font-weight:bold;font-size:16px;margin-left:8px;vertical-align:middle">Pehla Round</span></td></tr>
+<tr><td style="background:#0b1730;padding:18px 24px"><img src="${SITE_URL}/mark-email.png" width="26" height="26" alt="" style="display:inline-block;width:26px;height:26px;border:0;vertical-align:middle;border-radius:6px">
+<span style="color:#ffffff;font-weight:bold;font-size:16px;margin-left:8px;vertical-align:middle">Off Market Desk</span></td></tr>
 <tr><td style="padding:26px 24px 22px">${body}${sig}</td></tr>
-<tr><td style="padding:14px 24px 20px;border-top:1px solid #eef0f5;font-size:11.5px;line-height:1.5;color:#6b7590">You receive this because your family office is registered on Pehla Round, operated by SintraCap Advisors LLP, Lower Parel, Mumbai. Nothing in this email is an offer or advice; investments in unlisted companies can lose their entire value.${unsub}</td></tr>
+<tr><td style="padding:14px 24px 20px;border-top:1px solid #eef0f5;font-size:11.5px;line-height:1.5;color:#6b7590">You receive this because your family office is registered on Off Market Desk, operated by SintraCap Advisors LLP, Lower Parel, Mumbai. Nothing in this email is an offer or advice; investments in unlisted companies can lose their entire value.${unsub}</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -45,7 +45,7 @@ export type Attachment = { filename: string; content: Uint8Array | Buffer };
 /** Sends one email per address through Resend. Returns how many were accepted. */
 export async function sendRaw(to: string[], subject: string, html: string, attachments: Attachment[] = [], replyTo?: string) {
   if (!emailReady() || !to.length) return 0;
-  const from = process.env.EMAIL_FROM || "Pehla Round <desk@pehlaround.in>";
+  const from = process.env.EMAIL_FROM || "Off Market Desk <desk@offmarketdesk.in>";
   let sent = 0;
   for (const addr of to) {
     try {

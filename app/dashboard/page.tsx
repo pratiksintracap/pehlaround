@@ -81,7 +81,7 @@ export default async function Dashboard({ searchParams }: P) {
       </div>
 
       <section className="panel" data-panel="Shelf">
-        <div className="cmpwrap"><table className="cmp plain" id="shelf-t"><thead><tr><th>Deal</th><th>Structure</th><th>Target listing</th><th>Round</th><th>Pre-money</th><th>P/E trailing · forward</th><th>Min ticket</th><th>Pehla Score</th><th /></tr></thead>
+        <div className="cmpwrap"><table className="cmp plain" id="shelf-t"><thead><tr><th>Deal</th><th>Structure</th><th>Target listing</th><th>Round</th><th>Pre-money</th><th>P/E trailing · forward</th><th>Min ticket</th><th>Desk Score</th><th /></tr></thead>
           <tbody>{deals.map((d) => (
             <tr key={d.id} data-struct={d.category} data-months={monthsTo(d.listingMonth) ?? 999}>
               <th scope="row">{d.company}{names && <><br /><small className="fine">{d.title}</small></>}<br />
@@ -97,7 +97,7 @@ export default async function Dashboard({ searchParams }: P) {
             <div className="dc-top"><b>{d.company}</b><span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></div>
             <small>{names ? `${d.title} · ` : ""}{d.category}</small>
             <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
-              <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Pehla Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
+              <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
             <div className="dc-acts">
               {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
               <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>

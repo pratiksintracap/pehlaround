@@ -57,6 +57,13 @@
       "when": 1791865020771,
       "tag": "0007_email_series",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791867703563,
+      "tag": "0008_rebrand",
+      "breakpoints": true
     }
   ]
 }

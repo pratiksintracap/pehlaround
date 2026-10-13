@@ -70,7 +70,7 @@ export const deals = pgTable("deals", {
   published: boolean("published").notNull().default(true),
   sort: integer("sort").notNull().default(100),
   art: text("art"),                             // inline SVG for the card
-  score: doublePrecision("score"),               // Pehla Score out of 10, set by the desk (proprietary)
+  score: doublePrecision("score"),               // Desk Score out of 10, set by the desk (proprietary)
   publicRisks: jsonb("public_risks").$type<string[]>().notNull().default([]),
   asOf: text("as_of"),                          // "11 Oct 2026"
   ndaVersion: text("nda_version").notNull().default("2026-10-12"),
@@ -210,7 +210,7 @@ export const articles = pgTable("articles", {
   sources: jsonb("sources").$type<{ title: string; url: string }[]>().notNull().default([]),
   externalUrl: text("external_url"),
   image: text("image"),                         // optional cover image URL; a generated cover is used otherwise
-  author: text("author").notNull().default("Pehla Round desk"),
+  author: text("author").notNull().default("Off Market Desk team"),
   published: boolean("published").notNull().default(true),
   publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

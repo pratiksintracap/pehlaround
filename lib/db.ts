@@ -69,7 +69,7 @@ export async function getDb(): Promise<DB> {
   return s.db;
 }
 
-// Starting Pehla Scores (out of 10); the desk changes them in Admin → Deals.
+// Starting Desk Scores (out of 10); the desk changes them in Admin → Deals.
 const SCORES: Record<string, number> = { "naval-defence-secondary": 8.6, "jewellery-pre-ipo": 8.3, "ai-collections-software": 8.1,
   "waste-management-growth-round": 7.9, "edible-oils-pre-ipo": 7.7, "ethanol-distillery-pre-ipo": 7.5 };
 
@@ -96,8 +96,8 @@ async function bootstrap(db: DB) {
   if (!mark) await db.insert(schema.settings).values({ key: "seeded_articles", value: all }).onConflictDoNothing();
   else if (mark.value !== all) await db.update(schema.settings).set({ value: JSON.stringify([...new Set([...done, ...SEED_ARTICLES.map((x) => x.slug)])]) }).where(eq(schema.settings.key, "seeded_articles"));
   // The admin account comes from the environment, so no password is ever in the code.
-  const email = (process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== "production" ? "admin@pehlaround.in" : "")).toLowerCase().trim();
-  const pass = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "pehla-local-admin" : "");
+  const email = (process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== "production" ? "admin@offmarketdesk.in" : "")).toLowerCase().trim();
+  const pass = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "omd-local-admin" : "");
   if (email && pass) {
     const existing = await db.select({ id: schema.users.id, role: schema.users.role }).from(schema.users).where(eq(schema.users.email, email));
     if (!existing.length) {

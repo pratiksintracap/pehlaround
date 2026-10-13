@@ -11,7 +11,7 @@ export { emailReady } from "@/lib/email";
 
 export async function sendEmail(to: string[], m: Msg) {
   const link = m.link || "/dashboard";
-  const body = E.h(m.title) + (m.body ? E.p(esc(m.body).replace(/\n/g, "<br>")) : "") + E.btn("Open Pehla Round", link);
+  const body = E.h(m.title) + (m.body ? E.p(esc(m.body).replace(/\n/g, "<br>")) : "") + E.btn("Open Off Market Desk", link);
   return sendRaw(to, m.title, layout(body, { preheader: m.body?.slice(0, 120) || "" }));
 }
 

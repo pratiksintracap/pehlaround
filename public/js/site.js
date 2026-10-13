@@ -1,4 +1,4 @@
-/* Pehla Round: the site's interactive layer. Plain JS on server-rendered markup. */
+/* Off Market Desk: the site's interactive layer. Plain JS on server-rendered markup. */
 (function () {
   "use strict";
   function init() {
@@ -294,7 +294,7 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 
-/* Pehla Round: page chrome, disclaimer, forms and deal-room actions. */
+/* Off Market Desk: page chrome, disclaimer, forms and deal-room actions. */
 (function () {
   "use strict";
   function $(s, r) { return (r || document).querySelector(s); }

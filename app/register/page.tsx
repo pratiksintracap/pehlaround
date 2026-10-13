@@ -54,8 +54,8 @@ export default async function Register({ searchParams }: P) {
             <label>Viewers to add (optional)<input name="viewers" placeholder="CIO, CFO or CA emails" /></label></div>
           <p className="notice"><b>Privacy notice.</b> We use these details to identify your office and, at step two, to verify PAN and prepare documents. We keep them while the office is registered and for the period the law requires for offeree records, then delete them. You can ask for a copy, a correction or deletion at <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>. Full notice: <a href="/legal">privacy</a>.</p>
           <label className="chk"><input type="checkbox" required name="privacy" />I have read the privacy notice and consent to this use of my details.</label>
-          <label className="chk"><input type="checkbox" required name="risk" />I understand that unlisted investments are illiquid and can lose their entire value, that Pehla Round does not advise the family, and that the office decides on the documents and its own advice.</label>
-          <label className="chk"><input type="checkbox" name="contact" />Optional: Pehla Round may call, email or WhatsApp me about deals on the desk. I can withdraw this at any time.</label>
+          <label className="chk"><input type="checkbox" required name="risk" />I understand that unlisted investments are illiquid and can lose their entire value, that Off Market Desk does not advise the family, and that the office decides on the documents and its own advice.</label>
+          <label className="chk"><input type="checkbox" name="contact" />Optional: Off Market Desk may call, email or WhatsApp me about deals on the desk. I can withdraw this at any time.</label>
           <div><button className="btn primary" type="submit">Register</button></div>
           <p className="fine">Already registered? <a href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}>Sign in</a>.</p>
         </form>

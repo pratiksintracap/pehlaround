@@ -68,7 +68,7 @@ export default async function Room({ params }: P) {
               <div className="kv"><span>Family office ticket</span><b>{r.ticket}</b></div>
               {r.committed && <div className="kv"><span>Committed</span><b>{r.committed}</b></div>}
               <div className="kv"><span>Status</span><b>{d.status}</b></div>
-              {d.score != null && <div className="kv"><span>Pehla Score</span><b>{d.score.toFixed(1)} / 10</b></div>}
+              {d.score != null && <div className="kv"><span>Desk Score</span><b>{d.score.toFixed(1)} / 10</b></div>}
               <a className="btn primary" href={`/room/${d.slug}/summary`}>Deal summary (one page)</a>
             </div>
           </div>
@@ -92,7 +92,7 @@ export default async function Room({ params }: P) {
               ) : r.fin ? (
                 <div className="chart"><span className="k">{barSeries(r.fin).map((x) => x.label).join(" and ")} · {r.fin.unit}</span><Bars fin={r.fin} /></div>
               ) : null}
-              <div className="chart"><span className="k">Pehla Score</span>
+              <div className="chart"><span className="k">Desk Score</span>
                 {d.score != null ? <ScoreBadge score={d.score} size="lg" /> : <p className="fine">The desk is completing its assessment.</p>}
                 {r.stake && (
                   <div className="stake" style={{ marginTop: 6 }}><span className="k">Stake on offer</span>

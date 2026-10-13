@@ -23,7 +23,7 @@ export default async function AdminDeals({ searchParams }: { searchParams: Promi
     <>
       <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>Deals</h1>
-      <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Pehla Score</th><th title="Last 30 days">Overview views</th><th title="Offices, last 30 days">Rooms opened</th><th>NDAs</th><th>Allocation requests</th><th>Shown</th><th /></tr></thead><tbody>
+      <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Desk Score</th><th title="Last 30 days">Overview views</th><th title="Offices, last 30 days">Rooms opened</th><th>NDAs</th><th>Allocation requests</th><th>Shown</th><th /></tr></thead><tbody>
         {deals.map((d) => { return (
           <tr key={d.id}><th scope="row">{d.company}</th><td>{d.title}</td><td>{d.category}</td><td>{d.listingLabel}</td><td>{d.score != null ? d.score.toFixed(1) : "—"}</td><td>{views.get(d.id) ?? 0}</td><td>{rooms.get(d.id) ?? 0}</td><td>{ndaN.get(d.id) ?? 0}</td><td>{asks.get(d.id) ?? 0}</td>
             <td>{d.published ? (d.open ? "Live · room open" : "Live · room closed") : "Hidden"}</td>

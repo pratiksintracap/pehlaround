@@ -316,7 +316,7 @@ a.iconbtn{text-decoration:none}
 .note-list .when{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink3);margin-bottom:2px}
 .note-list p{margin:4px 0 0;color:var(--ink2);font-size:14.5px;line-height:1.5;white-space:pre-line}
 
-/* ---- v36: Pehla Score, projected bars ---- */
+/* ---- v36: Desk Score, projected bars ---- */
 .pscore{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
 .pscore .sring{flex:none}
 .pscore .sring .track{stroke:var(--line2)}
@@ -441,3 +441,6 @@ html.is-app .appbar a[aria-current=page]{color:var(--accent)}
 html.is-app body{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 html.is-app .hdr{padding-top:env(safe-area-inset-top,0px)}
 .adm-multi{min-width:200px;min-height:64px}
+
+/* ---- Off Market Desk mark ---- */
+.mk svg{display:block;width:18px;height:18px}.logo .mk{box-shadow:none;color:#fff}.disc-top .mk{color:#fff}.appx-bar .mk{color:#0b1730}.appx-bar .mk svg{width:15px;height:15px}.tagline{display:block;font-size:12px;font-weight:500;color:var(--ink3);letter-spacing:0;margin-top:2px}

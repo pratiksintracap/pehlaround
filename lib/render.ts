@@ -28,9 +28,9 @@ export function runwayHtml(d: Deal) {
   return `<div class="runway" aria-label="Target listing ${esc(d.listingLabel)}">${runwaySvg(d)}<div class="k"><span>Today</span><span>Target listing · <b>${esc(d.listingLabel)}</b></span></div></div>`;
 }
 
-export const SCORE_NOTE = "Pehla Round's proprietary score for how strongly a company fits a first institutional round ahead of its listing. The method is the desk's own. It is not a rating of the shares or a recommendation.";
+export const SCORE_NOTE = "Off Market Desk's proprietary score for how strongly a company fits a first institutional round ahead of its listing. The method is the desk's own. It is not a rating of the shares or a recommendation.";
 
-/** Ring showing the Pehla Score out of 10. */
+/** Ring showing the Desk Score out of 10. */
 export function scoreSvg(score: number, px = 44) {
   const C = 2 * Math.PI * 20, a = Math.max(0, Math.min(10, score)) / 10 * C;
   return `<svg class="viz sring" viewBox="0 0 48 48" width="${px}" height="${px}" style="width:${px}px;height:${px}px;flex:none" aria-hidden="true"><circle class="track" cx="24" cy="24" r="20" fill="none" stroke-width="4"></circle><circle class="arc" cx="24" cy="24" r="20" fill="none" stroke-width="4" stroke-linecap="round" stroke-dasharray="${a.toFixed(2)} ${(C - a).toFixed(2)}" transform="rotate(-90 24 24)"></circle><text x="24" y="28.5" text-anchor="middle">${score.toFixed(1)}</text></svg>`;
@@ -38,8 +38,8 @@ export function scoreSvg(score: number, px = 44) {
 
 /** The score line on a deal card (replaces the old checks and risks counts). */
 export function scoreHtml(d: Pick<Deal, "score">) {
-  if (d.score == null) return `<div class="pscore none"><span class="pk">Pehla Score</span><span class="ps">Assessment in progress</span></div>`;
-  return `<div class="pscore" title="${esc(SCORE_NOTE)}">${scoreSvg(d.score)}<div><span class="pk">Pehla Score</span><span class="ps"><b>${d.score.toFixed(1)}</b> / 10 · proprietary</span></div></div>`;
+  if (d.score == null) return `<div class="pscore none"><span class="pk">Desk Score</span><span class="ps">Assessment in progress</span></div>`;
+  return `<div class="pscore" title="${esc(SCORE_NOTE)}">${scoreSvg(d.score)}<div><span class="pk">Desk Score</span><span class="ps"><b>${d.score.toFixed(1)}</b> / 10 · proprietary</span></div></div>`;
 }
 
 const SAVE = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14l-5-3.5L5 17z"></path></svg>';
