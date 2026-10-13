@@ -450,16 +450,71 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
 })();
 
-/* Installable app: service worker, install button, and app-only touches. */
+/* Installable app: service worker, "Get the app" buttons per phone, and app-only touches. */
 (function () {
   if ("serviceWorker" in navigator) window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js").catch(function () {}); });
   var standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  var ua = navigator.userAgent || "";
+  var iOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var android = /Android/.test(ua);
+  var inApp = /FBAN|FBAV|Instagram|WhatsApp|Line\/|LinkedInApp|Twitter|Snapchat|GSA\/|; wv\)/.test(ua);
+  var iosOtherBrowser = iOS && (/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo|YaBrowser/.test(ua) || inApp || !/Safari\//.test(ua));
   var deferred = null;
+  var appUrl = location.origin + "/app?install=1";
+
+  function guide(which) {
+    var g = document.getElementById("install-guide"); if (!g) return;
+    Array.prototype.forEach.call(g.querySelectorAll("[data-ig]"), function (el) { el.hidden = el.getAttribute("data-ig") !== which; });
+    g.className = "ig ig-" + which; g.hidden = false; document.body.classList.add("ig-open");
+  }
+  function closeGuide() { var g = document.getElementById("install-guide"); if (g) { g.hidden = true; document.body.classList.remove("ig-open"); } }
+
+  function getApp(e) {
+    if (iOS && !iosOtherBrowser) { e.preventDefault(); guide("ios"); return; }
+    if (iOS) {
+      // Hand over to Safari (iOS 17+ understands x-safari-https://); if nothing happens, show the steps.
+      e.preventDefault();
+      var t0 = Date.now();
+      location.href = "x-safari-" + appUrl;
+      setTimeout(function () { if (document.visibilityState === "visible" && Date.now() - t0 < 2500) guide("ios-other"); }, 1200);
+      return;
+    }
+    if (android && deferred) { e.preventDefault(); deferred.prompt(); deferred.userChoice.then(function () { deferred = null; }); return; }
+    if (android && inApp) { e.preventDefault(); location.href = "intent://" + location.host + "/app?install=1#Intent;scheme=https;package=com.android.chrome;end"; return; }
+    if (android) { e.preventDefault(); guide("android"); return; }
+    e.preventDefault(); guide("desktop");
+  }
+
   function run() {
-    var btn = document.querySelector("[data-install]"), done = document.querySelector(".appx-installed");
+    if (standalone) document.documentElement.classList.add("is-app");
+    var done = document.querySelector(".appx-installed");
     if (standalone && done) done.hidden = false;
-    window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; if (btn) btn.hidden = false; });
-    if (btn) btn.addEventListener("click", function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { deferred = null; btn.hidden = true; }); });
+    window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; });
+    window.addEventListener("appinstalled", function () { closeGuide(); Array.prototype.forEach.call(document.querySelectorAll("[data-app-promo]"), function (n) { n.hidden = true; }); });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-get-app]"), function (a) {
+      if (iosOtherBrowser) a.textContent = "Open in Safari to install";
+      a.addEventListener("click", getApp);
+    });
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (t.closest && (t.closest("[data-ig-close]") || t.id === "install-guide")) closeGuide();
+      if (t.closest && t.closest("[data-copy-link]")) { try { navigator.clipboard.writeText(appUrl); t.textContent = "Link copied"; } catch (x) {} }
+      if (t.closest && t.closest("[data-ap-dismiss]")) { try { localStorage.setItem("pr_ap_hide", String(Date.now())); } catch (x) {} var b = t.closest(".ap-smart"); if (b) b.hidden = true; }
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeGuide(); });
+    // The small install bar on phones: not inside the app, not on the app page, not for two weeks after a dismiss.
+    var bar = document.querySelector(".ap-smart");
+    if (bar) { var hid = 0; try { hid = Number(localStorage.getItem("pr_ap_hide") || 0); } catch (x) {}
+      if (standalone || location.pathname === "/app" || location.pathname.indexOf("/admin") === 0 || Date.now() - hid < 14 * 864e5 || !(iOS || android)) bar.hidden = true; else bar.classList.add("on"); }
+    // Arriving from "Get the app" (or Safari hand-over): open the right steps straight away.
+    if (!standalone && /[?&]install=1/.test(location.search)) {
+      // wait until the first-visit disclaimer has been accepted, then show the steps
+      var tries = 0, show = function () {
+        if (document.body.classList.contains("disc-open") && tries++ < 600) return setTimeout(show, 300);
+        if (iOS && !iosOtherBrowser) guide("ios"); else if (android && !deferred) guide("android");
+      };
+      setTimeout(show, 600);
+    }
     var p = location.pathname;
     Array.prototype.forEach.call(document.querySelectorAll(".appbar a"), function (a) { var h = a.getAttribute("href").split("#")[0]; if (p === h || p.indexOf(h + "/") === 0) a.setAttribute("aria-current", "page"); });
   }

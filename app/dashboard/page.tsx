@@ -7,6 +7,7 @@ import { getDb } from "@/lib/db";
 import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, users } from "@/db/schema";
 import { listDeals, canSeeNames } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
+import { AppPromo } from "@/components/AppPromo";
 import { GRIEVANCE } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
@@ -59,6 +60,7 @@ export default async function Dashboard({ searchParams }: P) {
           <h1>{office.name}</h1>
           <p className="lede">Everything your office does on the desk, in one place: the shelf, the rooms you opened, calls, documents, what you hold, your team, and a log of who saw what.</p>
           <ol className="statusrail" aria-label="Your status">{rail.map(([t, c]) => <li key={t} className={c}>{t}</li>)}</ol>
+          <AppPromo text="Your dashboard on your home screen: new deals, promoter answers and approvals the moment they land." />
           {pendingApproval && <p className="notice" style={{ marginTop: 12 }}><b>Your office is being reviewed.</b> The desk approves new offices, usually within a working day. Once approved you will see every company by name with its round and valuation, and can sign NDAs to open the rooms. We will tell you here and by email.</p>}
           {msg && <p className="notice" style={{ marginTop: 12 }}>{msg}</p>}
           {error && <p className="notice" style={{ marginTop: 12, borderColor: "var(--warn, #c0392b)" }}>{error}</p>}
@@ -69,7 +71,7 @@ export default async function Dashboard({ searchParams }: P) {
           <div className="kv"><span>Passed</span><b>{myPasses.length}</b></div>
           <div className="kv"><span>Allocations requested</span><b>{indicated.length ? `${indicated.length} · ₹${+totalInd.toFixed(2)} Cr` : "0"}</b></div>
           {firstOpen && names && <a className="btn primary" href={signed.has(firstOpen.id) ? `/room/${firstOpen.slug}` : `/nda/${firstOpen.slug}`}>{signed.has(firstOpen.id) ? "Open your latest room" : "Open your first room"}</a>}
-          <a className="btn sm ghost dash-app" href="/app" data-hide-standalone="">Get the app</a>
+
         </div>
       </div>
 

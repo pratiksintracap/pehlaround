@@ -4,6 +4,7 @@ import { getUser } from "@/lib/auth";
 import { listDeals } from "@/lib/deals";
 import { listArticles, artDate, artHref } from "@/lib/articles";
 import { scoreSvg } from "@/lib/render";
+import { AppPromo } from "@/components/AppPromo";
 
 export const metadata: Metadata = { title: "Sign in", description: "Your family office's shelf, deal rooms, calls, documents and log, in one place." };
 type P = { searchParams: Promise<{ next?: string; error?: string }> };
@@ -92,6 +93,7 @@ export default async function Login({ searchParams }: P) {
             <p>Registration takes a minute and costs your office nothing: not to register, not to open a room, not to commit. A new deal reaches the desk about every fortnight.</p>
             <a className="btn" href={reg}>Register your family office</a>
           </div>
+          <AppPromo text="Already registered? Put the desk on your home screen: it opens straight to your dashboard." />
         </div>
 
         <section className="lp-stats" aria-label="The desk today">

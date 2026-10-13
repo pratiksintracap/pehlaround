@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Header, Footer, AppBar } from "@/components/Chrome";
+import { AppPromo, InstallGuide } from "@/components/AppPromo";
 import { getUser } from "@/lib/auth";
 import { listDeals, publicData } from "@/lib/deals";
 import { content } from "@/lib/content";
@@ -27,7 +28,8 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { themeColor: "#0b1730", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
-const THEME = `try{var t=JSON.parse(localStorage.getItem("ud_theme")||"null");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
+const THEME = `try{var t=JSON.parse(localStorage.getItem("ud_theme")||"null");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}
+try{if(matchMedia("(display-mode: standalone)").matches||navigator.standalone===true){document.documentElement.classList.add("is-app");var p=location.pathname;if(p==="/"||p==="/app"||p==="/how-it-works"||p==="/about"||p==="/founders"||p==="/webinars")location.replace("/dashboard")}}catch(e){}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [user, deals, st] = await Promise.all([getUser(), listDeals(), getSettings()]);
@@ -43,10 +45,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {children}
         <Footer />
         <AppBar user={user} />
+        <div className="ap-smart"><AppPromo variant="bar" text="Install it on your phone. Opens straight to your dashboard." /></div>
+        <InstallGuide />
         <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
         <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
         <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />
-        <Script src="/js/site.js?v=32" strategy="afterInteractive" />
+        <Script src="/js/site.js?v=33" strategy="afterInteractive" />
         <Analytics />
       </body>
     </html>

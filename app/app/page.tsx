@@ -19,12 +19,12 @@ export default function AppPage() {
           <h1>Your deal desk, <em>on your phone.</em></h1>
           <p className="lede">Install Pehla Round on your iPhone or Android phone and manage your office&apos;s dashboard from anywhere. It opens straight to your dashboard, full screen, like any other app. No app store needed.</p>
           <div className="appx-cta">
-            <button type="button" className="btn primary" data-install="" hidden>Install the app</button>
+            <a className="btn primary" href="/app?install=1" data-get-app="">Get the app</a>
             <span className="appx-installed fine" hidden>Installed. Open Pehla Round from your home screen.</span>
           </div>
           <div className="appx-steps">
-            <div className="appx-step"><b>iPhone (Safari)</b><ol><li>Open <span className="mono">pehlaround.in</span> in Safari</li><li>Tap the Share button</li><li>Choose <b>Add to Home Screen</b>, then <b>Add</b></li></ol></div>
-            <div className="appx-step"><b>Android (Chrome)</b><ol><li>Open <span className="mono">pehlaround.in</span> in Chrome</li><li>Tap <b>Install the app</b> above, or the ⋮ menu</li><li>Choose <b>Install app</b></li></ol></div>
+            <div className="appx-step"><b>iPhone (Safari)</b><ol><li>Tap <b>Get the app</b> above (it opens Safari if you are in another app)</li><li>Tap the Share button</li><li>Choose <b>Add to Home Screen</b>, then <b>Add</b></li></ol></div>
+            <div className="appx-step"><b>Android (Chrome)</b><ol><li>Tap <b>Get the app</b> above</li><li>Confirm <b>Install</b></li><li>Or use Chrome&apos;s ⋮ menu → <b>Install app</b></li></ol></div>
           </div>
           <p className="fine">Your office&apos;s data stays on our servers, not on the phone: if a phone is lost, nothing about your deals is stored on it. Sign out from the menu at any time.</p>
         </div>
