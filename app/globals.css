@@ -823,3 +823,7 @@ body:has(.appbar) .an-fab{bottom:84px}
 @media (max-width:720px){.lp-stats div:nth-child(3){border-left:0}.lp-stats div:nth-child(n+3){border-top:1px solid var(--line)}}
 @media (max-width:560px){.lp-stats{grid-template-columns:1fr}.lp-stats div+div{border-left:0;border-top:1px solid var(--line)}}
 .is-app .lp-perkwrap{display:none!important}
+/* install bars: the dismiss button works and stays dismissed */
+.app-promo[hidden],.ap-smart[hidden]{display:none!important}
+.app-promo .ap-x{flex:none;display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;background:rgba(255,255,255,.12);opacity:1;font-size:20px;transition:background .15s}
+.app-promo .ap-x:hover{background:rgba(255,255,255,.24)}

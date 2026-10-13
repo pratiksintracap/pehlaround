@@ -571,10 +571,16 @@
       var t = e.target;
       if (t.closest && (t.closest("[data-ig-close]") || t.id === "install-guide")) closeGuide();
       if (t.closest && t.closest("[data-copy-link]")) { try { navigator.clipboard.writeText(appUrl); t.textContent = "Link copied"; } catch (x) {} }
-      if (t.closest && t.closest("[data-ap-dismiss]")) { try { localStorage.setItem("pr_ap_hide", String(Date.now())); } catch (x) {} var b = t.closest(".ap-smart"); if (b) b.hidden = true; }
+      if (t.closest && t.closest("[data-ap-dismiss]")) {
+        try { localStorage.setItem("pr_ap_hide", String(Date.now())); } catch (x) {}
+        // hide every install bar on the page (the dashboard's and the phone's floating one) for two weeks
+        Array.prototype.forEach.call(document.querySelectorAll(".app-promo.bar, .ap-smart"), function (n) { n.hidden = true; n.classList.remove("on"); });
+      }
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeGuide(); });
     // The small install bar on phones: not inside the app, not on the app page, not for two weeks after a dismiss.
+    var apHid = 0; try { apHid = Number(localStorage.getItem("pr_ap_hide") || 0); } catch (x) {}
+    if (Date.now() - apHid < 14 * 864e5) Array.prototype.forEach.call(document.querySelectorAll(".app-promo.bar"), function (n) { n.hidden = true; });
     var bar = document.querySelector(".ap-smart");
     if (bar) { var hid = 0; try { hid = Number(localStorage.getItem("pr_ap_hide") || 0); } catch (x) {}
       if (standalone || location.pathname === "/app" || location.pathname.indexOf("/admin") === 0 || Date.now() - hid < 14 * 864e5 || !(iOS || android)) bar.hidden = true; else bar.classList.add("on"); }
