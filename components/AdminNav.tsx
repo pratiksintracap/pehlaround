@@ -7,6 +7,7 @@ const GROUPS: [string, [string, string, string][]][] = [
     ["/admin/offices", "Family offices", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"],
     ["/admin/invites", "Invite offices", "M4 4h16v16H4zM4 6l8 7 8-7"],
     ["/admin/activity", "Requests and Q&A", "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"],
+    ["/admin/analyst", "AI analyst", "M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.5l-1.8-5L5 9.7l5.2-1.8zM18.5 15l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z"],
   ]],
   ["Content", [
     ["/admin/deals", "Deals", "M3 7h18M3 12h18M3 17h12"],

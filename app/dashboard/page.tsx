@@ -10,6 +10,8 @@ import { monthsTo } from "@/lib/render";
 import { AppPromo } from "@/components/AppPromo";
 import { GRIEVANCE, DESK_EMAIL } from "@/lib/site";
 import { parsePromises, answerStats } from "@/lib/promises";
+import { Analyst } from "@/components/Analyst";
+import { aiReady, starters } from "@/lib/ai";
 import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, completeness, fit } from "@/lib/profile";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
@@ -37,6 +39,7 @@ export default async function Dashboard({ searchParams }: P) {
   const db = await getDb();
   const [allDeals, names, st, ans] = await Promise.all([listDeals(), canSeeNames(user), getSettings(), answerStats()]);
   const promises = parsePromises(st.promises);
+  const aiOn = aiReady() && st.aiAnalyst && names;
   const deals = names ? allDeals : allDeals.map((d) => ({ ...d, company: d.title, roundLabel: "After approval", preMoney: "After approval", peLabel: "After approval" }));
   const pendingApproval = !names;
   const byId = new Map(deals.map((d) => [d.id, d]));
@@ -102,6 +105,7 @@ export default async function Dashboard({ searchParams }: P) {
             <button key={k} role="tab" type="button" className="tabbtn" data-tab={k} aria-selected={i === 0}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ic} /></svg><span>{t}</span>{n ? <em>{n}</em> : null}</button>))}
         </nav>
+        {aiOn && <button type="button" className="as-ai" data-open-analyst=""><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.5l-1.8-5L5 9.7l5.2-1.8zM18.5 15l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" /></svg><span><b>Ask the analyst</b><small>AI on your rooms, peers and sectors</small></span></button>}
         <div className="as-foot">
           <a href="/app?install=1" data-get-app="">Get the app</a>
           <a href={`mailto:${DESK_EMAIL}`}>Write to the desk</a>
@@ -330,6 +334,8 @@ export default async function Dashboard({ searchParams }: P) {
           <form method="dialog"><button className="btn ghost sm">I&apos;ll look around first</button></form>
         </dialog>
       )}
-    </div></div></main>
+    </div></div>
+    {aiOn && <Analyst deal={null} starters={starters(null)} who={user.name} />}
+    </main>
   );
 }

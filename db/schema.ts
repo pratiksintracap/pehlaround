@@ -325,3 +325,18 @@ export const emailQueue = pgTable("email_queue", {
   sentAt: timestamp("sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("email_queue_user_step_uq").on(t.userId, t.step), index("email_queue_due_idx").on(t.status, t.sendAt)]);
+
+// The AI analyst: one conversation per person, in a deal room or on the dashboard. Kept on the office's record; the desk can read it.
+export const aiChats = pgTable("ai_chats", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id"),
+  userId: integer("user_id").notNull(),
+  dealId: integer("deal_id"),                   // null: asked from the dashboard, across the office's rooms
+  title: text("title").notNull(),
+  messages: jsonb("messages").$type<{ role: "user" | "assistant"; text: string; cites?: { url?: string; title: string; kind: "web" | "room" }[]; at: string }[]>().notNull().default([]),
+  searches: integer("searches").notNull().default(0),
+  inputTokens: integer("input_tokens").notNull().default(0),
+  outputTokens: integer("output_tokens").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("ai_chats_user_idx").on(t.userId, t.dealId)]);

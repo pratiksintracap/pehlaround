@@ -8,6 +8,9 @@ import { audit, dealPrefs, documents, interests, passes, questions } from "@/db/
 import { Donut, Ring, StatusBar, Bars, HBars, Timeline, barSeries } from "@/components/Charts";
 import { ScoreBadge } from "@/components/Score";
 import { GateCard } from "@/components/Gate";
+import { Analyst } from "@/components/Analyst";
+import { aiReady, starters } from "@/lib/ai";
+import { getSettings } from "@/lib/settings";
 
 type P = { params: Promise<{ slug: string }> };
 export const metadata: Metadata = { title: "Deal room", robots: { index: false } };
@@ -246,7 +249,9 @@ export default async function Room({ params }: P) {
           </section>
         </div>
       </div>
-    </div></main>
+    </div>
+    {aiReady() && (await getSettings()).aiAnalyst && <Analyst deal={{ slug: d.slug, company: d.company }} starters={starters(d)} who={user!.name} />}
+    </main>
   );
 }
 

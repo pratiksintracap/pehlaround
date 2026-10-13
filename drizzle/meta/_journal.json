@@ -85,6 +85,13 @@
       "when": 1791881958522,
       "tag": "0011_nda_email_code",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791888556011,
+      "tag": "0012_ai_chats",
+      "breakpoints": true
     }
   ]
 }

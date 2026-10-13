@@ -460,6 +460,8 @@
         });
       });
     });
+    // open the AI analyst drawer from anywhere on the page
+    Array.prototype.forEach.call(document.querySelectorAll("[data-open-analyst]"), function (b) { b.addEventListener("click", function () { window.dispatchEvent(new Event("omd-analyst")); }); });
     // sign in with an emailed code instead of a password
     var lg = document.querySelector(".lg-code");
     if (lg) (function () {
