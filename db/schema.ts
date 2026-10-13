@@ -352,3 +352,31 @@ export const aiUsage = pgTable("ai_usage", {
   searches: integer("searches").notNull().default(0),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("ai_usage_at_idx").on(t.at)]);
+
+// Support tickets: an office raises one from its dashboard; the desk answers in the same thread.
+export const tickets = pgTable("tickets", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id"),
+  userId: integer("user_id").notNull(),          // who raised it
+  dealId: integer("deal_id"),                    // when it is about one company
+  category: text("category").notNull(),
+  subject: text("subject").notNull(),
+  status: text("status").notNull().default("open"),   // open (with the desk) | answered (with the office) | resolved | closed
+  rating: integer("rating"),                     // 1–5, given by the office once resolved
+  ratingNote: text("rating_note"),
+  firstReplyAt: timestamp("first_reply_at", { withTimezone: true }),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("tickets_office_idx").on(t.officeId), index("tickets_status_idx").on(t.status)]);
+
+export const ticketMessages = pgTable("ticket_messages", {
+  id: serial("id").primaryKey(),
+  ticketId: integer("ticket_id").notNull().references(() => tickets.id),
+  from: text("from_side").notNull(),             // office | desk | system
+  userId: integer("user_id"),
+  who: text("who"),                              // name shown on the message
+  body: text("body").notNull(),
+  internal: boolean("internal").notNull().default(false),   // desk-only note, never shown to the office
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("ticket_messages_ticket_idx").on(t.ticketId)]);

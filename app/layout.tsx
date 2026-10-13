@@ -50,7 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
         <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
         <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />
-        <Script src="/js/site.js?v=41" strategy="afterInteractive" />
+        <Script src="/js/site.js?v=42" strategy="afterInteractive" />
         <Analytics />
       </body>
     </html>

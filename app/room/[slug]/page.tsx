@@ -193,7 +193,7 @@ export default async function Room({ params }: P) {
                   {live && acc === "after-allocation" ? <><span className="pill mid">After allocation request</span><span className="fine">Opens once your office requests an allocation</span></>
                   : live ? <><span className="pill ok">Available</span><a className="btn sm" href={`/api/docs/${doc.id}`} target="_blank" rel="noopener">View</a></>
                     : doc.status === "on_request" ? <><span className="pill mid">On request</span><span className="fine">Shared once you indicate interest</span></>
-                    : doc.status === "available" ? <><span className="pill mid">Being uploaded</span><span className="fine">Ask the desk</span></>
+                    : doc.status === "available" ? <><span className="pill mid">Being uploaded</span><a className="fine" href={`/dashboard?cat=documents&deal=${d.slug}#Support`}>Ask the desk</a></>
                     : <><span className="pill off">Pending</span><span className="fine">Requested</span></>}
                 </li>
               );

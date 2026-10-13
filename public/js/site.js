@@ -460,6 +460,17 @@
         });
       });
     });
+    // support ticket form: show quick answers for the chosen category
+    var spc = document.querySelector("[data-sp-cat]");
+    if (spc) (function () {
+      var box = document.querySelector("[data-sp-help]"), hints = {};
+      try { hints = JSON.parse(document.querySelector("[data-sp-hints]").textContent); } catch (x) {}
+      var show = function () {
+        var h = hints[spc.value] || []; box.hidden = !h.length;
+        box.innerHTML = h.length ? "<span class=\"k\">Quick answers</span><ul>" + h.map(function (t) { return "<li>" + t.replace(/</g, "&lt;") + "</li>"; }).join("") + "</ul><small>Still need the desk? Carry on below.</small>" : "";
+      };
+      spc.addEventListener("change", show); show();
+    })();
     // open the AI analyst drawer from anywhere on the page
     Array.prototype.forEach.call(document.querySelectorAll("[data-open-analyst]"), function (b) { b.addEventListener("click", function () { window.dispatchEvent(new Event("omd-analyst")); }); });
     // sign in with an emailed code instead of a password

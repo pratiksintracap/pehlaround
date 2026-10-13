@@ -4,7 +4,8 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
-import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, users } from "@/db/schema";
+import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users } from "@/db/schema";
+import { CATEGORIES, STATUS, catLabel, ticketNo } from "@/lib/tickets";
 import { listDeals, canSeeNames } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
 import { AppPromo } from "@/components/AppPromo";
@@ -15,7 +16,7 @@ import { aiReady, starters } from "@/lib/ai";
 import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, completeness, fit } from "@/lib/profile";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
-type P = { searchParams: Promise<{ msg?: string; error?: string }> };
+type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string }> };
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "";
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
@@ -34,7 +35,7 @@ const PR_ICONS = [
 export default async function Dashboard({ searchParams }: P) {
   const user = await requireUser("/dashboard");
   if (user.role === "admin" && !user.officeId) redirect("/admin");
-  const { msg, error } = await searchParams;
+  const { msg, error, deal: tDeal, cat: tCat } = await searchParams;
   const office = user.office!;
   const db = await getDb();
   const [allDeals, names, st, ans] = await Promise.all([listDeals(), canSeeNames(user), getSettings(), answerStats()]);
@@ -55,6 +56,8 @@ export default async function Dashboard({ searchParams }: P) {
     db.select({ at: docViews.at, title: documents.title, dealId: documents.dealId, userId: docViews.userId }).from(docViews)
       .innerJoin(documents, eq(documents.id, docViews.documentId)).where(eq(docViews.officeId, office.id)).orderBy(desc(docViews.at)).limit(100),
   ]);
+  const myTickets = await db.select().from(tickets).where(eq(tickets.officeId, office.id)).orderBy(desc(tickets.updatedAt));
+  const ticketsWaiting = myTickets.filter((t) => t.status === "answered").length;
   const signed = new Set(myNdas.map((n) => n.dealId));
   const sessions = signed.size ? await db.select().from(calls).where(and(eq(calls.kind, "session"), inArray(calls.dealId, [...signed]))).orderBy(desc(calls.createdAt)) : [];
   const userName = new Map(team.map((u) => [u.id, u.name]));
@@ -92,6 +95,7 @@ export default async function Dashboard({ searchParams }: P) {
     ["Profile", "Investment profile", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", null],
     ["Team", "Team", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", team.length > 1 ? team.length : null],
     ["Log", "Activity log", "M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z", null],
+    ["Support", "Help and support", "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.9 4.9l4.3 4.3M14.8 14.8l4.3 4.3M14.8 9.2l4.3-4.3M4.9 19.1l4.3-4.3", ticketsWaiting || null],
   ];
 
   return (
@@ -113,7 +117,7 @@ export default async function Dashboard({ searchParams }: P) {
         {aiOn && <button type="button" className="as-ai" data-open-analyst=""><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.5l-1.8-5L5 9.7l5.2-1.8zM18.5 15l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" /></svg><span><b>Ask the analyst</b><small>AI on your rooms, peers and sectors</small></span></button>}
         <div className="as-foot">
           <a href="/app?install=1" data-get-app="">Get the app</a>
-          <a href={`mailto:${DESK_EMAIL}`}>Write to the desk</a>
+          <a href="#Support">Raise a ticket</a>
         </div>
       </aside>
       <div className="app-main">
@@ -169,7 +173,7 @@ export default async function Dashboard({ searchParams }: P) {
         {promises.length > 0 && (
           <section className="promises" id="promises" aria-label="What the desk commits to">
             <div className="pr-head"><h2 className="tt">What the desk commits to.<span className="tt2">Hold us to it.</span></h2>
-              <a className="btn sm ghost" href={`mailto:${DESK_EMAIL}?subject=${encodeURIComponent("A commitment the desk missed")}`}>Tell us if we miss one</a></div>
+              <a className="btn sm ghost" href="/dashboard?cat=other#Support">Tell us if we miss one</a></div>
             <ul className="pr-grid">{promises.map((p, i) => {
               const measured = ans && /question|answer/i.test(p.title);
               return (
@@ -289,6 +293,35 @@ export default async function Dashboard({ searchParams }: P) {
               <form method="post" action="/api/office/deletion"><button className="btn sm ghost" type="submit">Request deletion</button></form>
             </div>
             <p className="fine">Grievance officer and data-protection contact: {GRIEVANCE.name}, <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel" data-panel="Support" hidden>
+        <div className="panel-head"><div><h2 className="tt">Help and support.<span className="tt2">Raise a ticket; the desk replies right here.</span></h2>
+          <p className="fine">Every ticket gets a number and stays on your office&apos;s record. You are told under the bell and by email when the desk replies.</p></div></div>
+        <div className="sp-grid">
+          <form className="form sp-form" method="post" action="/api/tickets" data-api="">
+            <span className="k">Raise a ticket</span>
+            <label>What is it about?<select name="category" required defaultValue={CATEGORIES.some((c) => c.id === tCat) ? tCat : ""} data-sp-cat="">
+              <option value="" disabled>Select</option>{CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+            <label>Company (optional)<select name="deal" defaultValue={tDeal && deals.some((d) => d.slug === tDeal) ? tDeal : ""}>
+              <option value="">Not about one company</option>{deals.map((d) => <option key={d.id} value={d.slug}>{names ? d.company : d.title}</option>)}</select></label>
+            <div className="sp-help" data-sp-help="" hidden />
+            <label>Subject<input name="subject" required minLength={4} maxLength={160} placeholder="e.g. Code email not arriving" /></label>
+            <label>Details<textarea name="body" required minLength={10} rows={5} maxLength={5000} placeholder="What happened, and what you need from the desk. Add links to screenshots or files if useful." /></label>
+            <div><button className="btn primary" type="submit">Raise ticket</button></div>
+            <script type="application/json" data-sp-hints="" dangerouslySetInnerHTML={{ __html: JSON.stringify(Object.fromEntries(CATEGORIES.map((c) => [c.id, c.help]))).replace(/</g, "\\u003c") }} />
+          </form>
+          <div className="sp-list">
+            <span className="k">Your office&apos;s tickets</span>
+            {myTickets.length ? <ul className="tk-list">{myTickets.map((t) => (
+              <li key={t.id}><a href={`/support/${ticketNo(t.id)}`}>
+                <span className="tk-top"><span className="mono">{ticketNo(t.id)}</span><span className={`pill ${STATUS[t.status]?.pill ?? ""}`}>{STATUS[t.status]?.office ?? t.status}</span></span>
+                <b>{t.subject}</b>
+                <small>{catLabel(t.category)}{t.dealId && byId.get(t.dealId) ? ` · ${byId.get(t.dealId)!.company}` : ""} · {userName.get(t.userId) ?? ""} · updated {fmtD(t.updatedAt)}</small></a></li>))}</ul>
+              : <p className="fine">No tickets yet. Anything you need from the desk, raise it here and it stays on record.</p>}
+            <p className="fine sp-alt">Prefer email? <a href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a> also reaches the desk.</p>
           </div>
         </div>
       </section>
