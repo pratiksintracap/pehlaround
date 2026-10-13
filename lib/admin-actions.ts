@@ -1,4 +1,5 @@
 "use server";
+import { DEFAULT_PROMISES } from "@/lib/promises";
 import { startSeries, backfill, preview } from "@/lib/onboarding";
 import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -335,6 +336,7 @@ export async function saveSiteSettings(f: FormData) {
   await saveSettings({
     requireApproval: f.get("requireApproval") === "on", requirePan: false,
     announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
+    promises: s(f, "promises", 3000) || DEFAULT_PROMISES,
   });
   await log(admin, "Desk changed the site settings");
   revalidatePath("/", "layout");

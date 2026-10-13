@@ -62,7 +62,8 @@ export default async function Activity({ searchParams }: { searchParams: Promise
       <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>When</th><th>Type</th><th>Who</th><th>Details</th><th>Status</th></tr></thead><tbody>
         {ls.length ? ls.map((l) => (
           <tr key={l.id}><td>{fmtD(l.createdAt)}</td><td>{l.kind === "deletion" ? "Data deletion" : "Founder"}</td><td>{l.name} · {l.company}<br /><small className="fine">{l.email} · {l.phone}</small></td>
-            <td><small>{Object.entries(l.data || {}).filter(([k, v]) => v && !["nda", "risk", "officeId"].includes(k)).map(([k, v]) => `${k}: ${v}`).join(" · ")}</small></td>
+            <td><small>{Object.entries(l.data || {}).filter(([k, v]) => v && !["nda", "risk", "officeId", "report"].includes(k)).map(([k, v]) => `${k}: ${v}`).join(" · ")}</small>
+              {(l.data as Record<string, string> | null)?.report && <details className="lead-rep"><summary>Readiness report</summary><pre>{(l.data as Record<string, string>).report}</pre></details>}</td>
             <td><form action={saveLead} style={{ display: "flex", gap: 6 }}><input type="hidden" name="id" value={l.id} /><select name="status" defaultValue={l.status}>{["New", "Contacted", "In diligence", "Closed"].map((s) => <option key={s}>{s}</option>)}</select><button className="btn sm" type="submit">Save</button></form></td></tr>))
           : <tr><td colSpan={5} className="fine">None yet.</td></tr>}
       </tbody></table></div>

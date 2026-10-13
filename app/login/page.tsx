@@ -5,6 +5,9 @@ import { listDeals } from "@/lib/deals";
 import { listArticles, artDate, artHref } from "@/lib/articles";
 import { scoreSvg } from "@/lib/render";
 import { AppPromo } from "@/components/AppPromo";
+import { providers } from "@/lib/oauth";
+import { emailReady } from "@/lib/email";
+import { OAuthButtons } from "@/components/OAuthButtons";
 
 export const metadata: Metadata = { title: "Sign in", description: "Your family office's shelf, deal rooms, calls, documents and log, in one place." };
 type P = { searchParams: Promise<{ next?: string; error?: string }> };
@@ -44,6 +47,7 @@ export default async function Login({ searchParams }: P) {
   const months = all.map((d) => d.listingMonth).filter((m): m is string => !!m).sort();
   const lbl = (ym: string) => new Date(ym + "-01").toLocaleDateString("en-IN", { month: "short", year: "numeric" });
   const listingSpan = months.length ? (months[0] === months[months.length - 1] ? lbl(months[0]) : `${lbl(months[0])} – ${lbl(months[months.length - 1])}`) : "—";
+  const provs = providers(), mail = emailReady();
   const reg = `/register${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   return (
     <main>
@@ -76,10 +80,20 @@ export default async function Login({ searchParams }: P) {
             <span className="eyebrow">Sign in</span>
             <input type="hidden" name="next" value={next} />
             {error && <div className="ok show bad" role="alert">{error}</div>}
+            <OAuthButtons list={provs} next={next} verb="Continue" />
             <label>Email<input type="email" required autoComplete="email" name="email" /></label>
-            <label>Password<input type="password" required autoComplete="current-password" name="password" /></label>
-            <div><button className="btn primary" type="submit">Sign in</button></div>
-            <p className="fine"><a href="/forgot">Forgotten your password?</a></p>
+            <div className="lg-pass">
+              <label>Password<input type="password" required autoComplete="current-password" name="password" /></label>
+              <div><button className="btn primary" type="submit">Sign in</button></div>
+              <p className="fine">{mail && <><button type="button" className="linkbtn" data-login-code="">Email me a sign-in code instead</button> · </>}<a href="/forgot">Forgotten your password?</a></p>
+            </div>
+            {mail && (
+              <div className="lg-code" hidden>
+                <label>Sign-in code from your email<input name="code" disabled inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="6 digits" /><span className="hint" data-code-status="" /></label>
+                <div><button className="btn primary" type="submit">Sign in</button></div>
+                <p className="fine"><button type="button" className="linkbtn" data-login-code="">Send a new code</button> · <button type="button" className="linkbtn" data-login-pass="">Use my password</button></p>
+              </div>
+            )}
           </form>
           <div className="lp-reg">
             <b>New to the desk?</b>

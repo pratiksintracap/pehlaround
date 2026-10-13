@@ -9,6 +9,7 @@ import { listDeals, canSeeNames } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
 import { AppPromo } from "@/components/AppPromo";
 import { GRIEVANCE, DESK_EMAIL } from "@/lib/site";
+import { parsePromises, answerStats } from "@/lib/promises";
 import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, completeness, fit } from "@/lib/profile";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
@@ -17,13 +18,25 @@ type P = { searchParams: Promise<{ msg?: string; error?: string }> };
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "";
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
 
+const PR_ICONS = [
+  "M5 11h14v9H5zM8 11V8a4 4 0 0 1 8 0v3", // lock open
+  "M4 5h16v11H9l-5 4zM8 9h8M8 12h5", // question
+  "M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z", // phone
+  "M4 12l5 5L20 6", // tick
+  "M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5", // document
+  "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", // eye
+  "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z", // shield
+  "M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", // clock
+];
+
 export default async function Dashboard({ searchParams }: P) {
   const user = await requireUser("/dashboard");
   if (user.role === "admin" && !user.officeId) redirect("/admin");
   const { msg, error } = await searchParams;
   const office = user.office!;
   const db = await getDb();
-  const [allDeals, names, st] = await Promise.all([listDeals(), canSeeNames(user), getSettings()]);
+  const [allDeals, names, st, ans] = await Promise.all([listDeals(), canSeeNames(user), getSettings(), answerStats()]);
+  const promises = parsePromises(st.promises);
   const deals = names ? allDeals : allDeals.map((d) => ({ ...d, company: d.title, roundLabel: "After approval", preMoney: "After approval", peLabel: "After approval" }));
   const pendingApproval = !names;
   const byId = new Map(deals.map((d) => [d.id, d]));
@@ -143,6 +156,19 @@ export default async function Dashboard({ searchParams }: P) {
               <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
           </li>))}</ul>
         <p className="fine">Same fields for every deal so offices can compare quickly. Each room opens with that company&apos;s own NDA.</p>
+        {promises.length > 0 && (
+          <section className="promises" id="promises" aria-label="What the desk commits to">
+            <div className="pr-head"><h2 className="tt">What the desk commits to.<span className="tt2">Hold us to it.</span></h2>
+              <a className="btn sm ghost" href={`mailto:${DESK_EMAIL}?subject=${encodeURIComponent("A commitment the desk missed")}`}>Tell us if we miss one</a></div>
+            <ul className="pr-grid">{promises.map((p, i) => {
+              const measured = ans && /question|answer/i.test(p.title);
+              return (
+                <li key={p.title}><span className="pr-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={PR_ICONS[i % PR_ICONS.length]} /></svg></span>
+                  <div><b>{p.title}</b>{p.detail && <p>{p.detail}</p>}
+                    {measured && ans && <span className="pr-live" title={`${ans.count} questions answered in the last 90 days`}><i />Last 90 days: median {ans.medianHours < 1 ? "under an hour" : `${Math.round(ans.medianHours)} hours`} · {Math.round(ans.within48 * 100)}% within 48 hours</span>}</div></li>);
+            })}</ul>
+          </section>
+        )}
         <AppPromo variant="bar" text="New deals, promoter answers and approvals on your home screen, the moment they land." />
       </section>
 
@@ -285,6 +311,7 @@ export default async function Dashboard({ searchParams }: P) {
           <span className="eyebrow live">You&apos;re in</span>
           <h2>Your office is approved</h2>
           <p>Every company on the desk is now open to you by name. A company&apos;s room opens with its own NDA, signed on screen with your name and a code we email you.</p>
+          {promises.length > 0 && <ul className="ticks wl-prom" aria-label="What the desk commits to">{promises.slice(0, 3).map((p) => <li key={p.title}>{p.title}</li>)}</ul>}
           {profileGaps.length > 0 && (
             <form className="form wl-profile" method="post" action="/api/office/profile">
               <span className="k">First, two details for the desk</span>

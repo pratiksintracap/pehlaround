@@ -7,6 +7,8 @@ import { signCodes } from "@/db/schema";
 const secret = () => process.env.SESSION_SECRET || process.env.DATABASE_URL || "omd-local-dev";
 const hash = (userId: number, dealId: number, code: string) => createHmac("sha256", secret()).update(`nda|${userId}|${dealId}|${code}`).digest("hex");
 export const CODE_MINUTES = 10;
+/** Codes for signing in use deal 0; codes for signing an NDA use that deal's id. */
+export const LOGIN = 0;
 
 /** A fresh six-digit code for this person and deal; earlier unused codes stop working. */
 export async function issueCode(userId: number, dealId: number) {

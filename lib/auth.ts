@@ -80,3 +80,18 @@ export async function log(u: { id: number; name: string; officeId: number | null
 
 export const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 export function maskPan(p?: string | null) { return p ? p.slice(0, 5) + "••••" + p.slice(9) : "—"; }
+
+/** A short-lived signed token (an identity confirmed by Google or Microsoft, waiting for registration). */
+export async function signTemp(payload: Record<string, unknown>, minutes: number) {
+  return new SignJWT(payload).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime(`${minutes}m`).setAudience("omd-temp").sign(secret());
+}
+export async function verifyTemp<T = Record<string, unknown>>(token: string | undefined): Promise<T | null> {
+  if (!token) return null;
+  try { return (await jwtVerify(token, secret(), { audience: "omd-temp" })).payload as T; } catch { return null; }
+}
+
+/** The identity confirmed by Google or Microsoft for a new registration, if any. */
+export const OAUTH_PENDING = "omd_oauth_pending";
+export async function pendingIdentity() {
+  return verifyTemp<{ email: string; name: string; provider: string }>((await cookies()).get(OAUTH_PENDING)?.value);
+}

@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { settings } from "@/db/schema";
 import { cachedPublic, PUBLIC_TAG } from "@/lib/cache";
 import { revalidateTag } from "next/cache";
+import { DEFAULT_PROMISES } from "@/lib/promises";
 
 export type Settings = {
   requireApproval: boolean;   // offices see names and sign NDAs only after the desk approves them
@@ -11,8 +12,9 @@ export type Settings = {
   announcementLink: string;
   notifyDeskEmail: string;    // where desk alerts are emailed (if email is set up)
   onboardingEmails: boolean;  // send the onboarding email series to new offices
+  promises: string;           // the desk's commitments shown on the office dashboard, one per line
 };
-const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true };
+const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES };
 
 const settingRows = cachedPublic(async () => { const db = await getDb(); return db.select().from(settings); }, "settings");
 export async function getSettings(): Promise<Settings> {

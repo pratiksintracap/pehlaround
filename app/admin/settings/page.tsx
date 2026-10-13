@@ -19,6 +19,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <span className="k eyebrow" style={{ marginTop: 14 }}>Announcement across the site</span>
         <label>Text (leave empty for none)<input name="announcement" maxLength={300} defaultValue={st.announcement} placeholder="Krasny's round closes on 31 October" /></label>
         <label>Link (optional)<input name="announcementLink" maxLength={500} defaultValue={st.announcementLink} placeholder="/deals/krasny" /></label>
+        <span className="k eyebrow" style={{ marginTop: 14 }}>What the desk commits to</span>
+        <label>Shown to every office on its dashboard. One per line, as <code>Promise | one-line detail</code>; up to eight.<textarea name="promises" rows={7} maxLength={3000} defaultValue={st.promises} style={{ fontSize: 13.5 }} /></label>
+        <p className="fine">Questions answered within 48 hours is checked against the rooms: once three or more are answered in 90 days, the dashboard shows the real median time beside it.</p>
         <span className="k eyebrow" style={{ marginTop: 14 }}>Desk alerts</span>
         <label>Email new registrations, NDAs, questions and requests to<input name="notifyDeskEmail" type="email" defaultValue={st.notifyDeskEmail} placeholder="desk@offmarketdesk.in" /></label>
         <p className="fine">{mail ? "Email is set up." : "Email is not set up yet: alerts show on the admin overview only. To switch email on, add RESEND_API_KEY (and EMAIL_FROM, for example Off Market Desk <desk@offmarketdesk.in>) in Vercel's environment variables and redeploy."}</p>

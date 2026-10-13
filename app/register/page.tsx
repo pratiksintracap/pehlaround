@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth";
+import { getUser, pendingIdentity } from "@/lib/auth";
+import { providers } from "@/lib/oauth";
+import { emailReady } from "@/lib/email";
+import { OAuthButtons } from "@/components/OAuthButtons";
 import { GRIEVANCE } from "@/lib/site";
 import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
@@ -12,6 +15,7 @@ type P = { searchParams: Promise<{ next?: string; error?: string; invite?: strin
 export default async function Register({ searchParams }: P) {
   const { next = "", error, invite = "" } = await searchParams;
   if (await getUser()) redirect(next.startsWith("/") ? next : "/dashboard");
+  const pend = await pendingIdentity(), provs = providers(), mail = emailReady();
   const inv = invite ? (await (await getDb()).select().from(deskInvites).where(and(eq(deskInvites.token, invite), isNull(deskInvites.usedAt))))[0] : undefined;
   return (
     <main><div className="wrap split" style={{ padding: "clamp(40px,6vw,72px) var(--gutter)" }}>
@@ -42,11 +46,15 @@ export default async function Register({ searchParams }: P) {
           {invite && !inv && <div className="ok show bad" role="alert">This invitation link was already used or is not valid. You can still register; the desk approves new offices within a working day.</div>}
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
           {error && <div className="ok show bad" role="alert">{error}</div>}
-          <div className="row"><label>Your name<input required autoComplete="name" name="name" defaultValue={inv?.name || ""} /></label>
+          {pend ? <div className="ok show" role="status">Confirmed by {pend.provider} as <b>{pend.email}</b>. Fill in the office details below; no password needed. You sign in with {pend.provider} next time.</div>
+            : <OAuthButtons list={provs} next={next} verb="Register with" />}
+          <div className="row"><label>Your name<input required autoComplete="name" name="name" defaultValue={inv?.name || pend?.name || ""} /></label>
             <label>Family office or family name<input required autoComplete="organization" placeholder="e.g. Mehta Family Office" name="entity" defaultValue={inv?.officeName || ""} /></label></div>
-          <div className="row"><label>Email<input type="email" required autoComplete="email" name="email" defaultValue={inv?.email || ""} /></label>
+          <div className="row"><label>Email<input type="email" required autoComplete="email" name="email" defaultValue={pend?.email || inv?.email || ""} readOnly={!!pend} /></label>
             <label>Mobile<input type="tel" required autoComplete="tel" placeholder="+91" name="phone" /></label></div>
-          <div className="row"><label>Password<input type="password" required minLength={8} autoComplete="new-password" name="password" /><span className="hint">At least 8 characters.</span></label>
+          <div className="row">{pend ? <div className="reg-noPw"><span className="k">Password</span><p className="fine">Not needed: {pend.provider} confirmed your email.</p></div>
+              : mail ? <label>Password (optional)<input type="password" minLength={8} autoComplete="new-password" name="password" /><span className="hint">Leave it empty to sign in with a code we email you.</span></label>
+              : <label>Password<input type="password" required minLength={8} autoComplete="new-password" name="password" /><span className="hint">At least 8 characters.</span></label>}
             <label>Your role<select name="role" required defaultValue=""><option value="" disabled>Select</option><option>Principal / family member</option><option>CIO or investment head</option><option>CFO, CA or adviser to the family</option><option>Analyst or associate</option></select></label></div>
           <div className="row"><label>The office invests as<select name="category" required defaultValue=""><option value="" disabled>Select</option><option>Individual</option><option>HUF</option><option>Private company</option><option>LLP</option><option>Trust</option><option>Family-office AIF</option><option>Other</option></select></label>
             <label>Residency<select name="residency" required defaultValue=""><option value="" disabled>Select</option><option>Resident in India</option><option>Non-resident (FEMA route applies)</option></select></label></div>

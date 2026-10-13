@@ -460,11 +460,35 @@
         });
       });
     });
+    // sign in with an emailed code instead of a password
+    var lg = document.querySelector(".lg-code");
+    if (lg) (function () {
+      var f = lg.closest("form"), pass = f.querySelector(".lg-pass"), pw = f.querySelector("input[name=password]"), code = lg.querySelector("input[name=code]"), em = f.querySelector("input[name=email]");
+      var mode = function (useCode) { pass.hidden = useCode; lg.hidden = !useCode; pw.disabled = useCode; pw.required = !useCode; code.disabled = !useCode; code.required = useCode; if (useCode) code.focus(); else pw.focus(); };
+      Array.prototype.forEach.call(f.querySelectorAll("[data-login-code]"), function (btn) {
+        btn.addEventListener("click", function () {
+          if (!em.value || !em.checkValidity()) { em.reportValidity(); return; }
+          var label = btn.textContent; btn.disabled = true; btn.textContent = "Sending…";
+          fetch("/api/auth/code", { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify({ email: em.value }), credentials: "same-origin" })
+            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || "The code could not be sent."); return j; }); })
+            .then(function (j) {
+              btn.disabled = false; btn.textContent = label; mode(true);
+              var st = lg.querySelector("[data-code-status]"); if (st) st.textContent = "If " + em.value + " is registered, a code is on its way. It works for " + (j.minutes || 10) + " minutes.";
+              var ok = f.querySelector(".ok.bad"); if (ok) ok.className = "ok";
+            })
+            .catch(function (err) {
+              btn.disabled = false; btn.textContent = label;
+              var ok = f.querySelector(".ok"); if (!ok) { ok = document.createElement("div"); ok.setAttribute("role", "alert"); f.insertBefore(ok, f.firstChild); }
+              ok.className = "ok show bad"; ok.textContent = err.message; });
+        });
+      });
+      Array.prototype.forEach.call(f.querySelectorAll("[data-login-pass]"), function (btn) { btn.addEventListener("click", function () { mode(false); }); });
+    })();
     Array.prototype.forEach.call(document.querySelectorAll("form[data-api]"), function (f) {
       f.addEventListener("submit", function (e) {
         e.preventDefault(); if (!f.reportValidity()) return;
-        var b = f.querySelector("button[type=submit]"), label = b ? b.textContent : "", data = {};
-        Array.prototype.forEach.call(f.elements, function (el) { if (!el.name) return; data[el.name] = el.type === "checkbox" ? el.checked : el.value; });
+        var b = e.submitter || f.querySelector("button[type=submit]"), label = b ? b.textContent : "", data = {};
+        Array.prototype.forEach.call(f.elements, function (el) { if (!el.name || el.disabled) return; data[el.name] = el.type === "checkbox" ? el.checked : el.value; });
         if (b) { b.disabled = true; b.textContent = "Please wait…"; }
         fetch(f.getAttribute("action"), { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(data), credentials: "same-origin" })
           .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || "Something went wrong. Please try again."); return j; }); })

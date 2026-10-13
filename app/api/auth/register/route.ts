@@ -3,7 +3,10 @@ import bcrypt from "bcryptjs";
 import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { offices, users, invites, deskInvites } from "@/db/schema";
-import { createSession, log } from "@/lib/auth";
+import { createSession, log, pendingIdentity, OAUTH_PENDING } from "@/lib/auth";
+import { emailReady } from "@/lib/email";
+import { randomBytes } from "node:crypto";
+import { cookies } from "next/headers";
 import { readBody, str, safeNext, done, fail } from "@/lib/http";
 import { notifyDesk } from "@/lib/notify";
 import { allowIp, isBot, TOO_MANY } from "@/lib/rate";
@@ -22,7 +25,10 @@ export async function POST(req: NextRequest) {
   if (!(await allowIp("register", 10, 3600))) return fail(req, json, TOO_MANY, back, 429);
   if (!name || !email || !phone) return fail(req, json, "Please fill in your name, email and mobile.", back);
   if (!EMAIL.test(email)) return fail(req, json, "Please enter a valid email address.", back);
-  if (password.length < 8) return fail(req, json, "Choose a password of at least 8 characters.", back);
+  // A password is optional when Google or Microsoft confirmed this email, or when sign-in codes can be emailed.
+  const pend = await pendingIdentity();
+  const viaProvider = !!pend && pend.email === email;
+  if (password ? password.length < 8 : !viaProvider && !emailReady()) return fail(req, json, "Choose a password of at least 8 characters.", back);
   if (!(data.privacy === true || data.privacy === "on" || data.privacy === "yes")) return fail(req, json, "Please accept the privacy notice.", back);
   if (!(data.risk === true || data.risk === "on" || data.risk === "yes")) return fail(req, json, "Please confirm the risk statement.", back);
 
@@ -52,14 +58,15 @@ export async function POST(req: NextRequest) {
   }
   const [u] = await db.insert(users).values({
     email, name, phone, officeId, officeRole: str(data.role, 80) || null, rights: inv ? inv.rights : "View, comment, commit",
-    passwordHash: await bcrypt.hash(password, 10), lastLoginAt: new Date(),
+    passwordHash: await bcrypt.hash(password || randomBytes(24).toString("hex"), 10), lastLoginAt: new Date(),
   }).returning();
   // viewers named at registration become invites
   for (const v of str(data.viewers, 600).split(/[\s,;]+/).map((x) => x.toLowerCase()).filter((x) => EMAIL.test(x) && x !== email).slice(0, 10)) {
     await db.insert(invites).values({ officeId, email: v, rights: "View", invitedBy: u.id });
   }
   await createSession(u.id);
-  await log({ id: u.id, name: u.name, officeId }, inv ? "Joined the office by invitation" : "Registered the office");
+  if (pend) (await cookies()).delete(OAUTH_PENDING);
+  await log({ id: u.id, name: u.name, officeId }, (inv ? "Joined the office by invitation" : "Registered the office") + (viaProvider ? ` (email confirmed by ${pend!.provider})` : password ? "" : " (signs in with email codes)"));
   if (!inv) await notifyDesk(invited
     ? { title: `Invited office registered: ${entity}`, body: `${name} · ${email} · ${phone}. Approved through the desk's invitation.`, link: "/admin/offices" }
     : { title: `New family office registered: ${entity}`, body: `${name} · ${email} · ${phone} · ${str(data.role, 80)} · ${str(data.ticket, 60)}. Approve or hold it in the admin.`, link: "/admin/offices?show=pending" });
