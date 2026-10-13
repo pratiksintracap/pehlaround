@@ -61,9 +61,14 @@ export default async function Dashboard({ searchParams }: P) {
   const allotted = myInterests.filter((i) => i.status === "Allotted");
   const indicated = myInterests.filter((i) => i.status !== "Withdrawn");
   const totalInd = indicated.reduce((s, i) => s + Number(i.amountCr), 0);
-  // the room this office was in last (from its own log), else the NDA it signed most recently
-  const lastOpened = log.find((l) => l.dealId && signed.has(l.dealId) && l.action.startsWith("Opened the room")) ?? log.find((l) => l.dealId && signed.has(l.dealId));
-  const latest = byId.get(lastOpened?.dealId ?? myNdas[0]?.dealId ?? -1);
+  // deals this office has passed on (its latest word on the deal, unless it asked for an allocation after passing)
+  const lastAsk = new Map<number, Date>(); for (const i of myInterests) if (!lastAsk.has(i.dealId)) lastAsk.set(i.dealId, i.createdAt);
+  const passedBy = new Map<number, (typeof myPasses)[number]>(), seenPass = new Set<number>();
+  for (const p of myPasses) { if (seenPass.has(p.dealId)) continue; seenPass.add(p.dealId); const a = lastAsk.get(p.dealId); if (!a || a < p.createdAt) passedBy.set(p.dealId, p); }
+  // the room this office was in last (from its own log), else the NDA it signed most recently; never one it passed on
+  const live = (id: number | null) => !!id && signed.has(id) && !passedBy.has(id);
+  const lastOpened = log.find((l) => live(l.dealId) && l.action.startsWith("Opened the room")) ?? log.find((l) => live(l.dealId));
+  const latest = byId.get(lastOpened?.dealId ?? myNdas.find((n) => !passedBy.has(n.dealId))?.dealId ?? -1);
   const topPick = [...deals].filter((d) => d.open && !signed.has(d.id)).sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0];
   // progress: four steps, shown until the office has a room open
   const steps: [string, string, "done" | "now" | "todo"][] = [
@@ -142,7 +147,8 @@ export default async function Dashboard({ searchParams }: P) {
           <tbody>{deals.map((d) => (
             <tr key={d.id} data-struct={d.category} data-months={monthsTo(d.listingMonth) ?? 999}>
               <th scope="row">{d.company}{names && <><br /><small className="fine">{d.title}</small></>}<br />
-                <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>{fits.get(d.id) && <span className="fitpill" title={fits.get(d.id)!}>Fits your thesis</span>}</th>
+                {passedBy.has(d.id) ? <span className="pill off" title={`Passed: ${passedBy.get(d.id)!.reason}`}>Passed</span>
+                  : <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>}{!passedBy.has(d.id) && fits.get(d.id) && <span className="fitpill" title={fits.get(d.id)!}>Fits your thesis</span>}</th>
               <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td><td>{d.score != null ? <b>{d.score.toFixed(1)}</b> : "—"}</td>
               <td><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
@@ -151,15 +157,15 @@ export default async function Dashboard({ searchParams }: P) {
           ))}</tbody></table></div>
         <ul className="dash-cards">{deals.map((d) => (
           <li key={d.id}>
-            <div className="dc-top"><b>{d.company}</b><span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></div>
-            <small>{names ? `${d.title} · ` : ""}{d.category}</small>{fits.get(d.id) && <span className="fitpill">{fits.get(d.id)}</span>}
+            <div className="dc-top"><b>{d.company}</b>{passedBy.has(d.id) ? <span className="pill off">Passed</span> : <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>}</div>
+            <small>{names ? `${d.title} · ` : ""}{d.category}</small>{!passedBy.has(d.id) && fits.get(d.id) && <span className="fitpill">{fits.get(d.id)}</span>}
             <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
               <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
             <div className="dc-acts">
               {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
               <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
           </li>))}</ul>
-        <p className="fine">Same fields for every deal so offices can compare quickly. Each room opens with that company&apos;s own NDA.</p>
+        <p className="fine">Same fields for every deal so offices can compare quickly.</p>
         {promises.length > 0 && (
           <section className="promises" id="promises" aria-label="What the desk commits to">
             <div className="pr-head"><h2 className="tt">What the desk commits to.<span className="tt2">Hold us to it.</span></h2>
@@ -179,8 +185,10 @@ export default async function Dashboard({ searchParams }: P) {
       <section className="panel" data-panel="Rooms" hidden>
         <div className="two">
           <div className="chart"><span className="k">Rooms open to your office</span><ul className="roomlist">
-            {myNdas.length ? myNdas.map((n) => { const dd = byId.get(n.dealId); return dd ? (
-              <li key={n.id}><div><b>{dd.company}</b><small>{dd.category} · NDA signed {fmtD(n.signedAt)}</small></div><a className="btn sm primary" href={`/room/${dd.slug}`}>Open room</a></li>) : null; })
+            {myNdas.length ? [...myNdas].sort((a, b) => Number(passedBy.has(a.dealId)) - Number(passedBy.has(b.dealId))).map((n) => { const dd = byId.get(n.dealId), ps = passedBy.get(n.dealId); return dd ? (
+              <li key={n.id} className={ps ? "passed" : undefined}><div><b>{dd.company}{ps && <> <span className="pill off">Passed</span></>}</b>
+                <small>{dd.category} · {ps ? `Passed ${fmtD(ps.createdAt)}: “${ps.reason}”` : `NDA signed ${fmtD(n.signedAt)}`}</small></div>
+                <a className={`btn sm ${ps ? "" : "primary"}`} href={`/room/${dd.slug}`}>Open room</a></li>) : null; })
               : <li className="empty-li">No rooms yet. Sign a company&apos;s NDA from the Shelf.</li>}</ul></div>
           <div className="chart"><span className="k">Allocations requested</span><ul className="feed">
             {indicated.length ? indicated.map((i) => <li key={i.id}><b>{byId.get(i.dealId)?.company}</b> · ₹{Number(i.amountCr)} Cr{i.colead ? " · co-lead interest" : ""} · {i.status} · {fmtD(i.createdAt)}</li>)
@@ -314,7 +322,7 @@ export default async function Dashboard({ searchParams }: P) {
           <form method="dialog" className="wl-x"><button className="btn sm ghost" aria-label="Close">✕</button></form>
           <span className="eyebrow live">You&apos;re in</span>
           <h2>Your office is approved</h2>
-          <p>Every company on the desk is now open to you by name. A company&apos;s room opens with its own NDA, signed on screen with your name and a code we email you.</p>
+          <p>Every company on the desk is now open to you by name. Open a company&apos;s room by signing its NDA on screen with your name and a code we email you.</p>
           {promises.length > 0 && <ul className="ticks wl-prom" aria-label="What the desk commits to">{promises.slice(0, 3).map((p) => <li key={p.title}>{p.title}</li>)}</ul>}
           {profileGaps.length > 0 && (
             <form className="form wl-profile" method="post" action="/api/office/profile">

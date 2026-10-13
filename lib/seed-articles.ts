@@ -194,7 +194,7 @@ A private placement is how a company raises money from a small number of identif
 
 ## Where the desk sits
 
-Off Market Desk does not run an order book, quote prices or hold investors' money. It introduces identified family offices to companies raising capital, builds the deal room, and documents each transaction under the Companies Act, with money moving directly to the company or the seller. Every room carries the company's own NDA, the desk's diligence tracker and the risks it sees.
+Off Market Desk does not run an order book, quote prices or hold investors' money. It introduces identified family offices to companies raising capital, builds the deal room, and documents each transaction under the Companies Act, with money moving directly to the company or the seller. Every room carries the desk's diligence tracker and the risks it sees.
 
 As SEBI's advisory says, check who you are dealing with, and how your money moves, before you invest.`,
     sources: [

@@ -5,7 +5,7 @@ import { questions } from "@/db/schema";
 
 /** The desk's service commitments, one per line as "Promise | detail" (edited in admin settings). */
 export const DEFAULT_PROMISES = [
-  "Your room opens the moment you sign | One NDA per company, signed on screen. No waiting for the desk.",
+  "Your room opens the moment you sign | The NDA is signed on screen. No waiting for the desk.",
   "Questions answered within 48 hours | By the promoter or the desk, in writing, in the room. Ask privately if you prefer.",
   "A promoter call within a week of asking | Request it from the room; the desk sets it up and confirms the slot.",
   "Allocation requests acknowledged the same working day | The desk confirms what is left in the round and the next step.",

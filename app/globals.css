@@ -827,3 +827,7 @@ body:has(.appbar) .an-fab{bottom:84px}
 .app-promo[hidden],.ap-smart[hidden]{display:none!important}
 .app-promo .ap-x{flex:none;display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;background:rgba(255,255,255,.12);opacity:1;font-size:20px;transition:background .15s}
 .app-promo .ap-x:hover{background:rgba(255,255,255,.24)}
+/* passed deals */
+.roomlist li.passed{background:var(--bg)}
+.roomlist li.passed b{color:var(--ink2)}
+.passnote{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding:9px 12px;border-radius:10px;background:var(--bg3);color:var(--ink2);font-size:13.5px}

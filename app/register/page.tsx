@@ -9,7 +9,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { deskInvites } from "@/db/schema";
 
-export const metadata: Metadata = { title: "Register your family office", description: "Register your family office. Once the desk approves it, every company on the desk opens by name; each company's room opens with its own NDA." };
+export const metadata: Metadata = { title: "Register your family office", description: "Register your family office. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." };
 type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string }> };
 
 export default async function Register({ searchParams }: P) {
@@ -28,12 +28,11 @@ export default async function Register({ searchParams }: P) {
         <span className="eyebrow">Family office registration</span>
         <h1>Register the office</h1>
         <p className="lede">Step one takes a minute. Once the desk approves your office, usually within a working day, you see every company on the desk with its round and valuation. Each room opens with an NDA signed with your name and a code we email you; KYC comes only if you commit. No fee for family offices, ever.</p>
-        <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>Approved by the desk</li><li>NDA per deal</li><li>Rooms unlocked</li></ol>
+        <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>Approved by the desk</li><li>NDA signed</li><li>Rooms unlocked</li></ol>
         <ul className="ticks">
           <li>A new deal reaches the desk about every fortnight; you are told the day it does.</li>
           <li>No fee for the office: not to register, not to open a room, not to commit.</li>
-          <li>Each deal has its own NDA, signed directly with that company; it opens that company&apos;s room only.</li>
-          <li>Add your CIO, CFO or CA as viewers; they join your office when they register with that email.</li>
+                    <li>Add your CIO, CFO or CA as viewers; they join your office when they register with that email.</li>
           <li>No PAN or ID to look at deals or sign an NDA. KYC, bank account, demat and the authorised signatory come only at commitment.</li>
           <li>The family&apos;s money moves directly to the company or seller, never through the desk.</li>
         </ul>

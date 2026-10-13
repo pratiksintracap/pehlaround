@@ -36,7 +36,7 @@ export const SERIES: Step[] = [
       + E.btn("Open your dashboard", "/dashboard") },
   { key: "approved", anchor: "approved", days: 0, name: "You're in", purpose: "Approval: every company now opens by name",
     subject: () => "You're in: every company on the desk is now open to your office",
-    preheader: () => "Names, rounds and valuations are open. Each deal room opens with its own NDA.",
+    preheader: () => "Names, rounds and valuations are open. Sign a company's NDA on screen to open its room.",
     body: (c) => E.h("Your office is approved")
       + E.p(`${first(c)}, the desk has approved <b>${c.office.name}</b>. Every company on the desk now opens to you by name, with its round, valuation and trailing and forward P/E.`)
       + E.p("The highest Desk Scores on the desk today:") + dealList(c.deals.slice(0, 3))

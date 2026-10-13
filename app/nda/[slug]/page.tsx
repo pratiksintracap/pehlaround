@@ -33,7 +33,7 @@ export default async function Nda({ params, searchParams }: P) {
         </ol>
         <span className="eyebrow">Non-disclosure agreement · {d.company}</span>
         <h1>An NDA with this company, for this deal</h1>
-        <p className="lede">Every deal on the desk has its own NDA, signed directly between your family office and that company. This one opens the {d.company} room and nothing else; another deal needs its own NDA with its own company.</p>
+        <p className="lede">An NDA directly between your family office and {d.company}. Sign it on screen and the {d.company} room opens straight away.</p>
         <NdaText company={d.company} office={office?.name || "the family office named at registration"} version={d.ndaVersion} />
       </div>
       <div className="rv inview" style={{ ["--d" as string]: ".1s" }}>

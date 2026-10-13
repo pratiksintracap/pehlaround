@@ -44,6 +44,12 @@ export default async function Room({ params }: P) {
     db.select().from(passes).where(and(eq(passes.dealId, d.id), eq(passes.officeId, officeId))).orderBy(desc(passes.createdAt)).limit(1),
     listDeals(), signedDealIds(user!.officeId),
   ]);
+  // deals this office has passed on, to mark them in the switcher
+  const [allPass, allAsk] = await Promise.all([
+    db.select({ dealId: passes.dealId, at: passes.createdAt }).from(passes).where(eq(passes.officeId, officeId)),
+    db.select({ dealId: interests.dealId, at: interests.createdAt }).from(interests).where(eq(interests.officeId, officeId)),
+  ]);
+  const passedIds = new Set(allPass.filter((p) => !allAsk.some((a) => a.dealId === p.dealId && a.at > p.at) && !allPass.some((q) => q.dealId === p.dealId && q.at > p.at)).map((p) => p.dealId));
   // other deals, for the switcher: rooms this office has opened first, then the rest of the shelf
   const others = allDeals.filter((x) => x.id !== d.id);
   const myRooms = others.filter((x) => mine.has(x.id)), rest = others.filter((x) => !mine.has(x.id));
@@ -58,6 +64,8 @@ export default async function Room({ params }: P) {
   // until an office chooses, every alert is on
   const alertsOn = new Set(prefs[0]?.alertsSet ? prefs[0].alerts : r.alerts), ticks = new Set(prefs[0]?.ticks ?? []);
   const inter = myInterest[0], passed = myPass[0];
+  // the office's latest word: a pass counts unless it asked for an allocation afterwards
+  const passedNow = passed && (!inter || inter.createdAt < passed.createdAt) ? passed : null;
   const it = r.interest;
   const fmtAmt = (a: number) => a < 1 ? `₹${Math.round(a * 100)} L` : `₹${a} Cr`;
   const def = inter ? Number(inter.amountCr) : it.def;
@@ -74,7 +82,7 @@ export default async function Room({ params }: P) {
             {others.length > 0 && <a className="btn sm ghost" href={hrefFor(prevD)} title={prevD.company} aria-label={`Previous deal: ${prevD.company}`}>‹</a>}
             <details className="ds-menu"><summary className="btn sm">Switch deal <span aria-hidden="true">▾</span></summary>
               <div className="ds-list">
-                {myRooms.length > 0 && <><span className="k">Your rooms</span>{myRooms.map((x) => <a key={x.id} href={`/room/${x.slug}`}><b>{x.company}</b><small>{x.category}{x.score != null ? ` · Desk Score ${x.score.toFixed(1)}` : ""}</small></a>)}</>}
+                {myRooms.length > 0 && <><span className="k">Your rooms</span>{myRooms.map((x) => <a key={x.id} href={`/room/${x.slug}`}><b>{x.company}{passedIds.has(x.id) && <> <span className="pill off">Passed</span></>}</b><small>{x.category}{x.score != null ? ` · Desk Score ${x.score.toFixed(1)}` : ""}</small></a>)}</>}
                 {rest.length > 0 && <><span className="k">{myRooms.length ? "Rest of the shelf" : "On the shelf"}</span>{rest.map((x) => <a key={x.id} href={hrefFor(x)}><b>{x.company}</b><small>{x.category}{x.open ? " · sign its NDA to open the room" : " · room not open yet"}</small></a>)}</>}
               </div>
             </details>
@@ -87,6 +95,7 @@ export default async function Room({ params }: P) {
               <span className="eyebrow live">Deal room · {d.category}</span>
               <h1>{d.company}</h1>
               <p className="lede">{r.lede}</p>
+              {passedNow && <p className="passnote"><span className="pill off">Passed</span> Your office passed on {fmtD(passedNow.createdAt)}: “{passedNow.reason}”. The room stays open to you; you can still ask questions or request an allocation.</p>}
               {access.admin && <p className="fine">You are viewing as the desk (admin).</p>}
             </div>
             <div className="roomside">

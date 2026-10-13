@@ -30,7 +30,7 @@ const PERKS: [string, string, string][] = [
   ["fresh", "A new deal about every fortnight", "The desk brings a fresh company to the shelf roughly every two weeks on average, each one found directly with the promoter, not passed around by bankers."],
   ["names", "Every company, by name", "Once the desk approves your office: round size, pre-money and trailing and forward P/E for every deal on the desk."],
   ["checked", "Checked before it reaches you", "Site, factory and plant visits, customer orders verified, customer feedback taken and the numbers reconciled, before a company gets a room. Each one carries a Desk Score."],
-  ["rooms", "Rooms that open on screen", "Sign one NDA with that company and its data room opens at once: financials, terms, IPO path, diligence, risks and documents."],
+  ["rooms", "Rooms that open on screen", "Sign that company's NDA on screen and its data room opens at once: financials, terms, IPO path, diligence, risks and documents."],
   ["ask", "Ask the promoter, in writing", "Questions go to the company and the answers are posted for every office. Promoter sessions are set up by the desk."],
   ["commit", "Commit, or pass in one line", "Request an allocation with a slider, or pass with a reason. Nobody calls to change your mind."],
   ["told", "Told the moment it matters", "Approvals, answers, new documents and new deals arrive under the bell, in the app on your phone, and by email."],
@@ -148,7 +148,7 @@ export default async function Login({ searchParams }: P) {
 
         <section className="lp-trust" aria-label="Why offices trust the desk">
           <span>Backed by <a href="https://sintracap.in" target="_blank" rel="noopener">SintraCap</a>, a family office investing its own capital</span>
-          <span>One NDA per company</span><span>Money never passes through the desk</span><span>Install it as an app: <a href="/app">get the app</a></span>
+          <span>Money never passes through the desk</span><span>Install it as an app: <a href="/app">get the app</a></span>
         </section>
       </div>
     </main>

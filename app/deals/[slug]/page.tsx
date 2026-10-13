@@ -81,7 +81,7 @@ export default async function Overview({ params }: P) {
                 : <a className="btn primary" href={`/register?next=${encodeURIComponent(`/deals/${d.slug}`)}`}>Register to see the company</a>}
             </>
           )}
-          <p className="fine">No fee for family offices, on any deal. Register once; after the desk approves your office, each company&apos;s room opens with its own NDA.</p>
+          <p className="fine">No fee for family offices, on any deal. Register once; after the desk approves your office, you can open this company&apos;s room by signing its NDA on screen.</p>
         </aside>
       </article>
 
