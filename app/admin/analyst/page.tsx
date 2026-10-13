@@ -2,7 +2,7 @@ import { desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { aiChats, deals, offices, users } from "@/db/schema";
-import { aiReady } from "@/lib/ai";
+import { aiReady, monthSpend } from "@/lib/ai";
 import { getSettings } from "@/lib/settings";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
@@ -11,11 +11,12 @@ const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "sh
 export default async function AnalystLog() {
   await requireAdmin();
   const db = await getDb();
-  const [chats, ds, os, us, st] = await Promise.all([
+  const [chats, ds, os, us, st, spent] = await Promise.all([
     db.select().from(aiChats).orderBy(desc(aiChats.updatedAt)).limit(200),
     db.select({ id: deals.id, company: deals.company }).from(deals), db.select({ id: offices.id, name: offices.name }).from(offices),
-    db.select({ id: users.id, name: users.name }).from(users), getSettings(),
+    db.select({ id: users.id, name: users.name }).from(users), getSettings(), monthSpend(),
   ]);
+  const budget = Number(st.aiBudget) || 0;
   const deal = new Map(ds.map((x) => [x.id, x.company])), office = new Map(os.map((x) => [x.id, x.name])), user = new Map(us.map((x) => [x.id, x.name]));
   const qs = chats.reduce((n, c) => n + c.messages.filter((m) => m.role === "user").length, 0), searches = chats.reduce((n, c) => n + c.searches, 0);
   const tok = chats.reduce((n, c) => n + c.inputTokens + c.outputTokens, 0);
@@ -28,6 +29,7 @@ export default async function AnalystLog() {
         <div className="chart"><span className="k">Questions asked</span><b style={{ fontSize: 26 }}>{qs}</b></div>
         <div className="chart"><span className="k">Web searches</span><b style={{ fontSize: 26 }}>{searches}</b></div>
         <div className="chart"><span className="k">Tokens used</span><b style={{ fontSize: 26 }}>{tok.toLocaleString("en-IN")}</b></div>
+        <div className="chart"><span className="k">Spend this month (est.)</span><b style={{ fontSize: 26 }}>${spent.toFixed(2)}</b><small className="fine">{budget ? `of a $${budget} budget` : "no cap set"}</small></div>
       </div>
       {chats.length ? (
         <ul className="an-log">{chats.map((c) => (

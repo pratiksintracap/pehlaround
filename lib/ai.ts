@@ -1,8 +1,8 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq, gte, or, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { documents, interests, questions } from "@/db/schema";
+import { aiUsage, documents, interests, questions } from "@/db/schema";
 import { listDeals, signedDealIds, docAccess, type Deal } from "@/lib/deals";
 import { completeness } from "@/lib/profile";
 import type { SessionUser } from "@/lib/auth";
@@ -22,6 +22,23 @@ export async function context(user: SessionUser, names: boolean, deal: Deal | nu
   return { user, admin, names, signed: await signedDealIds(user.officeId), deals: await listDeals(admin), deal };
 }
 const canOpen = (c: Ctx, d: Deal) => c.admin || c.signed.has(d.id);
+
+
+// ---------------------------------------------------------------- what it costs
+// List prices in US$ (override with AI_PRICE_IN / AI_PRICE_OUT per million tokens); web search is $10 per 1,000.
+const PRICE_IN = () => Number(process.env.AI_PRICE_IN || 2), PRICE_OUT = () => Number(process.env.AI_PRICE_OUT || 10);
+export const costOf = (u: { inputTokens: number; outputTokens: number; searches: number }) =>
+  (u.inputTokens * PRICE_IN() + u.outputTokens * PRICE_OUT()) / 1e6 + u.searches * 0.01;
+
+/** Estimated spend since the 1st of this month (IST), in US$. */
+export async function monthSpend() {
+  const now = new Date(Date.now() + 5.5 * 36e5);
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) - 5.5 * 36e5);
+  const db = await getDb();
+  const [r] = await db.select({ i: sql<number>`coalesce(sum(${aiUsage.inputTokens}),0)`, o: sql<number>`coalesce(sum(${aiUsage.outputTokens}),0)`, s: sql<number>`coalesce(sum(${aiUsage.searches}),0)` })
+    .from(aiUsage).where(gte(aiUsage.at, start));
+  return costOf({ inputTokens: Number(r?.i ?? 0), outputTokens: Number(r?.o ?? 0), searches: Number(r?.s ?? 0) });
+}
 
 // ---------------------------------------------------------------- the data bank, as tools
 const SECTIONS = ["overview", "financials", "valuation_and_peers", "round_and_terms", "risks", "ipo_path", "diligence", "updates"] as const;

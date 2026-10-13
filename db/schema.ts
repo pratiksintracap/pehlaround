@@ -340,3 +340,15 @@ export const aiChats = pgTable("ai_chats", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("ai_chats_user_idx").on(t.userId, t.dealId)]);
+
+// One row per analyst answer: what it cost, so the desk can hold the analyst to a monthly budget.
+export const aiUsage = pgTable("ai_usage", {
+  id: serial("id").primaryKey(),
+  chatId: integer("chat_id"),
+  userId: integer("user_id").notNull(),
+  officeId: integer("office_id"),
+  inputTokens: integer("input_tokens").notNull().default(0),
+  outputTokens: integer("output_tokens").notNull().default(0),
+  searches: integer("searches").notNull().default(0),
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("ai_usage_at_idx").on(t.at)]);

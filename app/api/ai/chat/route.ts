@@ -2,12 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { getUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { aiChats } from "@/db/schema";
+import { aiChats, aiUsage } from "@/db/schema";
 import { getDeal, canSeeNames, roomAccess } from "@/lib/deals";
 import { getSettings } from "@/lib/settings";
 import { readBody, str, jerr } from "@/lib/http";
 import { allow, TOO_MANY } from "@/lib/rate";
-import { aiReady, context, converse, type Cite } from "@/lib/ai";
+import { aiReady, context, converse, monthSpend, type Cite } from "@/lib/ai";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
   if ("err" in g) return g.err;
   const user = g.user!, q = str(data.q, 2000);
   if (q.length < 2) return jerr("Type a question.");
+  const budget = Number((await getSettings()).aiBudget) || 0;
+  if (budget > 0 && (await monthSpend()) >= budget) return jerr("The analyst has used this month's allowance and is back on the 1st. The desk can still answer you directly.", 503);
   if (!(await allow(`ai:u:${user.id}`, 30, 3600)) || (user.officeId && !(await allow(`ai:o:${user.officeId}`, 150, 86400)))) return jerr(TOO_MANY, 429);
   const db = await getDb();
   const want = Number(data.id) || 0;
@@ -62,8 +64,9 @@ export async function POST(req: NextRequest) {
         }
       } catch (e) {
         const m = e instanceof Error ? e.message : "";
-        send({ t: "error", d: /overloaded|529/i.test(m) ? "The analyst is busy. Please try again in a minute." : "The analyst could not answer just now. Please try again." });
+        send({ t: "error", d: /credit balance|billing/i.test(m) ? "The analyst has used this month's allowance and is back when the new month's credits arrive." : /overloaded|529/i.test(m) ? "The analyst is busy. Please try again in a minute." : "The analyst could not answer just now. Please try again." });
       }
+      if (usage.inputTokens || usage.outputTokens) await db.insert(aiUsage).values({ chatId: chat.id, userId: user.id, officeId: user.officeId, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, searches: usage.searches }).catch(() => 0);
       if (text.trim()) {
         const at = new Date().toISOString();
         const messages = [...chat.messages, { role: "user" as const, text: q, at }, { role: "assistant" as const, text, cites, at }];

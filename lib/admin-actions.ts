@@ -336,7 +336,7 @@ export async function saveSiteSettings(f: FormData) {
   await saveSettings({
     requireApproval: f.get("requireApproval") === "on", requirePan: false,
     announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
-    promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on",
+    promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on", aiBudget: String(Math.max(0, Math.round(Number(s(f, "aiBudget", 10)) || 0))),
   });
   await log(admin, "Desk changed the site settings");
   revalidatePath("/", "layout");
