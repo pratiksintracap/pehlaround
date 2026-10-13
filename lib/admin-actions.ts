@@ -1,7 +1,8 @@
 "use server";
 import { startSeries, backfill, preview } from "@/lib/onboarding";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { PUBLIC_TAG } from "@/lib/cache";
 import { and, eq, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
@@ -19,6 +20,7 @@ import ART from "@/lib/deal-art.json";
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const n = (f: FormData, k: string) => Number(f.get(k));
 const back = (path: string, msg: string) => {
+  revalidateTag(PUBLIC_TAG); // every desk change refreshes the public cache
   const [p, hash] = path.split("#");
   redirect(`${p}${p.includes("?") ? "&" : "?"}msg=${encodeURIComponent(msg)}${hash ? `#${hash}` : ""}`);
 };

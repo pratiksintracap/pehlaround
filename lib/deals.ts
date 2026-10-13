@@ -1,22 +1,21 @@
 import "server-only";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
+import { cachedPublic } from "@/lib/cache";
 import { deals, ndas } from "@/db/schema";
 import type { SessionUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 
 export type Deal = typeof deals.$inferSelect;
 
+const allDeals = cachedPublic(async () => { const db = await getDb(); return db.select().from(deals).orderBy(asc(deals.sort), asc(deals.id)); }, "deals");
 export async function listDeals(includeUnpublished = false) {
-  const db = await getDb();
-  const rows = await db.select().from(deals).orderBy(asc(deals.sort), asc(deals.id));
+  const rows = await allDeals();
   return includeUnpublished ? rows : rows.filter((d) => d.published);
 }
 
 export async function getDeal(slug: string) {
-  const db = await getDb();
-  const [d] = await db.select().from(deals).where(eq(deals.slug, slug));
-  return d ?? null;
+  return (await allDeals()).find((d) => d.slug === slug) ?? null;
 }
 
 export async function signedDealIds(officeId: number | null | undefined) {

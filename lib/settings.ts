@@ -1,6 +1,8 @@
 import "server-only";
 import { getDb } from "@/lib/db";
 import { settings } from "@/db/schema";
+import { cachedPublic, PUBLIC_TAG } from "@/lib/cache";
+import { revalidateTag } from "next/cache";
 
 export type Settings = {
   requireApproval: boolean;   // offices see names and sign NDAs only after the desk approves them
@@ -12,9 +14,9 @@ export type Settings = {
 };
 const DEFAULTS: Settings = { requireApproval: true, requirePan: process.env.REQUIRE_PAN_VERIFIED === "1", announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true };
 
+const settingRows = cachedPublic(async () => { const db = await getDb(); return db.select().from(settings); }, "settings");
 export async function getSettings(): Promise<Settings> {
-  const db = await getDb();
-  const rows = await db.select().from(settings);
+  const rows = await settingRows();
   const s = { ...DEFAULTS } as Record<string, unknown>;
   for (const r of rows) {
     if (!(r.key in DEFAULTS)) continue;
@@ -29,4 +31,5 @@ export async function saveSettings(v: Partial<Settings>) {
     const value = typeof val === "boolean" ? (val ? "1" : "0") : String(val ?? "");
     await db.insert(settings).values({ key: k, value }).onConflictDoUpdate({ target: settings.key, set: { value, updatedAt: new Date() } });
   }
+  try { revalidateTag(PUBLIC_TAG); } catch { /* outside a request */ }
 }
