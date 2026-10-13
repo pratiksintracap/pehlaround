@@ -99,6 +99,10 @@ export const documents = pgTable("documents", {
   kind: text("kind"),                           // PDF · 48 pp
   status: text("status").notNull().default("available"), // available | requested | on_request
   url: text("url"),                             // link to the file (Drive, Blob ...)
+  // who sees it: nda = every office that signed this company's NDA; allocation = only offices that requested an
+  // allocation in this deal; offices = only the offices listed in officeIds
+  audience: text("audience").notNull().default("nda"),
+  officeIds: jsonb("office_ids").$type<number[]>().notNull().default([]),
   sort: integer("sort").notNull().default(100),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

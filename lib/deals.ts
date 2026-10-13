@@ -70,3 +70,12 @@ export async function canSeeNames(user: SessionUser | null) {
   const st = await getSettings();
   return !st.requireApproval || user.office.approval === "approved";
 }
+
+type DocLike = { audience: string; officeIds: number[] | null };
+/** Whether this office sees a document's link: "yes", "after-allocation" (listed, opens once they request an allocation) or "no" (not listed). */
+export function docAccess(doc: DocLike, officeId: number | null | undefined, requestedAllocation: boolean, isAdmin = false): "yes" | "after-allocation" | "no" {
+  if (isAdmin) return "yes";
+  if (doc.audience === "offices") return officeId && (doc.officeIds || []).includes(officeId) ? "yes" : "no";
+  if (doc.audience === "allocation") return requestedAllocation ? "yes" : "after-allocation";
+  return "yes";
+}

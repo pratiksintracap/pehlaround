@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { and, asc, desc, eq, gt } from "drizzle-orm";
 import { getUser, log } from "@/lib/auth";
-import { getDeal, roomAccess, trackerCounts, type Deal } from "@/lib/deals";
+import { getDeal, roomAccess, trackerCounts, docAccess, type Deal } from "@/lib/deals";
 import { getDb } from "@/lib/db";
 import { audit, dealPrefs, documents, interests, passes, questions } from "@/db/schema";
 import { Donut, Ring, StatusBar, Bars, HBars, Timeline, barSeries } from "@/components/Charts";
@@ -149,10 +149,14 @@ export default async function Room({ params }: P) {
 
           <section className="panel" data-panel="Documents" hidden>
             <ul className="docs">{docs.map((doc) => {
+              const acc = docAccess(doc, user?.officeId, !!inter && inter.status !== "Withdrawn", !!access.admin);
+              if (acc === "no") return null;
               const live = doc.status === "available" && !!doc.url;
               return (
-                <li key={doc.id}><div><b>{doc.title}</b>{doc.kind && <small>{doc.kind}</small>}</div>
-                  {live ? <><span className="pill ok">Available</span><a className="btn sm" href={`/api/docs/${doc.id}`} target="_blank" rel="noopener">View</a></>
+                <li key={doc.id}><div><b>{doc.title}</b>{doc.kind && <small>{doc.kind}</small>}
+                  {access.admin && doc.audience !== "nda" && <small className="mono">{doc.audience === "allocation" ? "Only offices that requested an allocation" : `Only ${(doc.officeIds || []).length} selected office(s)`}</small>}</div>
+                  {live && acc === "after-allocation" ? <><span className="pill mid">After allocation request</span><span className="fine">Opens once your office requests an allocation</span></>
+                  : live ? <><span className="pill ok">Available</span><a className="btn sm" href={`/api/docs/${doc.id}`} target="_blank" rel="noopener">View</a></>
                     : doc.status === "on_request" ? <><span className="pill mid">On request</span><span className="fine">Shared once you indicate interest</span></>
                     : doc.status === "available" ? <><span className="pill mid">Being uploaded</span><span className="fine">Ask the desk</span></>
                     : <><span className="pill off">Pending</span><span className="fine">Requested</span></>}

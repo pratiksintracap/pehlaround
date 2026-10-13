@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { calls, deals, documents, questions } from "@/db/schema";
+import { calls, deals, documents, ndas, offices, questions } from "@/db/schema";
 import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall } from "@/lib/admin-actions";
 import { toText } from "@/lib/pipes";
 import { Msg } from "@/components/AdminBits";
@@ -22,6 +22,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   const db = await getDb();
   const [d] = await db.select().from(deals).where(eq(deals.id, id));
   if (!d) notFound();
+  const signedOffices = await db.select({ id: offices.id, name: offices.name }).from(ndas).innerJoin(offices, eq(offices.id, ndas.officeId)).where(eq(ndas.dealId, id));
   const [docs, qs, cs] = await Promise.all([
     db.select().from(documents).where(eq(documents.dealId, id)).orderBy(asc(documents.sort), asc(documents.id)),
     db.select().from(questions).where(eq(questions.dealId, id)).orderBy(desc(questions.askedAt)),
@@ -84,7 +85,8 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
       </form>
 
       <h2 id="docs">Documents</h2>
-      <p className="fine">Paste a link to the file (for example a Google Drive file shared with “anyone with the link”, or any secure URL). Offices only reach it through the room, and every view is logged. Status “on request” shows the file exists but is shared only with offices that indicate interest.</p>
+      <p className="fine">Paste a link to the file (for example a Google Drive file shared with “anyone with the link”, or any secure URL). Offices only reach it through the room, and every view is logged. Status “on request” shows the file exists but is shared only with offices that indicate interest.
+        Choose who sees each file: every office that signed this NDA, only offices that requested an allocation (for a draft term sheet, say: others see it listed as opening after their request), or only the offices you pick (hold Ctrl or Cmd to pick several).</p>
       {[...docs, null].map((doc, i) => (
         <form key={doc?.id ?? "new"} action={saveDocument} className="form adm-row">
           <input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="id" value={doc?.id ?? 0} />
@@ -92,6 +94,10 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
           <input name="kind" defaultValue={doc?.kind ?? ""} placeholder="PDF · 48 pp" style={{ maxWidth: 130 }} />
           <select name="status" defaultValue={doc?.status ?? "available"}><option value="available">Available</option><option value="on_request">On request</option><option value="requested">Requested from company</option></select>
           <input name="url" defaultValue={doc?.url ?? ""} placeholder="https://… link to the file" />
+          <select name="audience" defaultValue={doc?.audience ?? "nda"} title="Who sees it">
+            <option value="nda">All offices with the NDA</option><option value="allocation">Only offices that requested an allocation</option><option value="offices">Only the offices selected</option></select>
+          <select name="officeIds" multiple defaultValue={(doc?.officeIds ?? []).map(String)} title="Selected offices (hold Ctrl/Cmd to pick several)" className="adm-multi">
+            {signedOffices.length ? signedOffices.map((o) => <option key={o.id} value={o.id}>{o.name}</option>) : <option disabled value="">No office has signed this NDA yet</option>}</select>
           <input name="sort" defaultValue={doc?.sort ?? 100 + i} style={{ maxWidth: 60 }} />
           {doc && <label className="chk"><input type="checkbox" name="delete" /> delete</label>}
           <button className="btn sm" type="submit">{doc ? "Save" : "Add"}</button>

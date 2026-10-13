@@ -440,3 +440,4 @@ html.is-app .appbar svg{width:22px;height:22px;fill:none;stroke:currentColor;str
 html.is-app .appbar a[aria-current=page]{color:var(--accent)}
 html.is-app body{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 html.is-app .hdr{padding-top:env(safe-area-inset-top,0px)}
+.adm-multi{min-width:200px;min-height:64px}

@@ -16,7 +16,10 @@ import ART from "@/lib/deal-art.json";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const n = (f: FormData, k: string) => Number(f.get(k));
-const back = (path: string, msg: string) => redirect(`${path}${path.includes("?") ? "&" : "?"}msg=${encodeURIComponent(msg)}`);
+const back = (path: string, msg: string) => {
+  const [p, hash] = path.split("#");
+  redirect(`${p}${p.includes("?") ? "&" : "?"}msg=${encodeURIComponent(msg)}${hash ? `#${hash}` : ""}`);
+};
 
 function json<T>(raw: string, label: string): T | undefined {
   if (!raw) return undefined;
@@ -178,7 +181,9 @@ export async function saveDocument(f: FormData) {
   const admin = await requireAdmin();
   const dealId = n(f, "dealId"), id = n(f, "id");
   const db = await getDb();
-  const vals = { title: s(f, "title", 300), kind: s(f, "kind", 80) || null, status: s(f, "status", 20) || "available", url: s(f, "url", 2000) || null, sort: n(f, "sort") || 100 };
+  const audience = ["nda", "allocation", "offices"].includes(s(f, "audience", 20)) ? s(f, "audience", 20) : "nda";
+  const officeIds = f.getAll("officeIds").map(Number).filter((x) => x > 0);
+  const vals = { title: s(f, "title", 300), kind: s(f, "kind", 80) || null, status: s(f, "status", 20) || "available", url: s(f, "url", 2000) || null, sort: n(f, "sort") || 100, audience, officeIds };
   const [prev] = id ? await db.select().from(documents).where(eq(documents.id, id)) : [];
   if (f.get("delete") === "on" && id) await db.delete(documents).where(eq(documents.id, id));
   else if (id) await db.update(documents).set(vals).where(eq(documents.id, id));
@@ -186,7 +191,13 @@ export async function saveDocument(f: FormData) {
   const nowAvailable = f.get("delete") !== "on" && vals.title && vals.status === "available" && vals.url && (!prev || prev.status !== "available" || !prev.url);
   if (nowAvailable && f.get("tell") !== "off") {
     const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, dealId));
-    await notifyOffices(await ndaOffices(dealId), { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` });
+    let to = await ndaOffices(dealId);
+    if (audience === "offices") to = to.filter((o) => officeIds.includes(o));
+    if (audience === "allocation") {
+      const asked = new Set((await db.select({ o: interests.officeId }).from(interests).where(eq(interests.dealId, dealId))).map((r) => r.o));
+      to = to.filter((o) => asked.has(o));
+    }
+    await notifyOffices(to, { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` });
   }
   await log(admin, `Desk updated documents`, dealId);
   back(`/admin/deals/${dealId}#docs`, "Documents saved.");
