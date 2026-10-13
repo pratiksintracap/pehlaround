@@ -444,3 +444,4 @@ html.is-app .hdr{padding-top:env(safe-area-inset-top,0px)}
 
 /* ---- Off Market Desk mark ---- */
 .mk svg{display:block;width:18px;height:18px}.logo .mk{box-shadow:none;color:#fff}.disc-top .mk{color:#fff}.appx-bar .mk{color:#0b1730}.appx-bar .mk svg{width:15px;height:15px}.tagline{display:block;font-size:12px;font-weight:500;color:var(--ink3);letter-spacing:0;margin-top:2px}
+.journey .jtitle{fill:var(--live);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
