@@ -45,35 +45,48 @@ export default async function Dashboard({ searchParams }: P) {
   const allotted = myInterests.filter((i) => i.status === "Allotted");
   const indicated = myInterests.filter((i) => i.status !== "Withdrawn");
   const totalInd = indicated.reduce((s, i) => s + Number(i.amountCr), 0);
-  const firstOpen = deals.find((d) => signed.has(d.id)) || deals.find((d) => d.open);
-  const rail = [
-    ["Registered", "done"], ...(st.requireApproval ? [["Approved by the desk", names ? "done" : "now"]] : []), ["PAN on record", office.pan ? "done" : names ? "now" : ""],
-    ["NDA per deal", signed.size ? "done" : office.pan ? "now" : ""], ["Rooms unlocked", signed.size ? "done" : ""],
+  // the room this office was in last (from its own log), else the NDA it signed most recently
+  const lastOpened = log.find((l) => l.dealId && signed.has(l.dealId) && l.action.startsWith("Opened the room")) ?? log.find((l) => l.dealId && signed.has(l.dealId));
+  const latest = byId.get(lastOpened?.dealId ?? myNdas[0]?.dealId ?? -1);
+  const topPick = [...deals].filter((d) => d.open && !signed.has(d.id)).sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0];
+  const panWait = st.requirePan && signed.size > 0 && office.status !== "verified";
+  // progress: four steps, shown until the office has a room open
+  const steps: [string, string, "done" | "now" | "todo"][] = [
+    ["Registered", "Your office is on the desk", "done"],
+    ["Approved", names ? "Every company is open to you by name" : "The desk reviews new offices, usually within a working day", names ? "done" : "now"],
+    ["First NDA signed", signed.size ? "Your PAN and investing entity are on record" : "Sign one company's NDA; PAN and entity are asked once, with it", signed.size ? "done" : names ? "now" : "todo"],
+    ["Rooms open", panWait ? "The desk is checking your PAN" : signed.size ? `${signed.size} ${signed.size === 1 ? "room" : "rooms"} open to you` : "Numbers, documents and Q&A for each company", signed.size && !panWait ? "done" : signed.size ? "now" : "todo"],
   ];
+  const showSteps = !signed.size || panWait;
+  const profileGaps = [!office.category && "category", !office.residency && "residency", !office.ticket && "ticket"].filter(Boolean) as string[];
+  const welcome = names && !signed.size; // approved but no room yet: the welcome pop-up guides the first step
   const canCommit = /commit/i.test(user.rights);
 
   return (
-    <main><div className="wrap" style={{ paddingTop: 24, paddingBottom: 56 }}><div className="room" id="dash">
-      <div className="roomhead">
-        <div>
-          <span className="eyebrow">Office dashboard</span>
-          <h1>{office.name}</h1>
-          <p className="lede">Everything your office does on the desk, in one place: the shelf, the rooms you opened, calls, documents, what you hold, your team, and a log of who saw what.</p>
-          <ol className="statusrail" aria-label="Your status">{rail.map(([t, c]) => <li key={t} className={c}>{t}</li>)}</ol>
-          <AppPromo text="Your dashboard on your home screen: new deals, promoter answers and approvals the moment they land." />
-          {pendingApproval && <p className="notice" style={{ marginTop: 12 }}><b>Your office is being reviewed.</b> The desk approves new offices, usually within a working day. Once approved you will see every company by name with its round and valuation, and can sign NDAs to open the rooms. We will tell you here and by email.</p>}
-          {msg && <p className="notice" style={{ marginTop: 12 }}>{msg}</p>}
-          {error && <p className="notice" style={{ marginTop: 12, borderColor: "var(--warn, #c0392b)" }}>{error}</p>}
-        </div>
-        <div className="roomside">
-          <div className="kv"><span>Rooms open to you</span><b>{signed.size}</b></div>
-          <div className="kv"><span>Questions asked</span><b>{myQs.length}</b></div>
-          <div className="kv"><span>Passed</span><b>{myPasses.length}</b></div>
-          <div className="kv"><span>Allocations requested</span><b>{indicated.length ? `${indicated.length} · ₹${+totalInd.toFixed(2)} Cr` : "0"}</b></div>
-          {firstOpen && names && <a className="btn primary" href={signed.has(firstOpen.id) ? `/room/${firstOpen.slug}` : `/nda/${firstOpen.slug}`}>{signed.has(firstOpen.id) ? "Open your latest room" : "Open your first room"}</a>}
-
+    <main><div className="wrap" style={{ paddingTop: 20, paddingBottom: 56 }}><div className="room" id="dash">
+      <div className="dashhead">
+        <div className="dh-name"><span className="eyebrow">Office dashboard</span><h1>{office.name}</h1></div>
+        <div className="dh-stats">
+          <a href="#Rooms"><b>{signed.size}</b><span>{signed.size === 1 ? "room open" : "rooms open"}</span></a>
+          <a href="#Rooms"><b>{myQs.length}</b><span>questions</span></a>
+          <a href="#Rooms"><b>{indicated.length ? `₹${+totalInd.toFixed(2)} Cr` : "0"}</b><span>{indicated.length ? `requested · ${indicated.length}` : "allocations requested"}</span></a>
+          {latest && <a className="btn primary sm dh-go" href={`/room/${latest.slug}`}>Continue in {latest.company} →</a>}
         </div>
       </div>
+      {msg && <p className="notice" style={{ marginTop: 12 }}>{msg}</p>}
+      {error && <p className="notice" style={{ marginTop: 12, borderColor: "var(--warn, #c0392b)" }}>{error}</p>}
+
+      {showSteps && (
+        <section className="nextstep" aria-label="Your progress">
+          <ol className="osteps">{steps.map(([t, sub, c], i) => (
+            <li key={t} className={c} aria-current={c === "now" ? "step" : undefined}><span className="dot" aria-hidden="true">{c === "done" ? "✓" : i + 1}</span><div><b>{t}</b><small>{sub}</small></div></li>))}</ol>
+          <div className="ns-act">
+            {pendingApproval ? <p className="fine">You can browse the shelf below in the meantime. We will tell you under the bell and by email the moment your office is approved.</p>
+              : !signed.size && topPick ? <><a className="btn primary" href={`/nda/${topPick.slug}`}>Open your first room: {topPick.company}</a><a className="btn ghost" href="#Shelf">Or choose from the shelf ↓</a></>
+              : panWait ? <p className="fine">Your room opens as soon as the desk has checked the PAN, usually the same working day.</p> : null}
+          </div>
+        </section>
+      )}
 
       <div className="tabs" role="tablist">
         {[["Shelf", "Shelf"], ["Rooms", "My rooms"], ["Calls", "Calls"], ["Documents", "Documents"], ["Portfolio", "Portfolio"], ["Team", "Team and profile"], ["Log", "Activity log"]].map(([k, t], i) =>
@@ -103,12 +116,14 @@ export default async function Dashboard({ searchParams }: P) {
               <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
           </li>))}</ul>
         <p className="fine">Same fields for every deal so offices can compare quickly. Each room opens with that company&apos;s own NDA.</p>
+        <AppPromo variant="bar" text="New deals, promoter answers and approvals on your home screen, the moment they land." />
       </section>
 
       <section className="panel" data-panel="Rooms" hidden>
         <div className="two">
-          <div className="chart"><span className="k">NDAs signed · rooms open</span><ul className="feed">
-            {myNdas.length ? myNdas.map((n) => <li key={n.id}><b><a href={`/room/${byId.get(n.dealId)?.slug}`}>{byId.get(n.dealId)?.company}</a></b> · {fmtD(n.signedAt)}</li>)
+          <div className="chart"><span className="k">Rooms open to your office</span><ul className="roomlist">
+            {myNdas.length ? myNdas.map((n) => { const dd = byId.get(n.dealId); return dd ? (
+              <li key={n.id}><div><b>{dd.company}</b><small>{dd.category} · NDA signed {fmtD(n.signedAt)}</small></div><a className="btn sm primary" href={`/room/${dd.slug}`}>Open room</a></li>) : null; })
               : <li className="empty-li">No rooms yet. Sign a company&apos;s NDA from the Shelf.</li>}</ul></div>
           <div className="chart"><span className="k">Allocations requested</span><ul className="feed">
             {indicated.length ? indicated.map((i) => <li key={i.id}><b>{byId.get(i.dealId)?.company}</b> · ₹{Number(i.amountCr)} Cr{i.colead ? " · co-lead interest" : ""} · {i.status} · {fmtD(i.createdAt)}</li>)
@@ -207,6 +222,29 @@ export default async function Dashboard({ searchParams }: P) {
         </tbody></table></div>
         <p className="fine">The log shows the desk offered each deal only to identified people, which is what the private placement rules require.</p>
       </section>
+      {welcome && (
+        <dialog className="welcome" id="welcome" data-key={`omd_welcome_${office.id}`}>
+          <form method="dialog" className="wl-x"><button className="btn sm ghost" aria-label="Close">✕</button></form>
+          <span className="eyebrow live">You&apos;re in</span>
+          <h2>Your office is approved</h2>
+          <p>Every company on the desk is now open to you by name. A company&apos;s room opens with its own NDA, signed on screen; your PAN and investing entity are asked once, with the first one.</p>
+          {profileGaps.length > 0 && (
+            <form className="form wl-profile" method="post" action="/api/office/profile">
+              <span className="k">First, two details for the desk</span>
+              <div className="row">
+                {!office.category && <label>The office invests as<select name="category" required defaultValue=""><option value="" disabled>Select</option><option>Individual</option><option>HUF</option><option>Private company</option><option>LLP</option><option>Trust</option><option>Family-office AIF</option><option>Other</option></select></label>}
+                {!office.residency && <label>Residency<select name="residency" required defaultValue=""><option value="" disabled>Select</option><option>Resident in India</option><option>Non-resident (FEMA route applies)</option></select></label>}
+                {!office.ticket && <label>Typical ticket per deal<select name="ticket" required defaultValue=""><option value="" disabled>Select</option><option>₹50 lakh – 1 crore</option><option>₹1–2 crore</option><option>₹2–5 crore</option><option>₹5–25 crore</option><option>Above ₹25 crore</option></select></label>}
+              </div>
+              <div><button className="btn" type="submit">Save</button></div>
+            </form>
+          )}
+          <span className="k">Highest Desk Scores on the shelf</span>
+          <ul className="roomlist">{[...deals].filter((d) => d.open).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3).map((d) => (
+            <li key={d.id}><div><b>{d.company}</b><small>{d.category}{d.score != null ? ` · Desk Score ${d.score.toFixed(1)}` : ""}</small></div><a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a></li>))}</ul>
+          <form method="dialog"><button className="btn ghost sm">I&apos;ll look around first</button></form>
+        </dialog>
+      )}
     </div></div></main>
   );
 }

@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { ndas, notifications, offices, users } from "@/db/schema";
+import { dealPrefs, ndas, notifications, offices, users } from "@/db/schema";
 import { getSettings } from "@/lib/settings";
 import { emailReady, sendRaw, layout, E, esc } from "@/lib/email";
 
@@ -15,8 +15,28 @@ export async function sendEmail(to: string[], m: Msg) {
   return sendRaw(to, m.title, layout(body, { preheader: m.body?.slice(0, 120) || "" }));
 }
 
-/** Notify offices in the app and, if they allow it and email is set up, by email. Returns counts. */
-export async function notifyOffices(officeIds: number[], m: Msg, email = true) {
+/** Room alerts an office can switch on; the desk's events map to them by these patterns. */
+export const ALERT_TOPICS: Record<string, { label: string; match: RegExp }> = {
+  document: { label: "A new document is added", match: /document/i },
+  answer: { label: "The promoter answers a question", match: /answer|question/i },
+  session: { label: "Promoter session is scheduled", match: /session|call/i },
+  audit: { label: "Audit or financials", match: /audit|financ|result/i },
+  round: { label: "Round size or timetable", match: /round|timetable/i },
+  terms: { label: "Terms or price", match: /terms|price/i },
+};
+export type Alert = { dealId: number; topic: keyof typeof ALERT_TOPICS };
+
+/** Offices that want email for this room alert: every office that never chose, plus those that switched it on. */
+async function wantsAlert(ids: number[], a: Alert) {
+  const db = await getDb();
+  const prefs = await db.select().from(dealPrefs).where(and(eq(dealPrefs.dealId, a.dealId), inArray(dealPrefs.officeId, ids)));
+  const re = ALERT_TOPICS[a.topic].match;
+  const by = new Map(prefs.map((p) => [p.officeId, p]));
+  return ids.filter((id) => { const p = by.get(id); return !p || !p.alertsSet || p.alerts.some((x) => re.test(x)); });
+}
+
+/** Notify offices in the app (always) and by email if they allow it, email is set up and, for room alerts, they switched it on. */
+export async function notifyOffices(officeIds: number[], m: Msg, email = true, alert?: Alert) {
   const ids = [...new Set(officeIds)].filter(Boolean);
   if (!ids.length) return { recipients: 0, emailed: 0 };
   const db = await getDb();
@@ -24,7 +44,8 @@ export async function notifyOffices(officeIds: number[], m: Msg, email = true) {
   let emailed = 0;
   if (email && emailReady()) {
     const os = await db.select({ id: offices.id, consents: offices.consents }).from(offices).where(inArray(offices.id, ids));
-    const ok = os.filter((o) => o.consents?.email !== false).map((o) => o.id);
+    let ok = os.filter((o) => o.consents?.email !== false).map((o) => o.id);
+    if (alert && ok.length) ok = await wantsAlert(ok, alert);
     if (ok.length) {
       const people = await db.select({ email: users.email }).from(users).where(and(inArray(users.officeId, ok), eq(users.disabled, false)));
       emailed = await sendEmail(people.map((p) => p.email), m);

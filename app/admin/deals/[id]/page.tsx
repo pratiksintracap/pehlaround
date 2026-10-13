@@ -108,7 +108,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
       {qs.map((q) => (
         <form key={q.id} action={answerQuestion} className="form adm-card">
           <input type="hidden" name="id" value={q.id} /><input type="hidden" name="back" value={`/admin/deals/${d.id}#qa`} />
-          <label>Question{q.officeId ? " (from an office)" : ""}<input name="question" defaultValue={q.question} /></label>
+          <label>Question{q.officeId ? (q.private ? " (private to the office that asked)" : " (from an office)") : ""}<input name="question" defaultValue={q.question} /></label>
           <div className="row"><label>Answer<textarea name="answer" rows={2} defaultValue={q.answer ?? ""} /></label><label>Answered by<input name="by" defaultValue={q.answeredBy ?? "Promoter"} /></label></div>
           <label className="chk"><input type="checkbox" name="hidden" defaultChecked={q.hidden} /> Hide from the room</label>
           <div><button className="btn sm" type="submit">Save</button></div>

@@ -7,7 +7,7 @@ import { and, eq, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
 import { articles, broadcasts, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
-import { notifyOffices, ndaOffices, sendEmail, emailReady } from "@/lib/notify";
+import { notifyOffices, ndaOffices, sendEmail, emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { sendRaw } from "@/lib/email";
 import { randomBytes } from "node:crypto";
 import { SITE_URL } from "@/lib/site";
@@ -205,7 +205,7 @@ export async function saveDocument(f: FormData) {
       const asked = new Set((await db.select({ o: interests.officeId }).from(interests).where(eq(interests.dealId, dealId))).map((r) => r.o));
       to = to.filter((o) => asked.has(o));
     }
-    await notifyOffices(to, { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` });
+    await notifyOffices(to, { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` }, true, { dealId, topic: "document" });
   }
   await log(admin, `Desk updated documents`, dealId);
   back(`/admin/deals/${dealId}#docs`, "Documents saved.");
@@ -225,9 +225,10 @@ export async function answerQuestion(f: FormData) {
   await log(admin, `Desk ${answer ? "answered" : "updated"} a question`, q.dealId);
   if (answer && !q.answer && f.get("hidden") !== "on") {
     const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, q.dealId));
-    const to = await ndaOffices(q.dealId);
+    // A private question is answered only to the office that asked it.
+    const to = q.private ? [] : await ndaOffices(q.dealId);
     if (q.officeId) to.push(q.officeId);
-    await notifyOffices(to, { title: `${d?.company}: a question is answered`, body: q.question.slice(0, 280), link: `/room/${d?.slug}` });
+    await notifyOffices(to, { title: `${d?.company}: ${q.private ? "your private question is answered" : "a question is answered"}`, body: q.question.slice(0, 280), link: `/room/${d?.slug}#Q%26A` }, true, { dealId: q.dealId, topic: "answer" });
   }
   back(s(f, "back") || "/admin/activity", "Question saved.");
 }
@@ -254,7 +255,7 @@ export async function saveCall(f: FormData) {
     const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, dealId));
     const to = prev?.officeId ? [prev.officeId] : await ndaOffices(dealId);
     await notifyOffices(to, { title: `${d?.company}: ${vals.title || "promoter call"} · ${vals.status}${vals.scheduledFor ? ` · ${vals.scheduledFor}` : ""}`,
-      body: vals.summary, link: `/room/${d?.slug}` });
+      body: vals.summary, link: `/room/${d?.slug}` }, true, prev?.officeId ? undefined : { dealId, topic: "session" });
   }
   await log(admin, "Desk updated a call");
   back(s(f, "back") || "/admin/activity", "Call saved.");
@@ -321,7 +322,9 @@ export async function sendBroadcast(f: FormData) {
   else if (audience === "office") ids = [n(f, "officeId")].filter(Boolean);
   if (!ids.length) back("/admin/notify", "Nobody is in that audience yet.");
   const [b] = await db.insert(broadcasts).values({ title, body: body || null, link: link || null, audience, dealId, sentBy: admin.name }).returning({ id: broadcasts.id });
-  const r = await notifyOffices(ids, { title, body, link, broadcastId: b.id }, f.get("email") === "on");
+  const topic = s(f, "topic", 20);
+  const alert = dealId && topic && topic in ALERT_TOPICS ? { dealId, topic: topic as keyof typeof ALERT_TOPICS } : undefined;
+  const r = await notifyOffices(ids, { title, body, link, broadcastId: b.id }, f.get("email") === "on", alert);
   await db.update(broadcasts).set({ recipients: r.recipients, emailed: r.emailed }).where(eq(broadcasts.id, b.id));
   await log(admin, `Desk sent "${title}" to ${r.recipients} offices`);
   back("/admin/notify", `Sent to ${r.recipients} ${r.recipients === 1 ? "office" : "offices"}${r.emailed ? `, ${r.emailed} emails` : ""}.`);

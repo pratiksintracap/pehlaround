@@ -3,7 +3,7 @@ import { asc, desc, ne } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { broadcasts, deals, offices } from "@/db/schema";
 import { sendBroadcast } from "@/lib/admin-actions";
-import { emailReady } from "@/lib/notify";
+import { emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { Msg } from "@/components/AdminBits";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
@@ -34,6 +34,8 @@ export default async function Notify({ searchParams }: { searchParams: Promise<{
             <label>Company (for NDA offices)<select name="dealId">{ds.map((d) => <option key={d.id} value={d.id}>{d.company}</option>)}</select></label>
             <label>Office (for one office)<select name="officeId"><option value="">—</option>{os.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
           </div>
+          <label>Room alert (for NDA offices)<select name="topic" defaultValue=""><option value="">General update: email every office that allows email</option>
+            {Object.entries(ALERT_TOPICS).map(([k, v]) => <option key={k} value={k}>{v.label}: email only offices that want this alert</option>)}</select></label>
           <label>Title<input name="title" required maxLength={200} placeholder="New: Karthik Agro room is open" /></label>
           <label>Message<textarea name="body" rows={5} maxLength={4000} placeholder="Two or three lines. Plain text." /></label>
           <label>Link (optional)<input name="link" maxLength={500} placeholder="/deals/karthik-agro or a full https:// address" /></label>

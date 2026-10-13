@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { and, asc, desc, eq, gt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, or } from "drizzle-orm";
 import { getUser, log } from "@/lib/auth";
-import { getDeal, roomAccess, trackerCounts, docAccess, type Deal } from "@/lib/deals";
+import { getDeal, listDeals, signedDealIds, roomAccess, trackerCounts, docAccess, type Deal } from "@/lib/deals";
 import { getDb } from "@/lib/db";
 import { audit, dealPrefs, documents, interests, passes, questions } from "@/db/schema";
 import { Donut, Ring, StatusBar, Bars, HBars, Timeline, barSeries } from "@/components/Charts";
@@ -31,19 +31,29 @@ export default async function Room({ params }: P) {
 
   const db = await getDb();
   const officeId = user!.officeId ?? -1;
-  const [docs, qs, prefs, myInterest, myPass] = await Promise.all([
+  const [docs, qs, prefs, myInterest, myPass, allDeals, mine] = await Promise.all([
     db.select().from(documents).where(eq(documents.dealId, d.id)).orderBy(asc(documents.sort), asc(documents.id)),
-    db.select().from(questions).where(and(eq(questions.dealId, d.id), eq(questions.hidden, false))).orderBy(asc(questions.askedAt)),
+    // private questions are visible only to the office that asked (and the desk)
+    db.select().from(questions).where(and(eq(questions.dealId, d.id), eq(questions.hidden, false),
+      access.admin ? undefined : or(eq(questions.private, false), eq(questions.officeId, officeId)))).orderBy(asc(questions.askedAt)),
     db.select().from(dealPrefs).where(and(eq(dealPrefs.dealId, d.id), eq(dealPrefs.officeId, officeId))),
     db.select().from(interests).where(and(eq(interests.dealId, d.id), eq(interests.officeId, officeId))).orderBy(desc(interests.createdAt)).limit(1),
     db.select().from(passes).where(and(eq(passes.dealId, d.id), eq(passes.officeId, officeId))).orderBy(desc(passes.createdAt)).limit(1),
+    listDeals(), signedDealIds(user!.officeId),
   ]);
-  // one "opened" entry per user and deal per hour keeps the office's log readable
-  const recent = await db.select({ id: audit.id }).from(audit).where(and(eq(audit.userId, user!.id), eq(audit.dealId, d.id), gt(audit.at, new Date(Date.now() - 3600e3)))).limit(1);
+  // other deals, for the switcher: rooms this office has opened first, then the rest of the shelf
+  const others = allDeals.filter((x) => x.id !== d.id);
+  const myRooms = others.filter((x) => mine.has(x.id)), rest = others.filter((x) => !mine.has(x.id));
+  const idx = allDeals.findIndex((x) => x.id === d.id);
+  const prevD = allDeals[(idx - 1 + allDeals.length) % allDeals.length], nextD = allDeals[(idx + 1) % allDeals.length];
+  const hrefFor = (x: Deal) => (mine.has(x.id) || access.admin ? `/room/${x.slug}` : `/deals/${x.slug}`);
+  // one "opened" entry per user and deal per 15 minutes keeps the office's log readable
+  const recent = await db.select({ id: audit.id }).from(audit).where(and(eq(audit.userId, user!.id), eq(audit.dealId, d.id), like(audit.action, "Opened the room%"), gt(audit.at, new Date(Date.now() - 900e3)))).limit(1);
   if (!recent.length) await log(user, `Opened the room: ${d.company}`, d.id);
 
   const r = d.room, c = trackerCounts(d);
-  const alertsOn = new Set(prefs[0]?.alerts ?? []), ticks = new Set(prefs[0]?.ticks ?? []);
+  // until an office chooses, every alert is on
+  const alertsOn = new Set(prefs[0]?.alertsSet ? prefs[0].alerts : r.alerts), ticks = new Set(prefs[0]?.ticks ?? []);
   const inter = myInterest[0], passed = myPass[0];
   const it = r.interest;
   const fmtAmt = (a: number) => a < 1 ? `₹${Math.round(a * 100)} L` : `₹${a} Cr`;
@@ -55,6 +65,19 @@ export default async function Room({ params }: P) {
   return (
     <main><div className="wrap" style={{ paddingTop: 24, paddingBottom: 56 }}>
       <div className="room" data-room={d.slug}>
+        <nav className="dealswitch" aria-label="Switch deal">
+          <a className="btn sm ghost" href="/dashboard">← Your office</a>
+          <div className="ds-mid">
+            {others.length > 0 && <a className="btn sm ghost" href={hrefFor(prevD)} title={prevD.company} aria-label={`Previous deal: ${prevD.company}`}>‹</a>}
+            <details className="ds-menu"><summary className="btn sm">Switch deal <span aria-hidden="true">▾</span></summary>
+              <div className="ds-list">
+                {myRooms.length > 0 && <><span className="k">Your rooms</span>{myRooms.map((x) => <a key={x.id} href={`/room/${x.slug}`}><b>{x.company}</b><small>{x.category}{x.score != null ? ` · Desk Score ${x.score.toFixed(1)}` : ""}</small></a>)}</>}
+                {rest.length > 0 && <><span className="k">{myRooms.length ? "Rest of the shelf" : "On the shelf"}</span>{rest.map((x) => <a key={x.id} href={hrefFor(x)}><b>{x.company}</b><small>{x.category}{x.open ? " · sign its NDA to open the room" : " · room not open yet"}</small></a>)}</>}
+              </div>
+            </details>
+            {others.length > 0 && <a className="btn sm ghost" href={hrefFor(nextD)} title={nextD.company} aria-label={`Next deal: ${nextD.company}`}>›</a>}
+          </div>
+        </nav>
         <div className="roomwrap">
           <div className="roomhead">
             <div>
@@ -168,12 +191,14 @@ export default async function Room({ params }: P) {
 
           <section className="panel" data-panel="Q&A" hidden>
             <ul className="qa">{qs.map((q) => (
-              <li key={q.id}><b>{q.question}</b>
+              <li key={q.id}><b>{q.question}</b>{q.private && <> <span className="pill mid">{q.officeId === officeId ? "Private to your office" : "Private · asked by one office"}</span></>}
                 {q.answer ? <p>{q.answer}<small> — {q.answeredBy || "Desk"}, {fmtD(q.answeredAt)}</small></p>
-                  : <p className="fine">Asked {fmtD(q.askedAt)}. Awaiting the promoter; answers are posted here for every office in this room.</p>}
+                  : <p className="fine">Asked {fmtD(q.askedAt)}. Awaiting the promoter; {q.private ? "the answer is shown only to your office." : "answers are posted here for every office in this room."}</p>}
               </li>
             ))}</ul>
-            <form className="form askform"><label>Ask the promoter<textarea name="q" rows={2} placeholder="Questions are answered in writing and shown to every office in this room" /></label><div><button className="btn" type="submit">Submit question</button></div></form>
+            <form className="form askform"><label>Ask the promoter<textarea name="q" rows={2} placeholder="Answered in writing in this room" /></label>
+              <label className="chk"><input type="checkbox" name="private" /> <span><b>Ask privately.</b> Only your office sees this question and its answer; the promoter is told which office asked. Leave unticked to share the answer with every office in the room.</span></label>
+              <div><button className="btn" type="submit">Submit question</button></div></form>
             <div className="callbox" id="call"><h3>Request a management call</h3>
               <p className="fine">Calls are group sessions under the NDA. Information that will not appear in the offer documents is not shared on calls, and a written summary is posted to this room for every office.</p>
               <form className="form" id="callform" noValidate>
@@ -193,7 +218,7 @@ export default async function Room({ params }: P) {
               {inter && <p className="fine"><b>Your office requested {fmtAmt(Number(inter.amountCr))} on {fmtD(inter.createdAt)}</b> · {inter.status}</p>}</div>
             <div className="amt" data-price={it.price ?? ""} data-shares={it.sharesCr ?? ""} data-post={it.postCr ?? ""}>
               <label>Amount <b id="amtval">{fmtAmt(def)}</b></label>
-              <input type="range" min={it.min} max={it.max} step={it.step} defaultValue={def} />
+              <input type="range" data-ticket="" min={it.min} max={it.max} step={it.step} defaultValue={def} />
               <div className="amtrow"><span>{fmtAmt(it.min)}</span><span>{fmtAmt(it.max)}</span></div>
               {stakeLine && <p className="fine" id="amtstake" style={{ marginTop: 8 }}>{stakeLine}</p>}
             </div>
@@ -203,7 +228,7 @@ export default async function Room({ params }: P) {
             </div>
           </aside>
 
-          {r.scenario && <Scenario d={d} />}
+          {r.scenario && <Scenario d={d} ticket={def} />}
 
           <section className="passbox" id="passbox" data-deal={d.slug}>
             <div><span className="eyebrow">Not for your office?</span><h3>Pass, and say why</h3>
@@ -216,7 +241,7 @@ export default async function Room({ params }: P) {
 
           <section className="alerts" id="alerts" data-deal={d.slug}>
             <div><span className="eyebrow">Alerts for your office</span><h3>Tell me when</h3>
-              <p className="fine">Switch on what matters. Alerts go by email to the office that registered; each one is logged in the room&apos;s feed.</p></div>
+              <p className="fine">Every update on this room lands under the bell <span aria-hidden="true">🔔</span> at the top of the site and in the app, for everyone in your office. The ones switched on here also come by email to your office&apos;s team{user!.office?.consents?.email === false ? " once you switch email back on in Team and profile" : ""}. All are on until you choose.</p></div>
             <div className="alert-chips">{r.alerts.map((a) => <button key={a} type="button" className="chip" data-alert={a} aria-pressed={alertsOn.has(a)}>{a}</button>)}</div>
           </section>
         </div>
@@ -225,7 +250,9 @@ export default async function Room({ params }: P) {
   );
 }
 
-function Scenario({ d }: { d: Deal }) {
+function Scenario({ d, ticket }: { d: Deal; ticket: number }) {
+  const it = d.room.interest;
+  const fmtAmt = (a: number) => a < 1 ? `₹${Math.round(a * 100)} L` : `₹${a} Cr`;
   const s = d.room.scenario!;
   const valuation = !(s.price && s.sharesCr);
   const entry = valuation ? `₹${s.postCr} Cr post-money` : `₹${s.price} a share`;
@@ -237,7 +264,7 @@ function Scenario({ d }: { d: Deal }) {
         <div className="scen-inputs">
           <label><span>Projected PAT actually achieved <b data-out="ach">100%</b></span><input type="range" min="50" max="130" step="5" name="ach" defaultValue="100" /><small><span>50%</span><span>130%</span></small></label>
           <label><span>Exit P/E at listing <b data-out="pe">{s.peDefault}x</b></span><input type="range" min="6" max="45" step="1" name="pe" defaultValue={s.peDefault} /><small><span>6x</span><span>45x</span></small></label>
-          <label><span>Your ticket <b data-out="amt">₹2 Cr</b></span><input type="range" min="0.5" max="10" step="0.5" name="amt" defaultValue="2" /><small><span>₹50 L</span><span>₹10 Cr</span></small></label>
+          <label><span>Your ticket <b data-out="amt">{fmtAmt(ticket)}</b></span><input type="range" data-ticket="" min={it.min} max={it.max} step={it.step} name="amt" defaultValue={ticket} /><small><span>{fmtAmt(it.min)}</span><span>{fmtAmt(it.max)}</span></small></label>
         </div>
         <div className="scen-out">
           <div className="snapcell"><span className="k">Implied value at exit</span><b data-out="value">—</b><small data-out="vsub" /></div>
@@ -246,7 +273,7 @@ function Scenario({ d }: { d: Deal }) {
           <div className="snapcell"><span className="k">Entry vs exit P/E</span><b data-out="pes">—</b><small>on the same PAT line</small></div>
         </div>
       </div>
-      <div className="scen-bar" aria-hidden="true"><div className="track"><i data-out="bar" /></div><div className="k"><span>Entry: {entry}</span><span data-out="exitpx">Exit</span></div></div>
+      <div className="scen-bar" aria-hidden="true"><span className="k sb-title">Your ticket and what it is worth at exit</span><div className="track"><i data-out="bar" /></div><div className="k"><span data-out="entrylbl">Your ticket</span><span data-out="exitpx">Worth at exit</span></div><p className="fine">The same ticket as the allocation slider above: move either one. Entry at {entry}.</p></div>
     </section>
   );
 }

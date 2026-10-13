@@ -127,6 +127,7 @@ export const questions = pgTable("questions", {
   askedAt: timestamp("asked_at", { withTimezone: true }).notNull().defaultNow(),
   answeredAt: timestamp("answered_at", { withTimezone: true }),
   hidden: boolean("hidden").notNull().default(false),
+  private: boolean("private").notNull().default(false),   // asked privately: only the asking office sees it and the answer
 }, (t) => [index("questions_deal_idx").on(t.dealId)]);
 
 export const calls = pgTable("calls", {
@@ -175,6 +176,7 @@ export const dealPrefs = pgTable("deal_prefs", {
   alerts: jsonb("alerts").$type<string[]>().notNull().default([]),
   ticks: jsonb("ticks").$type<string[]>().notNull().default([]),
   saved: boolean("saved").notNull().default(false),
+  alertsSet: boolean("alerts_set").notNull().default(false),   // false: the office never chose, so every alert is on
 }, (t) => [uniqueIndex("deal_prefs_uq").on(t.officeId, t.dealId)]);
 
 export const leads = pgTable("leads", {

@@ -45,9 +45,10 @@ export async function POST(req: NextRequest, { params }: P) {
     case "question": {
       const q = str(data.question, 1000);
       if (q.length < 5) return jerr("Please write the question in full.");
-      await db.insert(questions).values({ ...base, question: q });
-      await log(user, `Asked the promoter a question: ${d.company}`, d.id);
-      await notifyDesk({ title: `New question on ${d.company}`, body: q, link: "/admin/activity#qs" });
+      const priv = data.private === true || data.private === "on" || data.private === "true";
+      await db.insert(questions).values({ ...base, question: q, private: priv });
+      await log(user, `Asked the promoter a ${priv ? "private " : ""}question: ${d.company}`, d.id);
+      await notifyDesk({ title: `New ${priv ? "private " : ""}question on ${d.company}`, body: `${user.office?.name}: ${q}`, link: "/admin/activity#qs" });
       break;
     }
     case "call": {
@@ -63,8 +64,9 @@ export async function POST(req: NextRequest, { params }: P) {
       const clean = (v: unknown) => Array.isArray(v) ? v.map((x) => str(x, 120)).filter(Boolean).slice(0, 20) : undefined;
       const alerts = clean(data.alerts), ticks = clean(data.ticks);
       if (!alerts && !ticks) return jerr("Nothing to save.");
-      if (cur) await db.update(dealPrefs).set({ ...(alerts ? { alerts } : {}), ...(ticks ? { ticks } : {}) }).where(eq(dealPrefs.id, cur.id));
-      else await db.insert(dealPrefs).values({ dealId: d.id, officeId: user.officeId, alerts: alerts ?? [], ticks: ticks ?? [] });
+      const set = { ...(alerts ? { alerts, alertsSet: true } : {}), ...(ticks ? { ticks } : {}) };
+      if (cur) await db.update(dealPrefs).set(set).where(eq(dealPrefs.id, cur.id));
+      else await db.insert(dealPrefs).values({ dealId: d.id, officeId: user.officeId, alerts: alerts ?? [], ticks: ticks ?? [], alertsSet: !!alerts });
       break;
     }
     default:

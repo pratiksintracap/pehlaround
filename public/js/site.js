@@ -155,8 +155,13 @@
       if (price && shares) out.textContent = "≈ " + ((a * 100) / price).toFixed(2) + " lakh shares at ₹" + price + " · " + ((a / (shares * price)) * 100).toFixed(2) + "% of the company";
       else if (post) out.textContent = "≈ " + ((a / post) * 100).toFixed(2) + "% of the company, post-money";
     }
-    r.addEventListener("input", upd); upd();
+    r.addEventListener("input", function () { upd(); syncTicket(r); }); upd();
   })();
+
+  /* one ticket across the room: the allocation slider and the scenario's ticket move together */
+  function syncTicket(src) {
+    $$("input[data-ticket]").forEach(function (o) { if (o !== src && o.value !== src.value) { o.value = src.value; o.dispatchEvent(new Event("input")); } });
+  }
 
   /* ---------- deal room: scenario calculator ---------- */
   (function () {
@@ -182,11 +187,12 @@
       out("moic").textContent = moic.toFixed(2) + "x";
       out("irr").textContent = (irr * 100).toFixed(1) + "%";
       out("pes").textContent = (price * shares / (pat * ach)).toFixed(1) + "x → " + pe + "x";
-      out("exitpx").textContent = post && shares === 1 ? "Exit: ₹" + Math.round(px).toLocaleString("en-IN") + " Cr market cap" : "Exit: ₹" + px.toFixed(0) + " a share";
-      var bar = out("bar"); if (bar) { var pct = Math.min(100, (price / Math.max(px, price)) * 100); bar.style.width = (moic >= 1 ? pct : 100) + "%"; bar.className = moic >= 1 ? "" : "down"; }
+      out("exitpx").textContent = "Worth at exit: ₹" + value.toFixed(2) + " Cr";
+      var inl = out("entrylbl"); if (inl) inl.textContent = "Your ticket: " + fmtAmt(amt);
+      var bar = out("bar"); if (bar) { var pct = moic >= 1 ? (1 / moic) * 100 : moic * 100; bar.style.width = Math.max(2, Math.min(100, pct)) + "%"; bar.className = moic >= 1 ? "" : "down"; }
       sc.classList.toggle("loss", moic < 1);
     }
-    Object.keys(ins).forEach(function (k) { if (ins[k]) ins[k].addEventListener("input", calc); });
+    Object.keys(ins).forEach(function (k) { if (ins[k]) ins[k].addEventListener("input", function () { calc(); if (k === "amt") syncTicket(ins.amt); }); });
     calc();
   })();
 
@@ -324,7 +330,14 @@
     $$(".tabbtn").forEach(function (t) { t.addEventListener("click", function () {
       $$(".tabbtn").forEach(function (o) { o.setAttribute("aria-selected", "false"); }); t.setAttribute("aria-selected", "true");
       var n = t.getAttribute("data-tab"); $$(".panel").forEach(function (pn) { pn.hidden = pn.getAttribute("data-panel") !== n; }); }); });
-    (function () { var h = decodeURIComponent(location.hash.slice(1)); var t = h && $('.tabbtn[data-tab="' + h.replace(/"/g, "") + '"]'); if (t) t.click(); })();
+    function tabFromHash(scroll) { var h = decodeURIComponent(location.hash.slice(1)); var t = h && $('.tabbtn[data-tab="' + h.replace(/"/g, "") + '"]'); if (t) { t.click(); if (scroll) { var tb = $(".tabs"); if (tb) tb.scrollIntoView({ behavior: "smooth", block: "start" }); } } }
+    tabFromHash(false);
+    window.addEventListener("hashchange", function () { tabFromHash(true); });
+    // deal switcher: close the menu on an outside click or Escape
+    $$(".ds-menu").forEach(function (m) {
+      document.addEventListener("click", function (e) { if (m.open && !m.contains(e.target)) m.open = false; });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") m.open = false; });
+    });
 
     // ---------- disclaimer gate ----------
     var VER = "2026-10-12", KEY = "pr_disclaimer", g = $("#disc-gate");
@@ -334,7 +347,12 @@
     function hide() { if (!g) return; g.hidden = true; document.body.classList.remove("disc-open"); }
     var rec = get(), fresh = rec && rec.v === VER && (Date.now() - rec.at) < 30 * 864e5;
     if (!fresh) show();
-    var ag = $("#disc-agree"); if (ag) ag.addEventListener("click", function () { set({ v: VER, at: Date.now() }); hide(); if (document.body.getAttribute("data-user")) api("/api/disclaimer", { version: VER }).catch(function () {}); });
+    // welcome pop-up after approval: once per office, after the disclaimer
+    var wl = $("#welcome");
+    function welcome() { if (!wl || !wl.showModal) return; var k = wl.getAttribute("data-key"); try { if (localStorage.getItem(k)) return; localStorage.setItem(k, "1"); } catch (e) {} wl.showModal(); }
+    if (wl) wl.addEventListener("click", function (e) { if (e.target === wl) wl.close(); });
+    if (fresh) welcome();
+    var ag = $("#disc-agree"); if (ag) ag.addEventListener("click", function () { set({ v: VER, at: Date.now() }); hide(); welcome(); if (document.body.getAttribute("data-user")) api("/api/disclaimer", { version: VER }).catch(function () {}); });
     var lv = $("#disc-leave"); if (lv) lv.addEventListener("click", function () { if (history.length > 1) history.back(); else location.replace("about:blank"); });
     $$("[data-show-disclaimer]").forEach(function (x) { x.addEventListener("click", function (e) { e.preventDefault(); show(); }); });
     if (g) g.addEventListener("keydown", function (e) { if (e.key === "Tab") { var f = $$("button", g); if (!f.length) return; var first = f[0], last = f[f.length - 1];
@@ -388,9 +406,10 @@
     if (ask) ask.addEventListener("submit", function (e) {
       e.preventDefault(); var ta = $("textarea", ask), q = ta && ta.value.trim(); if (!q) return;
       var b = $("button", ask); b.disabled = true;
-      api(base + "question", { question: q }).then(function () {
-        var li = document.createElement("li"); li.innerHTML = '<b></b><p class="fine">Submitted just now. Awaiting the promoter; the answer will appear here for every office in this room.</p>';
-        $("b", li).textContent = q; var list = $(".qa"); if (list) list.appendChild(li); ta.value = ""; b.disabled = false; toast("Question sent");
+      var pv = $("input[name=private]", ask), priv = !!(pv && pv.checked);
+      api(base + "question", { question: q, private: priv }).then(function () {
+        var li = document.createElement("li"); li.innerHTML = '<b></b>' + (priv ? ' <span class="pill mid">Private to your office</span>' : '') + '<p class="fine">' + (priv ? "Submitted just now. Only your office will see this question and its answer." : "Submitted just now. Awaiting the promoter; the answer will appear here for every office in this room.") + '</p>';
+        $("b", li).textContent = q; var list = $(".qa"); if (list) list.appendChild(li); ta.value = ""; if (pv) pv.checked = false; b.disabled = false; toast(priv ? "Private question sent" : "Question sent");
       }).catch(function (err) { b.disabled = false; toast(err.message); });
     });
     // management call

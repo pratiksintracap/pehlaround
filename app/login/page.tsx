@@ -35,13 +35,6 @@ const PERKS: [string, string, string][] = [
   ["team", "Your whole office, one record", "Add your CIO, CFO or CA. Every NDA, document view and request is logged against a name."],
 ];
 
-const FAQ: [string, string][] = [
-  ["Does it cost the office anything?", "No. Not to register, not to open a room, not to commit."],
-  ["Does our money pass through the desk?", "Never. It goes directly to the company or the seller under signed documents, and the shares land in your demat."],
-  ["Who sees our office's details?", "Only the desk. Companies see your office's name on the NDA you sign with them, and nothing else until you commit."],
-  ["What if we pass on a deal?", "Pass in one line from the room. You keep seeing every new deal; nobody follows up to change your mind."],
-];
-
 export default async function Login({ searchParams }: P) {
   const { next = "", error } = await searchParams;
   if (await getUser()) redirect(next.startsWith("/") ? next : "/dashboard");
@@ -129,11 +122,7 @@ export default async function Login({ searchParams }: P) {
           </ol>
         </section>
 
-        <section className="lp-two">
-          <div className="lp-block">
-            <div className="lp-bhead"><span className="eyebrow">Questions</span><h2>Before you register</h2></div>
-            <div className="faq">{FAQ.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div>
-          </div>
+        <section className="lp-two" style={{ gridTemplateColumns: "1fr" }}>
           <div className="lp-block">
             <div className="lp-bhead"><span className="eyebrow">From the desk</span><h2>Latest articles</h2></div>
             <ul className="lp-arts">{arts.map((a) => <li key={a.id}><a href={artHref(a)}><span className="mono">{artDate(a.publishedAt)}</span><b>{a.title}</b></a></li>)}</ul>

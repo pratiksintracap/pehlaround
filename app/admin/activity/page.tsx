@@ -38,9 +38,9 @@ export default async function Activity({ searchParams }: { searchParams: Promise
       <h2 id="qs">Questions waiting for an answer</h2>
       {qs.length ? qs.map((q) => (
         <form key={q.id} action={answerQuestion} className="form adm-card"><input type="hidden" name="id" value={q.id} /><input type="hidden" name="back" value="/admin/activity#qs" />
-          <p className="fine">{deal.get(q.dealId)} · {q.officeId ? office.get(q.officeId) : "desk"} · {fmtD(q.askedAt)}</p>
+          <p className="fine">{deal.get(q.dealId)} · {q.officeId ? office.get(q.officeId) : "desk"} · {fmtD(q.askedAt)}{q.private && <> · <span className="pill mid">Private to this office</span></>}</p>
           <label>Question<input name="question" defaultValue={q.question} /></label>
-          <div className="row"><label>Answer (shown to every office in the room)<textarea name="answer" rows={2} /></label><label>Answered by<input name="by" defaultValue="Promoter" /></label></div>
+          <div className="row"><label>{q.private ? "Answer (shown only to the office that asked)" : "Answer (shown to every office in the room)"}<textarea name="answer" rows={2} /></label><label>Answered by<input name="by" defaultValue="Promoter" /></label></div>
           <label className="chk"><input type="checkbox" name="hidden" /> Hide from the room</label>
           <div><button className="btn sm" type="submit">Save</button></div></form>))
         : <p className="fine">All questions are answered.</p>}

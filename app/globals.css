@@ -445,3 +445,65 @@ html.is-app .hdr{padding-top:env(safe-area-inset-top,0px)}
 /* ---- Off Market Desk mark ---- */
 .mk svg{display:block;width:18px;height:18px}.logo .mk{box-shadow:none;color:#fff}.disc-top .mk{color:#fff}.appx-bar .mk{color:#0b1730}.appx-bar .mk svg{width:15px;height:15px}.tagline{display:block;font-size:12px;font-weight:500;color:var(--ink3);letter-spacing:0;margin-top:2px}
 .journey .jtitle{fill:var(--live);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+/* ---- v37: dashboard header, progress steps, room list, welcome, deal switcher, scenario bar, money-flow card ---- */
+.dashhead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px 24px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.dashhead h1{font-size:clamp(26px,3.4vw,34px);margin:4px 0 0;line-height:1.1}
+.dh-stats{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.dh-stats a:not(.btn){display:grid;gap:1px;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);text-decoration:none;color:var(--ink);min-width:96px;transition:border-color .15s}
+.dh-stats a:not(.btn):hover{border-color:var(--accent)}
+.dh-stats a b{font-size:18px;line-height:1.2}
+.dh-stats a span{font-size:11.5px;color:var(--ink3)}
+.dh-stats .dh-go{align-self:center}
+.nextstep{margin:16px 0 4px;padding:18px clamp(14px,2.4vw,22px);background:var(--bg2);border:1px solid var(--line);border-radius:14px;display:grid;gap:14px}
+.osteps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;counter-reset:s}
+.osteps li{position:relative;display:flex;gap:10px;align-items:flex-start;padding-right:12px;cursor:default}
+.osteps li:not(:last-child)::after{content:"";position:absolute;left:30px;right:6px;top:13px;height:2px;background:var(--line2)}
+.osteps li.done:not(:last-child)::after{background:var(--live)}
+.osteps .dot{position:relative;z-index:1;flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:700;background:var(--bg2);border:2px solid var(--line2);color:var(--ink3)}
+.osteps li.done .dot{background:var(--live);border-color:var(--live);color:#fff}
+.osteps li.now .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.osteps li div{display:grid;gap:2px;padding-top:3px;background:var(--bg2);position:relative;z-index:1;padding-right:6px}
+.osteps li b{font-size:13.5px}
+.osteps li small{font-size:12px;color:var(--ink3);line-height:1.35}
+.osteps li.todo b{color:var(--ink3)}
+.ns-act{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ns-act:empty{display:none}
+@media (max-width:760px){.osteps{grid-template-columns:1fr;gap:12px}.osteps li:not(:last-child)::after{left:12px;right:auto;top:28px;bottom:-14px;width:2px;height:auto}.osteps li div{background:none}}
+.roomlist{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
+.roomlist li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
+.roomlist li div{display:grid;gap:2px;min-width:0}
+.roomlist li small{color:var(--ink3);font-size:12px}
+.roomlist .empty-li{display:block;color:var(--ink3);font-size:14px}
+dialog.welcome{max-width:560px;width:calc(100% - 32px);border:0;border-radius:16px;padding:24px clamp(16px,3vw,28px);background:var(--bg2);color:var(--ink);box-shadow:0 24px 80px #0b173040}
+dialog.welcome::backdrop{background:#0b1730a6;backdrop-filter:blur(2px)}
+dialog.welcome h2{margin:6px 0 8px;font-size:24px}
+dialog.welcome p{color:var(--ink2)}
+dialog.welcome .k{display:block;margin:16px 0 4px}
+dialog.welcome .wl-x{position:absolute;right:12px;top:12px}
+dialog.welcome .wl-profile{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:12px}
+dialog.welcome form[method=dialog]:last-child{margin-top:14px}
+.dealswitch{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.ds-mid{display:flex;gap:6px;align-items:center}
+.ds-menu{position:relative}
+.ds-menu summary{list-style:none;cursor:pointer}
+.ds-menu summary::-webkit-details-marker{display:none}
+.ds-list{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(360px,calc(100vw - 32px));max-height:60vh;overflow:auto;background:var(--bg2);border:1px solid var(--line2);border-radius:12px;box-shadow:0 18px 50px #0b173030;padding:8px;display:grid;gap:2px}
+.ds-list .k{padding:8px 10px 4px}
+.ds-list a{display:grid;gap:1px;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink)}
+.ds-list a:hover{background:var(--bg3)}
+.ds-list a small{color:var(--ink3);font-size:12px}
+.scen-bar .sb-title{display:block;margin-bottom:6px}
+.scen-bar .track{background:repeating-linear-gradient(135deg,var(--live-soft) 0 8px,transparent 8px 14px),var(--bg3);height:14px}
+.scen-bar .track i{background:var(--accent);border-radius:999px 0 0 999px}
+.scen-bar .track i.down{background:var(--bad);border-radius:999px}
+.scen-bar .k span:last-child{color:var(--live);font-weight:600}
+.scen-bar .fine{margin-top:6px}
+.flowcard{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:clamp(14px,2.5vw,28px);box-shadow:0 10px 40px #0b17300f;margin-bottom:8px}
+.faqlink{padding:18px 20px;border:1px dashed var(--line2);border-radius:14px;text-align:center;color:var(--ink2)}
+.faqlink a{font-weight:600}
+.askform .chk span{font-size:13.5px;color:var(--ink2)}
+/* steps: label sits under the dot, the line joins dot to dot */
+.osteps li{display:grid;grid-template-columns:1fr;gap:8px;align-content:start;padding-right:10px}
+.osteps li:not(:last-child)::after{left:36px;right:4px;top:12px}
+.osteps li div{background:none;padding:0}
+@media (max-width:760px){.osteps li{grid-template-columns:26px 1fr;gap:10px}.osteps li:not(:last-child)::after{left:12px;right:auto;top:30px;bottom:-12px;width:2px;height:auto}}
