@@ -8,15 +8,30 @@ import { scoreSvg } from "@/lib/render";
 export const metadata: Metadata = { title: "Sign in", description: "Your family office's shelf, deal rooms, calls, documents and log, in one place." };
 type P = { searchParams: Promise<{ next?: string; error?: string }> };
 
-const PERKS: [string, string][] = [
-  ["A new deal about every fortnight", "The desk brings a fresh company to the shelf roughly every two weeks on average, each one found directly with the promoter, not passed around by bankers."],
-  ["Every company, by name", "Once the desk approves your office: round size, pre-money and trailing and forward P/E for every deal on the desk."],
-  ["Checked before it reaches you", "Site, factory and plant visits, customer orders verified, customer feedback taken and the numbers reconciled, before a company gets a room. Each one carries a Pehla Score."],
-  ["Rooms that open on screen", "Sign one NDA with that company and its data room opens at once: financials, terms, IPO path, diligence, risks and documents."],
-  ["Ask the promoter, in writing", "Questions go to the company and the answers are posted for every office. Promoter sessions are set up by the desk."],
-  ["Commit, or pass in one line", "Request an allocation with a slider, or pass with a reason. Nobody calls to change your mind."],
-  ["Told the moment it matters", "Approvals, answers, new documents and new deals arrive under the bell, in the app on your phone, and by email."],
-  ["Your whole office, one record", "Add your CIO, CFO or CA. Every NDA, document view and request is logged against a name."],
+const ICON: Record<string, string> = {
+  fresh: "M4 7h16v13H4zM4 7l2-3h12l2 3M8 2v4M16 2v4M12 11v5M9.5 13.5h5",
+  names: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+  checked: "M3 21V10l5 3V10l5 3V6l8 4v11zM9 17l2 2 4-4",
+  rooms: "M4 4h11l5 5v11H4zM15 4v5h5M8 13h8M8 17h5",
+  ask: "M4 5h16v11H9l-5 4zM8 9h8M8 12h5",
+  commit: "M4 8h16M4 16h16M9 5v6M15 13v6",
+  told: "M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0",
+  team: "M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2 20c.5-3.5 3.5-6 7-6s6.5 2.5 7 6M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14c2 .8 3.5 3 4 6",
+};
+const HUE = ["#2563eb", "#059669", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#ea580c", "#4f46e5"];
+const Icon = ({ k, c }: { k: string; c: string }) => (
+  <span className="lp-ic" style={{ ["--c" as string]: c }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICON[k]} /></svg></span>
+);
+
+const PERKS: [string, string, string][] = [
+  ["fresh", "A new deal about every fortnight", "The desk brings a fresh company to the shelf roughly every two weeks on average, each one found directly with the promoter, not passed around by bankers."],
+  ["names", "Every company, by name", "Once the desk approves your office: round size, pre-money and trailing and forward P/E for every deal on the desk."],
+  ["checked", "Checked before it reaches you", "Site, factory and plant visits, customer orders verified, customer feedback taken and the numbers reconciled, before a company gets a room. Each one carries a Pehla Score."],
+  ["rooms", "Rooms that open on screen", "Sign one NDA with that company and its data room opens at once: financials, terms, IPO path, diligence, risks and documents."],
+  ["ask", "Ask the promoter, in writing", "Questions go to the company and the answers are posted for every office. Promoter sessions are set up by the desk."],
+  ["commit", "Commit, or pass in one line", "Request an allocation with a slider, or pass with a reason. Nobody calls to change your mind."],
+  ["told", "Told the moment it matters", "Approvals, answers, new documents and new deals arrive under the bell, in the app on your phone, and by email."],
+  ["team", "Your whole office, one record", "Add your CIO, CFO or CA. Every NDA, document view and request is logged against a name."],
 ];
 
 const FAQ: [string, string][] = [
@@ -80,16 +95,16 @@ export default async function Login({ searchParams }: P) {
         </div>
 
         <section className="lp-stats" aria-label="The desk today">
-          <div><b>{all.length}</b><span>companies on the desk now</span></div>
-          <div><b>~2 weeks</b><span>between new deals, on average</span></div>
-          <div><b>{listingSpan}</b><span>target listings on the shelf</span></div>
-          <div><b>₹0</b><span>fee for family offices</span></div>
+          <div><Icon k="rooms" c="#2563eb" /><b>{all.length}</b><span>companies on the desk now</span></div>
+          <div><Icon k="fresh" c="#059669" /><b>~2 weeks</b><span>between new deals, on average</span></div>
+          <div><Icon k="told" c="#d97706" /><b>{listingSpan}</b><span>target listings on the shelf</span></div>
+          <div><Icon k="names" c="#db2777" /><b>₹0</b><span>fee for family offices</span></div>
         </section>
 
         <section className="lp-perks" aria-label="What registered offices get">
-          {PERKS.map(([t, d], i) => (
-            <div key={t} className="lp-perk rv inview" style={{ ["--d" as string]: `${i * 0.05}s` }}>
-              <span className="lp-n">{String(i + 1).padStart(2, "0")}</span><b>{t}</b><p>{d}</p>
+          {PERKS.map(([k, t, d], i) => (
+            <div key={t} className="lp-perk rv inview" style={{ ["--d" as string]: `${i * 0.05}s`, ["--c" as string]: HUE[i % HUE.length] }}>
+              <Icon k={k} c={HUE[i % HUE.length]} /><b>{t}</b><p>{d}</p>
             </div>
           ))}
         </section>
