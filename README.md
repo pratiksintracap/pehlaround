@@ -23,7 +23,7 @@ Deal content lives in the database and is edited in `/admin/deals`. `lib/seed.ts
 2. **Settings → Environment Variables**:
    - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` — the first desk admin (created on start; more admins can be added in `/admin`).
    - `SESSION_SECRET` — a long random string (e.g. `openssl rand -hex 32`).
-   - `NEXT_PUBLIC_SITE_URL` — `https://offmarketdesk.in` once the domain points here.
+   - `NEXT_PUBLIC_SITE_URL` — optional; defaults to `https://offmarketdesk.in`.
    - Optional `REQUIRE_PAN_VERIFIED=1` — rooms open only after the desk marks the office's PAN verified (default: the room opens on signing; the desk checks PAN after).
 3. Redeploy.
 
