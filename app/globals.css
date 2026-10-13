@@ -802,3 +802,24 @@ body:has(.appbar) .an-fab{bottom:84px}
 .an-log-t>div{padding:10px 12px;border-radius:10px;background:var(--bg)}
 .an-log-t>div.u{background:var(--accent-soft)}
 .an-log-t p{white-space:pre-wrap;font-size:13.5px;margin-top:4px;color:var(--ink2)}
+
+/* ---------- v41: sign-in page stats and perks in the site's card language (navy icon tile, green line, plain cards) ---------- */
+.lp-ic{width:40px;height:40px;border-radius:10px;background:var(--navy);color:var(--live);margin-bottom:12px}
+.lp-ic svg{width:22px;height:22px;stroke-width:1.6}
+.lp-perk::before,.lp-perk::after{display:none}
+.lp-perk{padding:18px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);transition:border-color .2s,transform .2s var(--ease)}
+.lp-perk:hover{transform:translateY(-2px);box-shadow:none;border-color:var(--line2)}
+.lp-perk b{font-size:16px;letter-spacing:-.01em}
+.lp-perk p{font-size:13.5px;color:var(--ink2)}
+.lp-perkwrap{grid-column:1/-1}
+.lp-perkwrap .lp-perks{margin-top:14px}
+.lp-stats{gap:0;background:var(--bg2);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.lp-stats div{border:0;border-radius:0;background:none;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14px;align-items:center;padding:18px 20px}
+.lp-stats div+div{border-left:1px solid var(--line)}
+.lp-stats span.lp-ic{grid-row:1/3;width:40px;height:40px;border-radius:10px;margin:0;color:var(--live)}
+.lp-stats span.lp-ic svg{width:21px;height:21px}
+.lp-stats b{font-size:clamp(19px,1.8vw,24px);line-height:1.15}
+.lp-stats span:not(.lp-ic){margin-top:2px}
+@media (max-width:720px){.lp-stats div:nth-child(3){border-left:0}.lp-stats div:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:560px){.lp-stats{grid-template-columns:1fr}.lp-stats div+div{border-left:0;border-top:1px solid var(--line)}}
+.is-app .lp-perkwrap{display:none!important}

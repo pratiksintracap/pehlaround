@@ -22,9 +22,8 @@ const ICON: Record<string, string> = {
   told: "M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0",
   team: "M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2 20c.5-3.5 3.5-6 7-6s6.5 2.5 7 6M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14c2 .8 3.5 3 4 6",
 };
-const HUE = ["#2563eb", "#059669", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#ea580c", "#4f46e5"];
-const Icon = ({ k, c }: { k: string; c: string }) => (
-  <span className="lp-ic" style={{ ["--c" as string]: c }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICON[k]} /></svg></span>
+const Icon = ({ k }: { k: string }) => (
+  <span className="lp-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICON[k]} /></svg></span>
 );
 
 const PERKS: [string, string, string][] = [
@@ -104,18 +103,21 @@ export default async function Login({ searchParams }: P) {
         </div>
 
         <section className="lp-stats" aria-label="The desk today">
-          <div><Icon k="rooms" c="#2563eb" /><b>{all.length}</b><span>companies on the desk now</span></div>
-          <div><Icon k="fresh" c="#059669" /><b>~2 weeks</b><span>between new deals, on average</span></div>
-          <div><Icon k="told" c="#d97706" /><b>{listingSpan}</b><span>target listings on the shelf</span></div>
-          <div><Icon k="names" c="#db2777" /><b>₹0</b><span>fee for family offices</span></div>
+          <div><Icon k="rooms" /><b>{all.length}</b><span>companies on the desk now</span></div>
+          <div><Icon k="fresh" /><b>~2 weeks</b><span>between new deals, on average</span></div>
+          <div><Icon k="told" /><b>{listingSpan}</b><span>target listings on the shelf</span></div>
+          <div><Icon k="names" /><b>₹0</b><span>fee for family offices</span></div>
         </section>
 
-        <section className="lp-perks" aria-label="What registered offices get">
-          {PERKS.map(([k, t, d], i) => (
-            <div key={t} className="lp-perk rv inview" style={{ ["--d" as string]: `${i * 0.05}s`, ["--c" as string]: HUE[i % HUE.length] }}>
-              <Icon k={k} c={HUE[i % HUE.length]} /><b>{t}</b><p>{d}</p>
-            </div>
-          ))}
+        <section className="lp-block lp-perkwrap" aria-label="What registered offices get">
+          <div className="lp-bhead"><span className="eyebrow">What registered offices get</span><h2 className="tt">One desk for every pre-IPO deal.<span className="tt2">From the first look to allotment.</span></h2></div>
+          <div className="lp-perks">
+            {PERKS.map(([k, t, d], i) => (
+              <div key={t} className="lp-perk rv inview" style={{ ["--d" as string]: `${i * 0.05}s` }}>
+                <Icon k={k} /><b>{t}</b><p>{d}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="lp-block" aria-label="On the desk now">
