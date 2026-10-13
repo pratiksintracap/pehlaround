@@ -54,7 +54,7 @@ export default async function Login({ searchParams }: P) {
           <p className="lede">IPO-bound companies the market has not found yet, each in the same structured room. Registered offices see the names and the numbers; nobody else does.</p>
 
           <div className="lp-mock" aria-label="Preview of the office dashboard">
-            <div className="lp-mock-top"><span className="lp-dots"><i /><i /><i /></span><span className="mono">Office dashboard</span><span className="pill ok">PAN on record</span></div>
+            <div className="lp-mock-top"><span className="lp-dots"><i /><i /><i /></span><span className="mono">Office dashboard</span><span className="pill ok">Approved</span></div>
             <div className="lp-mock-tabs"><b>Shelf</b><span>My rooms</span><span>Calls</span><span>Documents</span><span>Portfolio</span><span>Log</span></div>
             <ul className="lp-rows">
               {deals.map((d, i) => (

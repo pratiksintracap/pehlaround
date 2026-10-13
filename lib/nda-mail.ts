@@ -12,8 +12,8 @@ export async function ndaRecord(id: number): Promise<(NdaRecord & { officeId: nu
   const [[d], [o], [u]] = await Promise.all([
     db.select().from(deals).where(eq(deals.id, n.dealId)), db.select().from(offices).where(eq(offices.id, n.officeId)), db.select().from(users).where(eq(users.id, n.userId)),
   ]);
-  return { id: n.id, company: d.company, slug: d.slug, officeId: o.id, officeName: o.name, entityName: o.entityName, pan: o.pan, signerName: n.signerName,
-    signerEmail: u?.email ?? "", version: n.version, signedAt: n.signedAt, ip: n.ip };
+  return { id: n.id, company: d.company, slug: d.slug, officeId: o.id, officeName: o.name, entityName: o.entityName, signerName: n.signerName,
+    signerEmail: n.signerEmail || u?.email || "", codeVerified: n.codeVerified, version: n.version, signedAt: n.signedAt, ip: n.ip };
 }
 
 export const ndaFilename = (r: { company: string; officeName: string }) =>

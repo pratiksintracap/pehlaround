@@ -19,18 +19,18 @@ export default async function Register({ searchParams }: P) {
         <ol className="stepper" aria-label="Step 1 of 3">
           <li className="now"><span className="dot">1</span><span className="t">Register the office</span><span className="s">one form</span></li>
           <li><span className="dot">2</span><span className="t">Approved by the desk</span><span className="s">usually a working day</span></li>
-          <li><span className="dot">3</span><span className="t">PAN and deal NDA</span><span className="s">opens that room</span></li>
+          <li><span className="dot">3</span><span className="t">Sign a deal&apos;s NDA</span><span className="s">name and an email code</span></li>
         </ol>
         <span className="eyebrow">Family office registration</span>
         <h1>Register the office</h1>
-        <p className="lede">Step one takes a minute. Once the desk approves your office, usually within a working day, you see every company on the desk with its round and valuation. PAN comes with the first NDA, and KYC only if you commit. No fee for family offices, ever.</p>
-        <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>Approved by the desk</li><li>PAN on record</li><li>NDA per deal</li><li>Rooms unlocked</li></ol>
+        <p className="lede">Step one takes a minute. Once the desk approves your office, usually within a working day, you see every company on the desk with its round and valuation. Each room opens with an NDA signed with your name and a code we email you; KYC comes only if you commit. No fee for family offices, ever.</p>
+        <ol className="statusrail" aria-label="Your status"><li className="now">Registered</li><li>Approved by the desk</li><li>NDA per deal</li><li>Rooms unlocked</li></ol>
         <ul className="ticks">
           <li>A new deal reaches the desk about every fortnight; you are told the day it does.</li>
           <li>No fee for the office: not to register, not to open a room, not to commit.</li>
           <li>Each deal has its own NDA, signed directly with that company; it opens that company&apos;s room only.</li>
           <li>Add your CIO, CFO or CA as viewers; they join your office when they register with that email.</li>
-          <li>The first NDA asks for the investing entity&apos;s PAN; KYC, bank account, demat and the authorised signatory come only at commitment.</li>
+          <li>No PAN or ID to look at deals or sign an NDA. KYC, bank account, demat and the authorised signatory come only at commitment.</li>
           <li>The family&apos;s money moves directly to the company or seller, never through the desk.</li>
         </ul>
       </div>
@@ -52,7 +52,7 @@ export default async function Register({ searchParams }: P) {
             <label>Residency<select name="residency" required defaultValue=""><option value="" disabled>Select</option><option>Resident in India</option><option>Non-resident (FEMA route applies)</option></select></label></div>
           <div className="row"><label>Typical ticket per deal<select name="ticket" required defaultValue=""><option value="" disabled>Select</option><option>₹50 lakh – 1 crore</option><option>₹1–2 crore</option><option>₹2–5 crore</option><option>₹5–25 crore</option><option>Above ₹25 crore</option></select></label>
             <label>Viewers to add (optional)<input name="viewers" placeholder="CIO, CFO or CA emails" /></label></div>
-          <p className="notice"><b>Privacy notice.</b> We use these details to identify your office and, at step two, to verify PAN and prepare documents. We keep them while the office is registered and for the period the law requires for offeree records, then delete them. You can ask for a copy, a correction or deletion at <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>. Full notice: <a href="/legal">privacy</a>.</p>
+          <p className="notice"><b>Privacy notice.</b> We use these details to identify your office and to prepare documents. We keep them while the office is registered and for the period the law requires for offeree records, then delete them. You can ask for a copy, a correction or deletion at <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>. Full notice: <a href="/legal">privacy</a>.</p>
           <label className="chk"><input type="checkbox" required name="privacy" />I have read the privacy notice and consent to this use of my details.</label>
           <label className="chk"><input type="checkbox" required name="risk" />I understand that unlisted investments are illiquid and can lose their entire value, that Off Market Desk does not advise the family, and that the office decides on the documents and its own advice.</label>
           <label className="chk"><input type="checkbox" name="contact" />Optional: Off Market Desk may call, email or WhatsApp me about deals on the desk. I can withdraw this at any time.</label>

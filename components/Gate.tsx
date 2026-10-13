@@ -25,7 +25,7 @@ export function GateCard({ deal, state }: { deal: Deal; state: Exclude<Access["s
       body = <p>Thank you for registering. The desk is reviewing your office, usually within a working day. Once approved you will see every company by name and can sign this company&apos;s NDA; we will let you know in your dashboard and by email.</p>;
       break;
     case "pending-pan":
-      body = <p>Your office has signed this company&apos;s NDA. The desk is checking the PAN against the name on it; the room opens as soon as that is done, usually within a working day.</p>;
+      body = <p>Your office has signed this company&apos;s NDA. The desk is completing its checks; the room opens as soon as that is done, usually within a working day.</p>;
       break;
     case "closed":
       body = <>

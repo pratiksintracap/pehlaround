@@ -45,7 +45,6 @@ export async function roomAccess(user: SessionUser | null, deal: Deal): Promise<
   if (!deal.open) return { state: "closed" };
   const signed = await signedDealIds(user.office.id);
   if (!signed.has(deal.id)) return { state: "need-nda" };
-  if (st.requirePan && user.office.status !== "verified") return { state: "pending-pan" };
   return { state: "open" };
 }
 

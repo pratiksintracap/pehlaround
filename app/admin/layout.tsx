@@ -1,24 +1,38 @@
 import type { Metadata } from "next";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
-import { dbKind } from "@/lib/db";
+import { dbKind, getDb } from "@/lib/db";
+import { offices, questions, interests } from "@/db/schema";
+import { AdminNav } from "@/components/AdminNav";
 
 export const metadata: Metadata = { title: "Desk admin", robots: { index: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const me = await requireAdmin();
   const kind = dbKind();
+  const db = await getDb();
+  const n = async (q: Promise<{ n: number }[]>) => (await q)[0]?.n ?? 0;
+  const [pending, qs, reqs] = await Promise.all([
+    n(db.select({ n: sql<number>`count(*)::int` }).from(offices).where(eq(offices.approval, "pending"))),
+    n(db.select({ n: sql<number>`count(*)::int` }).from(questions).where(and(isNull(questions.answer), eq(questions.hidden, false)))),
+    n(db.select({ n: sql<number>`count(*)::int` }).from(interests).where(eq(interests.status, "Indicated"))),
+  ]);
   return (
-    <main className="adm"><div className="wrap" style={{ paddingTop: 24, paddingBottom: 56 }}>
-      <div className="adm-top">
-        <div><span className="eyebrow">Desk admin · {me.name}</span></div>
-        <nav className="adm-nav">
-          <a href="/admin">Overview</a><a href="/admin/offices">Offices</a><a href="/admin/invites">Invite</a><a href="/admin/deals">Deals</a><a href="/admin/articles">Articles</a><a href="/admin/activity">Requests and Q&amp;A</a><a href="/admin/notify">Notify</a><a href="/admin/emails">Emails</a><a href="/admin/settings">Settings</a><a href="/admin/log">Log</a>
-        </nav>
+    <main className="adm"><div className="wrap app-wrap"><div className="app">
+      <aside className="app-side" aria-label="Desk admin">
+        <div className="as-office">
+          <span className="as-av desk" aria-hidden="true">D</span>
+          <div><b>Desk admin</b><small>{me.name}</small></div>
+        </div>
+        <AdminNav counts={{ "/admin/offices": pending, "/admin/activity": qs + reqs }} />
+        <div className="as-foot"><a href="/deals">View the site</a><a href="/dashboard">Office view</a></div>
+      </aside>
+      <div className="app-main">
+        {kind !== "postgres" && (
+          <p className="notice" style={{ borderColor: "#c0392b", marginBottom: 16 }}><b>No database connected.</b> The site is running on a temporary built-in database: registrations and edits are lost when the server restarts. In Vercel, open the project → Storage → create a Neon Postgres database and connect it to this project (it sets DATABASE_URL), then redeploy.</p>
+        )}
+        {children}
       </div>
-      {kind !== "postgres" && (
-        <p className="notice" style={{ borderColor: "#c0392b", marginBottom: 16 }}><b>No database connected.</b> The site is running on a temporary built-in database: registrations and edits are lost when the server restarts. In Vercel, open the project → Storage → create a Neon Postgres database and connect it to this project (it sets DATABASE_URL), then redeploy.</p>
-      )}
-      {children}
-    </div></main>
+    </div></div></main>
   );
 }

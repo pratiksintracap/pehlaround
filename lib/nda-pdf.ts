@@ -2,11 +2,10 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
 import { NDA_CLAUSES, ndaParties } from "@/lib/nda";
-import { maskPan } from "@/lib/auth";
 
 export type NdaRecord = {
-  id: number; company: string; officeName: string; entityName: string | null; pan: string | null;
-  signerName: string; signerEmail: string; version: string; signedAt: Date; ip: string | null;
+  id: number; company: string; officeName: string; entityName: string | null;
+  signerName: string; signerEmail: string; codeVerified: boolean; version: string; signedAt: Date; ip: string | null;
 };
 
 const NAVY = rgb(0.043, 0.09, 0.188), INK2 = rgb(0.23, 0.27, 0.39), INK3 = rgb(0.42, 0.46, 0.56), ACCENT = rgb(0.12, 0.31, 1);
@@ -71,12 +70,12 @@ export async function ndaPdf(r: NdaRecord): Promise<Uint8Array> {
   const at = r.signedAt.toLocaleString("en-IN", { dateStyle: "long", timeStyle: "medium", timeZone: "Asia/Kolkata" });
   const rows: [string, string][] = [
     ["Signed by", `${r.signerName} (${r.signerEmail}), for ${r.officeName}`],
-    ["Investing entity", `${r.entityName || "—"}${r.pan ? ` · PAN ${maskPan(r.pan)}` : ""}`],
+    ["Email check", r.codeVerified ? `One-time code sent to ${r.signerEmail} and entered at signing` : "Signed on screen while signed in to the office's account"],
     ["Signed at", `${at} IST`], ["Recorded from", r.ip || "—"], ["Agreement", `Version ${r.version} · record #${r.id}`],
   ];
   for (const [k, v] of rows) { page.drawText(k, { x: M + 16, y: sy, size: 9, font: bold, color: INK3 }); page.drawText(safe(v).slice(0, 95), { x: M + 120, y: sy, size: 9, font: reg, color: INK2 }); sy -= 13; }
   y -= 168;
-  para(`Executed electronically on Off Market Desk: the signatory typed their name and confirmed the agreement on screen. Record fingerprint (SHA-256): ${ndaFingerprint(r)}`, reg, 8, INK3, 0);
+  para(`Executed electronically on Off Market Desk: the signatory, signed in to the office's account, typed their name, confirmed the agreement on screen${r.codeVerified ? " and entered a one-time code emailed to their address" : ""}. Record fingerprint (SHA-256): ${ndaFingerprint(r)}`, reg, 8, INK3, 0);
   // footer on every page
   const pages = pdf.getPages();
   pages.forEach((p, i) => p.drawText(`Off Market Desk · operated by SintraCap Advisors LLP · Confidential · Page ${i + 1} of ${pages.length}`, { x: M, y: 28, size: 7.5, font: reg, color: INK3 }));

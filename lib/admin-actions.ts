@@ -333,7 +333,7 @@ export async function sendBroadcast(f: FormData) {
 export async function saveSiteSettings(f: FormData) {
   const admin = await requireAdmin();
   await saveSettings({
-    requireApproval: f.get("requireApproval") === "on", requirePan: f.get("requirePan") === "on",
+    requireApproval: f.get("requireApproval") === "on", requirePan: false,
     announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
   });
   await log(admin, "Desk changed the site settings");

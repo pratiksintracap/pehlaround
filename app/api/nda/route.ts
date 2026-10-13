@@ -1,8 +1,9 @@
 import { type NextRequest } from "next/server";
-import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { ndas, offices } from "@/db/schema";
-import { getUser, log, clientIp, PAN_RE } from "@/lib/auth";
+import { ndas } from "@/db/schema";
+import { getUser, log, clientIp } from "@/lib/auth";
+import { emailReady } from "@/lib/email";
+import { checkCode } from "@/lib/sign-code";
 import { getDeal, signedDealIds, canSeeNames } from "@/lib/deals";
 import { notifyDesk } from "@/lib/notify";
 import { emailSignedNda } from "@/lib/nda-mail";
@@ -24,18 +25,22 @@ export async function POST(req: NextRequest) {
   const sig = str(data.sig, 120);
   if (!sig) return fail(req, json, "Please type your full name to sign.", back);
   if (!(data.agree === true || data.agree === "on")) return fail(req, json, "Please tick the box to sign the agreement.", back);
-  const db = await getDb();
-  if (!user.office.pan) {
-    const pan = str(data.pan, 10).toUpperCase(), entity = str(data.entity, 160);
-    if (!PAN_RE.test(pan)) return fail(req, json, "Please enter a valid PAN (five letters, four digits, one letter).", back);
-    if (!entity) return fail(req, json, "Please enter the investing entity's name as on PAN.", back);
-    await db.update(offices).set({ pan, entityName: entity, panName: sig, status: user.office.status === "verified" ? "verified" : "pan_submitted" }).where(eq(offices.id, user.office.id));
-    await log(user, "Submitted PAN for verification");
+  // Signing is confirmed with a one-time code emailed to the signer (whenever email is set up).
+  let verified = false;
+  if (emailReady()) {
+    const code = str(data.code, 12);
+    if (!code) return fail(req, json, "Enter the six-digit code we emailed you, or send a new one.", back);
+    const r = await checkCode(user.id, d.id, code);
+    if (r === "none") return fail(req, json, "That code has expired. Send a new one and enter it within 10 minutes.", back);
+    if (r === "expired") return fail(req, json, "Too many wrong tries. Send a new code.", back);
+    if (r === "wrong") return fail(req, json, "That code is not right. Check the latest email from Off Market Desk.", back);
+    verified = true;
   }
-  const [signed] = await db.insert(ndas).values({ officeId: user.office.id, dealId: d.id, userId: user.id, signerName: sig, version: d.ndaVersion,
-    ip: await clientIp(), userAgent: str(req.headers.get("user-agent"), 300) }).onConflictDoNothing().returning({ id: ndas.id });
+  const db = await getDb();
+  const [signed] = await db.insert(ndas).values({ officeId: user.office.id, dealId: d.id, userId: user.id, signerName: sig, signerEmail: user.email, codeVerified: verified,
+    version: d.ndaVersion, ip: await clientIp(), userAgent: str(req.headers.get("user-agent"), 300) }).onConflictDoNothing().returning({ id: ndas.id });
   if (signed) await emailSignedNda(signed.id).catch(() => 0);
   await log(user, `Signed the NDA with ${d.company} (version ${d.ndaVersion})`, d.id);
-  await notifyDesk({ title: `${user.office.name} signed the NDA with ${d.company}`, body: `Signed by ${sig}.`, link: "/admin/offices" });
+  await notifyDesk({ title: `${user.office.name} signed the NDA with ${d.company}`, body: `Signed by ${sig} (${user.email}${verified ? ", email code confirmed" : ""}).`, link: "/admin/offices" });
   return done(req, json, `/room/${slug}`);
 }

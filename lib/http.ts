@@ -7,7 +7,12 @@ export async function readBody(req: NextRequest): Promise<{ data: Record<string,
   if (ct.includes("application/json")) return { data: (await req.json().catch(() => ({}))) as Record<string, unknown>, json: true };
   const fd = await req.formData();
   const data: Record<string, unknown> = {};
-  fd.forEach((v, k) => { data[k] = typeof v === "string" ? v : ""; });
+  fd.forEach((v, k) => {
+    const val = typeof v === "string" ? v : "";
+    // a repeated name (checkbox groups) becomes a list
+    if (k in data) data[k] = Array.isArray(data[k]) ? [...(data[k] as string[]), val] : [data[k] as string, val];
+    else data[k] = val;
+  });
   return { data, json: false };
 }
 

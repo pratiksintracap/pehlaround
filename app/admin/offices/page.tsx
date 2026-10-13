@@ -3,10 +3,10 @@ import { desc, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { deals, invites, ndas, offices, users } from "@/db/schema";
 import { setApproval, setOfficeStatus, saveOfficeNotes, resetPassword, toggleUser, revokeNda } from "@/lib/admin-actions";
+import { completeness } from "@/lib/profile";
 import { Msg } from "@/components/AdminBits";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
-const LABEL: Record<string, string> = { registered: "Registered", pan_submitted: "PAN to check", verified: "Verified", rejected: "On hold" };
 
 export default async function Offices({ searchParams }: { searchParams: Promise<{ msg?: string; show?: string }> }) {
   await requireAdmin();
@@ -31,13 +31,13 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
       <p className="fine" style={{ marginBottom: 10 }}>New registrations wait here for the desk. An office sees company names, terms and NDAs only after you approve it, and it is told in its dashboard (and by email, once email is set up). Approval can be switched off in <a href="/admin/settings">Settings</a>.</p>
       <div className="adm-filter">{[["", `All (${os.length})`], ["pending", `Awaiting approval (${pendingN})`], ["approved", "Approved"], ["rejected", "Declined"]].map(([k, l]) =>
         <a key={k} href={k ? `/admin/offices?show=${k}` : "/admin/offices"} className={(show || "") === k ? "on" : ""}>{l}</a>)}</div>
-      <p className="fine" style={{ marginBottom: 16 }}>Check each PAN against the entity name (for example on the income-tax portal) and mark the office verified. Putting an office on hold closes every room to it.</p>
+      <p className="fine" style={{ marginBottom: 16 }}>Putting an office on hold closes every room to it. NDAs are signed with the signatory&apos;s name and a one-time code emailed to them; no PAN is asked until an office invests.</p>
       {list.map((o) => {
         const people = us.filter((u) => u.officeId === o.id), nn = ns.filter((x) => x.officeId === o.id);
         return (
-          <details key={o.id} className="adm-card" open={o.approval === "pending" || o.status === "pan_submitted"}>
-            <summary><b>{o.name}</b> <span className={`pill ${AP[o.approval]?.[1] || ""}`}>{AP[o.approval]?.[0] || o.approval}</span> <span className={`pill ${o.status === "verified" ? "ok" : o.status === "pan_submitted" ? "mid" : o.status === "rejected" ? "off" : ""}`}>{LABEL[o.status] || o.status}</span>
-              <span className="fine"> · {people.length} {people.length === 1 ? "person" : "people"} · {nn.length} NDAs · registered {fmtD(o.createdAt)}</span></summary>
+          <details key={o.id} className="adm-card" open={o.approval === "pending"}>
+            <summary><b>{o.name}</b> <span className={`pill ${AP[o.approval]?.[1] || ""}`}>{AP[o.approval]?.[0] || o.approval}</span> {o.status === "rejected" && <span className="pill off">On hold</span>}
+              <span className="fine"> · {people.length} {people.length === 1 ? "person" : "people"} · {nn.length} NDAs · registered {fmtD(o.createdAt)} · profile {completeness(o).pct}%{o.aum ? ` · AUM ${o.aum}` : ""}</span></summary>
             {o.approval !== "approved" && (
               <div className="adm-approve">
                 <form action={setApproval}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="approval" value="approved" /><input type="hidden" name="back" value={show ? `/admin/offices?show=${show}` : "/admin/offices"} />
@@ -53,18 +53,19 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
               <div>
                 <dl className="terms compact">
                   <div><dt>Investing entity</dt><dd>{o.entityName || "—"}</dd></div>
-                  <div><dt>PAN</dt><dd className="mono">{o.pan || "—"}</dd></div>
-                  <div><dt>Name typed at signing</dt><dd>{o.panName || "—"}</dd></div>
+                  {o.pan && <div><dt>PAN (given before PAN was dropped)</dt><dd className="mono">{o.pan}</dd></div>}
                   <div><dt>Invests as · residency</dt><dd>{o.category || "—"} · {o.residency || "—"}</dd></div>
-                  <div><dt>Ticket</dt><dd>{o.ticket || "—"}</dd></div>
+                  <div><dt>Ticket · AUM</dt><dd>{o.ticket || "—"} · {o.aum || "—"}</dd></div>
+                  <div><dt>City · website</dt><dd>{o.city || "—"}{o.website ? <> · <a href={o.website.startsWith("http") ? o.website : `https://${o.website}`} target="_blank" rel="noopener">{o.website.replace(/^https?:\/\//, "")}</a></> : ""}</dd></div>
+                  <div><dt>Sectors</dt><dd>{(o.sectors || []).join(", ") || "—"}</dd></div>
+                  <div><dt>Structures · horizon</dt><dd>{(o.structures || []).join(", ") || "—"} · {o.horizon || "—"}{o.coLead ? " · open to co-lead" : ""}</dd></div>
+                  <div><dt>Thesis</dt><dd>{o.thesis || "—"}</dd></div>
                   <div><dt>Approved</dt><dd>{o.approval === "approved" ? fmtD(o.approvedAt) : "—"}</dd></div>
                   <div><dt>Consents</dt><dd>{Object.entries(o.consents || {}).filter(([, v]) => v).map(([k]) => k).join(", ") || "—"}</dd></div>
                 </dl>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-                  {(["verified", "rejected", "pan_submitted"] as const).filter((st) => st !== o.status).map((st) => (
-                    <form key={st} action={setOfficeStatus}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="status" value={st} />
-                      <button className={`btn sm ${st === "verified" ? "primary" : ""}`} type="submit">{st === "verified" ? "Mark PAN verified" : st === "rejected" ? "Put on hold" : "Back to PAN check"}</button></form>
-                  ))}
+                  <form action={setOfficeStatus}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="status" value={o.status === "rejected" ? "registered" : "rejected"} />
+                    <button className="btn sm ghost" type="submit">{o.status === "rejected" ? "Release the hold" : "Put on hold (closes every room)"}</button></form>
                 </div>
                 {o.approval === "approved" && <form action={setApproval} style={{ marginTop: 6 }}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="approval" value="pending" /><button className="btn sm ghost" type="submit">Withdraw approval</button></form>}
                 <form action={saveOfficeNotes} className="form" style={{ marginTop: 10 }}><input type="hidden" name="id" value={o.id} />

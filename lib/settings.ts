@@ -12,7 +12,7 @@ export type Settings = {
   notifyDeskEmail: string;    // where desk alerts are emailed (if email is set up)
   onboardingEmails: boolean;  // send the onboarding email series to new offices
 };
-const DEFAULTS: Settings = { requireApproval: true, requirePan: process.env.REQUIRE_PAN_VERIFIED === "1", announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true };
+const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true };
 
 const settingRows = cachedPublic(async () => { const db = await getDb(); return db.select().from(settings); }, "settings");
 export async function getSettings(): Promise<Settings> {

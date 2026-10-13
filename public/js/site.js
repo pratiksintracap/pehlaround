@@ -290,7 +290,7 @@
       t.addEventListener("click", function () { try { history.replaceState(null, "", "#" + encodeURIComponent(t.getAttribute("data-tab"))); } catch (e) {} });
     });
     // keyboard: left/right between tabs
-    $(".tabs").addEventListener("keydown", function (e) {
+    var tl = $(".tabs") || $(".side-nav"); if (tl) tl.addEventListener("keydown", function (e) {
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
       var i = tabs.indexOf(document.activeElement); if (i < 0) return;
       var n = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); n.click();
@@ -330,8 +330,10 @@
     $$(".tabbtn").forEach(function (t) { t.addEventListener("click", function () {
       $$(".tabbtn").forEach(function (o) { o.setAttribute("aria-selected", "false"); }); t.setAttribute("aria-selected", "true");
       var n = t.getAttribute("data-tab"); $$(".panel").forEach(function (pn) { pn.hidden = pn.getAttribute("data-panel") !== n; }); }); });
-    function tabFromHash(scroll) { var h = decodeURIComponent(location.hash.slice(1)); var t = h && $('.tabbtn[data-tab="' + h.replace(/"/g, "") + '"]'); if (t) { t.click(); if (scroll) { var tb = $(".tabs"); if (tb) tb.scrollIntoView({ behavior: "smooth", block: "start" }); } } }
+    function tabFromHash(scroll) { var h = decodeURIComponent(location.hash.slice(1)); var t = h && $('.tabbtn[data-tab="' + h.replace(/"/g, "") + '"]'); if (t) { t.click(); if (scroll) { var tb = $(".tabs") || $(".app-main"); if (tb && !$(".side-nav")) tb.scrollIntoView({ behavior: "smooth", block: "start" }); else window.scrollTo({ top: 0, behavior: "smooth" }); } } }
     tabFromHash(false);
+    $$(".side-nav .tabbtn").forEach(function (t) { t.addEventListener("click", function () { try { t.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) {} }); });
+    $$("[data-close-welcome]").forEach(function (a) { a.addEventListener("click", function () { var w = $("#welcome"); if (w && w.open) w.close(); }); });
     window.addEventListener("hashchange", function () { tabFromHash(true); });
     // deal switcher: close the menu on an outside click or Escape
     $$(".ds-menu").forEach(function (m) {
@@ -433,6 +435,31 @@
 (function () {
   "use strict";
   function run() {
+    // NDA: email a one-time signing code, then show the code field and the sign button
+    Array.prototype.forEach.call(document.querySelectorAll("[data-codebox]"), function (box) {
+      var slug = box.getAttribute("data-codebox"), f = box.closest("form");
+      Array.prototype.forEach.call(box.querySelectorAll("[data-send-code]"), function (btn) {
+        btn.addEventListener("click", function () {
+          var sig = f.querySelector("input[name=sig]"), ag = f.querySelector("input[name=agree]");
+          if (!sig.value.trim()) { sig.reportValidity(); return; }
+          if (!ag.checked) { ag.reportValidity(); return; }
+          var label = btn.textContent; btn.disabled = true; btn.textContent = "Sending…";
+          fetch("/api/nda/code", { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify({ slug: slug }), credentials: "same-origin" })
+            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || "The code could not be sent."); return j; }); })
+            .then(function (j) {
+              if (j.signed) { location.href = "/room/" + slug; return; }
+              box.querySelector(".cb-send").hidden = true; box.querySelector(".cb-enter").hidden = false; box.querySelector(".cb-sign").hidden = false;
+              var inp = box.querySelector("input[name=code]"); if (j.noEmail) { box.querySelector(".cb-enter").hidden = true; } else { inp.required = true; inp.focus(); }
+              var st = box.querySelector("[data-code-status]"); if (st) st.textContent = j.to ? "Sent to " + j.to + "." : "";
+              btn.disabled = false; btn.textContent = label;
+            })
+            .catch(function (err) {
+              btn.disabled = false; btn.textContent = label;
+              var ok = f.querySelector(".ok"); if (!ok) { ok = document.createElement("div"); ok.setAttribute("role", "alert"); f.insertBefore(ok, f.firstChild); }
+              ok.className = "ok show bad"; ok.textContent = err.message; });
+        });
+      });
+    });
     Array.prototype.forEach.call(document.querySelectorAll("form[data-api]"), function (f) {
       f.addEventListener("submit", function (e) {
         e.preventDefault(); if (!f.reportValidity()) return;

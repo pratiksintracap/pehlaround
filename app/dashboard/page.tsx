@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import { requireUser, maskPan } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
 import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, users } from "@/db/schema";
 import { listDeals, canSeeNames } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
 import { AppPromo } from "@/components/AppPromo";
-import { GRIEVANCE } from "@/lib/site";
+import { GRIEVANCE, DESK_EMAIL } from "@/lib/site";
+import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, completeness, fit } from "@/lib/profile";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
 type P = { searchParams: Promise<{ msg?: string; error?: string }> };
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "";
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
-const STATUS: Record<string, string> = { registered: "Registered", pan_submitted: "PAN submitted · being checked", verified: "PAN verified", rejected: "On hold" };
 
 export default async function Dashboard({ searchParams }: P) {
   const user = await requireUser("/dashboard");
@@ -49,21 +49,52 @@ export default async function Dashboard({ searchParams }: P) {
   const lastOpened = log.find((l) => l.dealId && signed.has(l.dealId) && l.action.startsWith("Opened the room")) ?? log.find((l) => l.dealId && signed.has(l.dealId));
   const latest = byId.get(lastOpened?.dealId ?? myNdas[0]?.dealId ?? -1);
   const topPick = [...deals].filter((d) => d.open && !signed.has(d.id)).sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0];
-  const panWait = st.requirePan && signed.size > 0 && office.status !== "verified";
   // progress: four steps, shown until the office has a room open
   const steps: [string, string, "done" | "now" | "todo"][] = [
     ["Registered", "Your office is on the desk", "done"],
     ["Approved", names ? "Every company is open to you by name" : "The desk reviews new offices, usually within a working day", names ? "done" : "now"],
-    ["First NDA signed", signed.size ? "Your PAN and investing entity are on record" : "Sign one company's NDA; PAN and entity are asked once, with it", signed.size ? "done" : names ? "now" : "todo"],
-    ["Rooms open", panWait ? "The desk is checking your PAN" : signed.size ? `${signed.size} ${signed.size === 1 ? "room" : "rooms"} open to you` : "Numbers, documents and Q&A for each company", signed.size && !panWait ? "done" : signed.size ? "now" : "todo"],
+    ["First NDA signed", signed.size ? "Signed with your name and an email code" : "Your name and a code we email you; nothing else", signed.size ? "done" : names ? "now" : "todo"],
+    ["Rooms open", signed.size ? `${signed.size} ${signed.size === 1 ? "room" : "rooms"} open to you` : "Numbers, documents and Q&A for each company", signed.size ? "done" : "todo"],
   ];
-  const showSteps = !signed.size || panWait;
+  const showSteps = !signed.size;
   const profileGaps = [!office.category && "category", !office.residency && "residency", !office.ticket && "ticket"].filter(Boolean) as string[];
   const welcome = names && !signed.size; // approved but no room yet: the welcome pop-up guides the first step
   const canCommit = /commit/i.test(user.rights);
+  const prof = completeness(office);
+  const fits = new Map(deals.map((d) => [d.id, fit(office, d)]));
+  const NAV: [string, string, string, number | null][] = [
+    ["Shelf", "Deals", "M3 7h18M3 12h18M3 17h12", deals.filter((d) => d.open).length],
+    ["Rooms", "My rooms", "M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16M9 21v-6h6v6", signed.size || null],
+    ["Calls", "Calls", "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2", null],
+    ["Documents", "Documents", "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6", null],
+    ["Portfolio", "Portfolio", "M4 19V9M10 19V5M16 19v-7M22 19H2", allotted.length || null],
+    ["Profile", "Investment profile", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", null],
+    ["Team", "Team", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", team.length > 1 ? team.length : null],
+    ["Log", "Activity log", "M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z", null],
+  ];
 
   return (
-    <main><div className="wrap" style={{ paddingTop: 20, paddingBottom: 56 }}><div className="room" id="dash">
+    <main><div className="wrap app-wrap"><div className="app" id="dash">
+      <aside className="app-side" aria-label="Your office">
+        <div className="as-office">
+          <span className="as-av" aria-hidden="true">{office.name.trim().slice(0, 1).toUpperCase()}</span>
+          <div><b>{office.name}</b><small>{names ? "Approved by the desk" : "Awaiting approval"}{office.city ? ` · ${office.city}` : ""}</small></div>
+        </div>
+        <a className="as-prof" href="#Profile" title={prof.missing.length ? `Still to add: ${prof.missing.join(", ")}` : "Your profile is complete"}>
+          <span><b>Investment profile</b><small>{prof.pct === 100 ? "Complete" : `${prof.pct}% complete · add ${prof.missing[0].toLowerCase()}`}</small></span>
+          <i className="as-meter" aria-hidden="true"><i style={{ width: `${prof.pct}%` }} /></i>
+        </a>
+        <nav className="side-nav" role="tablist" aria-label="Dashboard sections">
+          {NAV.map(([k, t, ic, n], i) => (
+            <button key={k} role="tab" type="button" className="tabbtn" data-tab={k} aria-selected={i === 0}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ic} /></svg><span>{t}</span>{n ? <em>{n}</em> : null}</button>))}
+        </nav>
+        <div className="as-foot">
+          <a href="/app?install=1" data-get-app="">Get the app</a>
+          <a href={`mailto:${DESK_EMAIL}`}>Write to the desk</a>
+        </div>
+      </aside>
+      <div className="app-main">
       <div className="dashhead">
         <div className="dh-name"><span className="eyebrow">Office dashboard</span><h1>{office.name}</h1></div>
         <div className="dh-stats">
@@ -83,22 +114,18 @@ export default async function Dashboard({ searchParams }: P) {
           <div className="ns-act">
             {pendingApproval ? <p className="fine">You can browse the shelf below in the meantime. We will tell you under the bell and by email the moment your office is approved.</p>
               : !signed.size && topPick ? <><a className="btn primary" href={`/nda/${topPick.slug}`}>Open your first room: {topPick.company}</a><a className="btn ghost" href="#Shelf">Or choose from the shelf ↓</a></>
-              : panWait ? <p className="fine">Your room opens as soon as the desk has checked the PAN, usually the same working day.</p> : null}
+              : null}
           </div>
         </section>
       )}
 
-      <div className="tabs" role="tablist">
-        {[["Shelf", "Shelf"], ["Rooms", "My rooms"], ["Calls", "Calls"], ["Documents", "Documents"], ["Portfolio", "Portfolio"], ["Team", "Team and profile"], ["Log", "Activity log"]].map(([k, t], i) =>
-          <button key={k} role="tab" type="button" className="tabbtn" data-tab={k} aria-selected={i === 0}>{t}</button>)}
-      </div>
 
       <section className="panel" data-panel="Shelf">
         <div className="cmpwrap"><table className="cmp plain" id="shelf-t"><thead><tr><th>Deal</th><th>Structure</th><th>Target listing</th><th>Round</th><th>Pre-money</th><th>P/E trailing · forward</th><th>Min ticket</th><th>Desk Score</th><th /></tr></thead>
           <tbody>{deals.map((d) => (
             <tr key={d.id} data-struct={d.category} data-months={monthsTo(d.listingMonth) ?? 999}>
               <th scope="row">{d.company}{names && <><br /><small className="fine">{d.title}</small></>}<br />
-                <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></th>
+                <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>{fits.get(d.id) && <span className="fitpill" title={fits.get(d.id)!}>Fits your thesis</span>}</th>
               <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td><td>{d.score != null ? <b>{d.score.toFixed(1)}</b> : "—"}</td>
               <td><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
@@ -108,7 +135,7 @@ export default async function Dashboard({ searchParams }: P) {
         <ul className="dash-cards">{deals.map((d) => (
           <li key={d.id}>
             <div className="dc-top"><b>{d.company}</b><span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span></div>
-            <small>{names ? `${d.title} · ` : ""}{d.category}</small>
+            <small>{names ? `${d.title} · ` : ""}{d.category}</small>{fits.get(d.id) && <span className="fitpill">{fits.get(d.id)}</span>}
             <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
               <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
             <div className="dc-acts">
@@ -154,7 +181,6 @@ export default async function Dashboard({ searchParams }: P) {
             <tr key={`n${n.id}`}><th scope="row">NDA with {byId.get(n.dealId)?.company}</th><td>{byId.get(n.dealId)?.title}</td>
               <td><span className="pill ok">Signed · version {n.version}</span></td><td>{fmtD(n.signedAt)}</td><td><div style={{ display: "flex", gap: 6 }}><a className="btn sm" href={`/dashboard/nda/${n.id}`}>View</a><a className="btn sm" href={`/dashboard/nda/${n.id}/pdf`} target="_blank" rel="noopener">PDF</a></div></td></tr>
           ))}
-          <tr><th scope="row">PAN of the investing entity</th><td>Office</td><td><span className={`pill ${office.status === "verified" ? "ok" : ""}`}>{office.pan ? (office.status === "verified" ? "Verified" : "Submitted") : "Not yet"}</span></td><td>{office.verifiedAt ? fmtD(office.verifiedAt) : "—"}</td><td /></tr>
           <tr><th scope="row">KYC pack: address, bank, demat, authorised signatory</th><td>Office</td><td><span className="pill">At commitment</span></td><td>—</td><td /></tr>
         </tbody></table></div>
         {views.length > 0 && <>
@@ -176,44 +202,74 @@ export default async function Dashboard({ searchParams }: P) {
           : <div className="chart"><span className="k">Holdings</span><p>Nothing allotted yet. Once shares are credited to your demat, each holding appears here with its listing milestones, lock-in dates and the company&apos;s quarterly updates.</p></div>}
       </section>
 
+      <section className="panel" data-panel="Profile" hidden>
+        <div className="panel-head"><div><h2>Investment profile</h2><p className="fine">What your office looks for. The desk uses it to bring you the right companies, and the shelf marks the deals that fit. Seen only by your office and the desk.</p></div>
+          <div className="ph-meter"><b>{prof.pct}%</b><small>complete</small></div></div>
+        <form className="form profform" method="post" action="/api/office/profile">
+          <input type="hidden" name="mode" value="full" />
+          <fieldset disabled={!canCommit}>
+          <div className="pf-card"><span className="k">The office</span>
+            <div className="row3">
+              <label>City<input name="city" maxLength={80} defaultValue={office.city || ""} placeholder="Mumbai" /></label>
+              <label>Website<input name="website" maxLength={200} defaultValue={office.website || ""} placeholder="shahfamilyoffice.in" /></label>
+              <label>Invests as<select name="category" defaultValue={office.category || ""}><option value="" disabled>Select</option>{CATEGORY.map((x) => <option key={x}>{x}</option>)}</select></label>
+            </div>
+            <div className="row3">
+              <label>Residency<select name="residency" defaultValue={office.residency || ""}><option value="" disabled>Select</option>{RESIDENCY.map((x) => <option key={x}>{x}</option>)}</select></label>
+              <label>Assets under management<select name="aum" defaultValue={office.aum || ""}><option value="">Select</option>{AUM.map((x) => <option key={x}>{x}</option>)}</select></label>
+              <label>Typical ticket per deal<select name="ticket" defaultValue={office.ticket || ""}><option value="" disabled>Select</option>{TICKET.map((x) => <option key={x}>{x}</option>)}</select></label>
+            </div>
+          </div>
+          <div className="pf-card"><span className="k">Your thesis</span>
+            <label className="pf-l">Sectors you invest in</label>
+            <div className="chips">{SECTORS.map(([n]) => <label key={n} className="chipbox"><input type="checkbox" name="sectors" value={n} defaultChecked={(office.sectors || []).includes(n)} /><span>{n}</span></label>)}</div>
+            <label className="pf-l">Deal structures</label>
+            <div className="chips">{STRUCTURES.map((n) => <label key={n} className="chipbox"><input type="checkbox" name="structures" value={n} defaultChecked={(office.structures || []).includes(n)} /><span>{n}</span></label>)}</div>
+            <div className="row3">
+              <label>Holding horizon<select name="horizon" defaultValue={office.horizon || ""}><option value="">Select</option>{HORIZON.map((x) => <option key={x}>{x}</option>)}</select></label>
+              <label className="chk" style={{ alignSelf: "end" }}><input type="checkbox" name="coLead" defaultChecked={office.coLead} /> Open to co-leading a round</label>
+            </div>
+            <label>Investment thesis, in your words<textarea name="thesis" rows={4} maxLength={1500} defaultValue={office.thesis || ""} placeholder="e.g. Profitable manufacturers with export revenue, entering 2–3 years before a main-board listing, at a clear discount to listed peers. We avoid lending businesses and anything pre-profit." /></label>
+          </div>
+          {canCommit ? <div><button className="btn primary" type="submit">Save profile</button>{office.profileAt && <span className="fine" style={{ marginLeft: 10 }}>Last saved {fmtD(office.profileAt)}</span>}</div>
+            : <p className="fine">Only people with commit rights can change the profile.</p>}
+          </fieldset>
+        </form>
+        <div className="two" style={{ marginTop: 16 }}>
+          <div className="chart"><span className="k">How signing works</span>
+            <p className="fine" style={{ marginTop: 6 }}>Each company&apos;s NDA is signed with the signatory&apos;s name and a one-time code emailed to them. No PAN or ID is needed to look at deals; KYC for the investing entity comes only when your office invests.</p>
+          </div>
+          <div className="chart"><span className="k">Consents and your data</span>
+            <form method="post" action="/api/office/consents" style={{ display: "grid", gap: 8 }}>
+              <label className="chk"><input type="checkbox" name="email" defaultChecked={office.consents?.email !== false} /> Deal alerts by email</label>
+              <label className="chk"><input type="checkbox" name="wa" defaultChecked={!!office.consents?.wa} /> WhatsApp messages about deals</label>
+              <label className="chk"><input type="checkbox" name="calls" defaultChecked={!!office.consents?.calls} /> Calls from the desk</label>
+              <div><button className="btn sm" type="submit">Save consents</button></div>
+            </form>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              <a className="btn sm" href="/api/office/export">Download my data</a>
+              <form method="post" action="/api/office/deletion"><button className="btn sm ghost" type="submit">Request deletion</button></form>
+            </div>
+            <p className="fine">Grievance officer and data-protection contact: {GRIEVANCE.name}, <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="panel" data-panel="Team" hidden>
-        <div className="two">
-          <div className="chart"><span className="k">Investing entity</span>
-            <div className="kv"><span>Office</span><b>{office.name}</b></div>
-            <div className="kv"><span>Entity</span><b>{office.entityName || "Added with your first NDA"}</b></div>
-            <div className="kv"><span>PAN</span><b>{maskPan(office.pan)}{office.pan ? ` · ${STATUS[office.status] || office.status}` : ""}</b></div>
-            <div className="kv"><span>Invests as</span><b>{office.category || "—"}</b></div>
-            <div className="kv"><span>Residency</span><b>{office.residency || "—"}</b></div>
-            <div className="kv"><span>Ticket band</span><b>{office.ticket || "—"}</b></div>
-            {st.requirePan && office.status !== "verified" && <p className="fine">Rooms open once the desk has checked the PAN.</p>}
-          </div>
-          <div className="chart"><span className="k">People with access</span>
-            <div className="cmpwrap"><table className="cmp plain" style={{ minWidth: 0 }}><thead><tr><th>Name</th><th>Role</th><th>Rights</th></tr></thead><tbody>
-              {team.map((t) => <tr key={t.id}><th scope="row">{t.name}<br /><small className="fine">{t.email}</small></th><td>{t.officeRole || "—"}</td><td>{t.rights}</td></tr>)}
-              {pending.map((p) => <tr key={`i${p.id}`}><th scope="row">{p.email}</th><td>Invited</td><td>{p.rights}</td></tr>)}
-            </tbody></table></div>
-            {canCommit && <form className="form" method="post" action="/api/office/invite" style={{ marginTop: 10 }}>
-              <div className="row"><label>Email<input type="email" name="email" required placeholder="name@office.in" /></label>
-                <label>Rights<select name="rights" defaultValue="View"><option>View</option><option>View, comment</option><option>View, comment, commit</option></select></label></div>
-              <div><button className="btn" type="submit">Add viewer</button></div>
-              <p className="fine">They join your office when they register with this email. Each deal&apos;s NDA covers your office&apos;s team for that deal.</p>
-            </form>}
-          </div>
+        <div className="panel-head"><div><h2>Team</h2><p className="fine">Everyone from your office on the desk. Each deal&apos;s NDA covers your office&apos;s team for that deal, and every view is logged against a name.</p></div></div>
+        <div className="chart">
+          <div className="cmpwrap"><table className="cmp plain" style={{ minWidth: 0 }}><thead><tr><th>Name</th><th>Role</th><th>Rights</th></tr></thead><tbody>
+            {team.map((t) => <tr key={t.id}><th scope="row">{t.name}<br /><small className="fine">{t.email}</small></th><td>{t.officeRole || "—"}</td><td>{t.rights}</td></tr>)}
+            {pending.map((p) => <tr key={`i${p.id}`}><th scope="row">{p.email}</th><td>Invited</td><td>{p.rights}</td></tr>)}
+          </tbody></table></div>
+          {canCommit && <form className="form" method="post" action="/api/office/invite" style={{ marginTop: 10 }}>
+            <div className="row"><label>Email<input type="email" name="email" required placeholder="name@office.in" /></label>
+              <label>Rights<select name="rights" defaultValue="View"><option>View</option><option>View, comment</option><option>View, comment, commit</option></select></label></div>
+            <div><button className="btn" type="submit">Add a person</button></div>
+            <p className="fine">They join your office when they register with this email.</p>
+          </form>}
         </div>
-        <div className="chart"><span className="k">Consents and your data</span>
-          <form method="post" action="/api/office/consents" style={{ display: "grid", gap: 8 }}>
-            <label className="chk"><input type="checkbox" name="email" defaultChecked={office.consents?.email !== false} /> Deal alerts by email</label>
-            <label className="chk"><input type="checkbox" name="wa" defaultChecked={!!office.consents?.wa} /> WhatsApp messages about deals</label>
-            <label className="chk"><input type="checkbox" name="calls" defaultChecked={!!office.consents?.calls} /> Calls from the desk</label>
-            <div><button className="btn sm" type="submit">Save consents</button></div>
-          </form>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-            <a className="btn sm" href="/api/office/export">Download my data</a>
-            <form method="post" action="/api/auth/signout-all"><button className="btn sm ghost" type="submit">Sign out other devices</button></form>
-            <form method="post" action="/api/office/deletion"><button className="btn sm ghost" type="submit">Request deletion</button></form>
-          </div>
-          <p className="fine">Grievance officer and data-protection contact: {GRIEVANCE.name}, <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>.</p>
-        </div>
+        <div style={{ marginTop: 12 }}><form method="post" action="/api/auth/signout-all"><button className="btn sm ghost" type="submit">Sign out other devices</button></form></div>
       </section>
 
       <section className="panel" data-panel="Log" hidden>
@@ -222,12 +278,13 @@ export default async function Dashboard({ searchParams }: P) {
         </tbody></table></div>
         <p className="fine">The log shows the desk offered each deal only to identified people, which is what the private placement rules require.</p>
       </section>
+      </div>
       {welcome && (
         <dialog className="welcome" id="welcome" data-key={`omd_welcome_${office.id}`}>
           <form method="dialog" className="wl-x"><button className="btn sm ghost" aria-label="Close">✕</button></form>
           <span className="eyebrow live">You&apos;re in</span>
           <h2>Your office is approved</h2>
-          <p>Every company on the desk is now open to you by name. A company&apos;s room opens with its own NDA, signed on screen; your PAN and investing entity are asked once, with the first one.</p>
+          <p>Every company on the desk is now open to you by name. A company&apos;s room opens with its own NDA, signed on screen with your name and a code we email you.</p>
           {profileGaps.length > 0 && (
             <form className="form wl-profile" method="post" action="/api/office/profile">
               <span className="k">First, two details for the desk</span>
@@ -242,6 +299,7 @@ export default async function Dashboard({ searchParams }: P) {
           <span className="k">Highest Desk Scores on the shelf</span>
           <ul className="roomlist">{[...deals].filter((d) => d.open).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3).map((d) => (
             <li key={d.id}><div><b>{d.company}</b><small>{d.category}{d.score != null ? ` · Desk Score ${d.score.toFixed(1)}` : ""}</small></div><a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a></li>))}</ul>
+          <p className="fine" style={{ marginTop: 12 }}>Tell the desk what you look for in <a href="#Profile" data-close-welcome="">your investment profile</a> and the shelf will mark the deals that fit.</p>
           <form method="dialog"><button className="btn ghost sm">I&apos;ll look around first</button></form>
         </dialog>
       )}

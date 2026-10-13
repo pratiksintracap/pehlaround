@@ -13,8 +13,8 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
   const db = await getDb();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const count = async (t: any, where?: ReturnType<typeof sql>) => (await db.select({ n: sql<number>`count(*)::int` }).from(t).where(where))[0].n as number;
-  const [o, appr, pan, nd, intr, q, c, l, admins, recent, alerts] = await Promise.all([
-    count(offices), count(offices, sql`approval = 'pending'`), count(offices, sql`status = 'pan_submitted'`), count(ndas), count(interests, sql`status = 'Indicated'`),
+  const [o, appr, nd, intr, q, c, l, admins, recent, alerts] = await Promise.all([
+    count(offices), count(offices, sql`approval = 'pending'`), count(ndas), count(interests, sql`status = 'Indicated'`),
     count(questions, sql`answer is null and hidden = false`), count(calls, sql`status = 'Requested'`), count(leads, sql`status = 'New'`),
     db.select().from(users).where(sql`role = 'admin'`),
     db.select().from(audit).orderBy(desc(audit.at)).limit(25),
@@ -33,7 +33,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       and not exists (select 1 from passes p where p.office_id = a.office_id and p.deal_id = a.deal_id)
     group by a.office_id, a.deal_id, o.name, d.company order by n desc, last desc limit 12`)) as unknown as { rows: Lead[] }).rows;
   const tiles: [string, number, string][] = [
-    ["Offices awaiting approval", appr, "/admin/offices?show=pending"], ["Family offices registered", o, "/admin/offices"], ["PANs to check", pan, "/admin/offices"], ["NDAs signed", nd, "/admin/offices"],
+    ["Offices awaiting approval", appr, "/admin/offices?show=pending"], ["Family offices registered", o, "/admin/offices"], ["NDAs signed", nd, "/admin/offices"],
     ["New allocation requests", intr, "/admin/activity"], ["Questions to answer", q, "/admin/activity#qs"], ["Calls requested", c, "/admin/activity#calls"], ["New founder leads", l, "/admin/activity#leads"],
   ];
   return (

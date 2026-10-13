@@ -19,6 +19,15 @@ export const offices = pgTable("offices", {
   verifiedAt: timestamp("verified_at", { withTimezone: true }),
   consents: jsonb("consents").$type<Record<string, boolean>>().default({}),
   sectors: jsonb("sectors").$type<string[]>().default([]),
+  // investment profile, kept by the office
+  aum: text("aum"),                             // assets under management, as a band
+  city: text("city"),
+  website: text("website"),
+  structures: jsonb("structures").$type<string[]>().default([]),
+  horizon: text("horizon"),
+  thesis: text("thesis"),
+  coLead: boolean("co_lead").notNull().default(false),
+  profileAt: timestamp("profile_at", { withTimezone: true }),
   notes: text("notes"),                         // admin notes
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -85,12 +94,26 @@ export const ndas = pgTable("ndas", {
   dealId: integer("deal_id").notNull().references(() => deals.id),
   userId: integer("user_id").notNull().references(() => users.id),
   signerName: text("signer_name").notNull(),
+  signerEmail: text("signer_email"),             // the address the one-time code was sent to
+  codeVerified: boolean("code_verified").notNull().default(false),
   version: text("version").notNull(),
   ip: text("ip"),
   userAgent: text("user_agent"),
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
   signedAt: timestamp("signed_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("ndas_office_deal_uq").on(t.officeId, t.dealId)]);
+
+// One-time codes for signing an NDA: emailed to the signer, valid for 10 minutes, stored only as a hash.
+export const signCodes = pgTable("sign_codes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  dealId: integer("deal_id").notNull(),
+  codeHash: text("code_hash").notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("sign_codes_user_deal_idx").on(t.userId, t.dealId)]);
 
 export const documents = pgTable("documents", {
   id: serial("id").primaryKey(),
