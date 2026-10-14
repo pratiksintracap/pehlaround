@@ -75,7 +75,7 @@ export function Footer() {
           <div className="ft-col"><h4>Operated by</h4><ul>
             <li className="kv"><b>SintraCap Advisors LLP</b>LLPIN ACL-6334 · <a href="https://sintracap.in" target="_blank" rel="noopener">sintracap.in</a></li>
             <li className="kv"><b>Office</b>602 Lodha Supremus, Lower Parel, Mumbai 400013</li>
-            <li className="kv"><b>Registered office</b>B/3501, World View, Lodha World Towers, S.B. Marg, Lower Parel, Mumbai 400013</li>
+            <li className="kv addr"><b>Registered office</b>B/3501, World View, Lodha World Towers, S.B. Marg, Lower Parel, Mumbai 400013</li>
           </ul></div>
           <div className="ft-col"><h4>Legal</h4><ul>
             <li><a href="/legal">Terms and privacy</a></li>

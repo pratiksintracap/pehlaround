@@ -1,6 +1,82 @@
 // The desk's opening articles. Edit or add more in /admin/articles.
 export const SEED_ARTICLES = [
   {
+    slug: "nine-ipos-two-thirds-to-sellers",
+    title: "Nine IPOs this week, and two-thirds of the money goes to sellers",
+    dek: "₹10,288 Cr of main-board offers open between Monday and Wednesday. Only ₹3,330 Cr of it is new money for the companies. The rest is early investors and promoters cashing out.",
+    publishedAt: "2026-10-13T09:00:00+05:30",
+    body: `Nine IPOs open this week, six of them on the main board, for a combined ₹10,506 Cr. Read the fine print and the week looks different: of the ₹10,288 Cr being raised on the main board, ₹6,958 Cr is an offer for sale. Only Zetwerk (₹2,830 Cr fresh) and Fusion CX (₹500 Cr fresh) are putting money into the business. HD Fire Protect, Bonfiglioli Transmissions, Tonbo Imaging and Sahajanand Medical are selling existing shares and nothing else.
+
+## Who is selling
+
+- HD Fire Protect (₹712 Cr): entirely the promoters.
+- Bonfiglioli Transmissions (₹2,534 Cr): entirely the Italian parent.
+- Tonbo Imaging (₹852 Cr): co-founders, a promoter-group holder and early investors.
+- Sahajanand Medical (₹476 Cr): the promoter group and investors.
+- Zetwerk (₹5,012 Cr): about ₹1,152 Cr of the offer goes to early investors. Reports put Kae Capital and Accel, who backed the company in its first rounds, at up to 38 times their money at the ₹151 top of the band, which values the company at ₹25,583 Cr.
+
+None of this makes the offers bad. An IPO that is mostly a sale is the normal way a venture investor or a parent takes its return, and the companies are real businesses with public track records. It does say clearly who is on each side of the table in a listing week.
+
+## The number that matters is the entry price
+
+Thirty-eight times is not a return the listing week offers anyone. It belongs to a fund that wrote a cheque when Zetwerk was a small, unproven manufacturer. The buyer at ₹151 is buying from that fund, at a price set to clear a ₹5,000 Cr book across institutions, mutual funds and retail.
+
+Tonbo is the other side of the same lesson. It is a genuine defence-electronics business, with thermal imaging and seeker products in service. FY26 revenue was ₹362.65 Cr, down 23% on the year, and profit after tax ₹50.88 Cr against ₹72.76 Cr; the June quarter showed a loss of ₹17.74 Cr. The band is ₹665–700. Whoever buys in the book is buying the sellers' view that this is a good price to leave at.
+
+## What this means for a family office
+
+- In a listing week, an office is a price-taker. The band is set to fill the book, not to leave a margin for the buyer.
+- The large multiples in these companies were made two to five years earlier, in rounds priced off the business and its listed peers, by investors who accepted illiquidity and a lock-in.
+- That is the stage this desk works in: profitable companies a few years from listing, raising a first institutional round. The risks are different and have to be priced; the reward is the gap between a private multiple and a public one.
+
+If the week's books fill, and the quality of the names suggests most will, the money will have moved from thousands of new holders to a small group of early ones. The question for an office is not whether to apply for the shares. It is whether it wants to be the seller next time.`,
+    sources: [
+      { title: "Upcoming IPOs this week: nine issues to raise ₹10,506 crore (Kotak Neo, 12 October 2026)", url: "https://www.kotakneo.com/news/ipos/upcoming-ipos-this-week-and-companies-raising-10506-crore-in-october-2026/" },
+      { title: "Busy IPO week ahead: eight issues aim to raise over ₹11,000 crore (Kalkine, 12 October 2026)", url: "https://kalkine.co.in/article/business-finance/busy-ipo-week-ahead-eight-issues-aim-to-raise-over-rs-11000-crore" },
+      { title: "Zetwerk IPO priced ₹143–151 could net early backers 38x returns (NewsBytes)", url: "https://www.newsbytesapp.com/news/business/zetwerk-ipo-priced-rs143-rs151-could-net-early-backers-38x-returns/tldr" },
+      { title: "Defence startup Tonbo Imaging fixes IPO price band at ₹665–700 a share (Business Standard, 12 October 2026)", url: "https://www.business-standard.com/markets/news/defence-startup-tonbo-imaging-fixes-ipo-price-band-at-665-700-a-share-126101201269_1.html" },
+      { title: "India IPO daily market and IPO updates, 13 October 2026 (indiaipo.in)", url: "https://www.indiaipo.in/daily-reporter/india-ipo-daily-market-ipo-updates-13th-october-2026" },
+    ],
+  },
+  {
+    slug: "sip-record-domestic-bid-ipo-window",
+    title: "₹32,490 Cr a month on autopilot: the domestic bid that keeps the IPO window open",
+    dek: "September's SIP book was the largest ever, equity funds took in ₹38,307 Cr, and nearly half of it went to small- and mid-cap schemes. That money is the real buyer of this month's listings.",
+    publishedAt: "2026-10-14T09:00:00+05:30",
+    body: `The Nifty closed at 22,363 on Monday, down 0.7% on the day and well off its highs. The ten-year government bond yields 7.39%, a three-year high. Retail inflation came in at 5.54% for September, up from 4.82%. Foreign portfolio investors are net sellers in the secondary market. On that backdrop, nine IPOs open this week for ₹10,506 Cr, and most bankers expect the books to fill.
+
+The explanation is in the AMFI data for September, released this week.
+
+## The numbers
+
+- Equity mutual funds took in a net ₹38,307 Cr, up 31% on August.
+- SIP contributions were ₹32,490 Cr, the highest monthly figure on record. That money arrives on a fixed date whatever the index did the week before.
+- Small-cap schemes drew ₹9,039 Cr and mid-cap schemes ₹7,835 Cr: together 44% of all equity inflows. Flexi-cap took ₹6,702 Cr. Large-cap schemes took ₹859 Cr.
+- The industry as a whole showed a net outflow of ₹1.33 lakh crore, but that was quarter-end money leaving liquid and money-market funds. The equity book kept growing.
+
+Foreign investors have not left the primary market. They were net sellers of listed shares in September but kept taking allocations in IPOs and QIPs, where the price is set in a book rather than on the screen.
+
+## Why it matters for the listing calendar
+
+The week's ₹10,506 Cr of IPO supply is less than a third of one month's equity inflow. Fund managers who received ₹17,000 Cr for small and mid-cap schemes in September have to deploy it, and a fresh listing with an institutional book is the easiest place to put a large cheque in a smaller company. That is why books fill in a falling market: the buyer is not sentiment, it is a mandate.
+
+It also explains the shape of the market. The share of the ten largest companies in total market capitalisation has fallen to a nine-year low. The money is going down the capitalisation table, and it is paying up for growth when it gets there.
+
+## What this means for a family office
+
+- The domestic fund is the anchor and the exit for every company on this desk. When a company reaches its book, the SIP money is on the other side.
+- Listed small and mid-cap multiples are being set by that flow, and the private round before listing is priced off those listed peers. An office buying before the listing is buying against a benchmark that domestic money has been bidding up.
+- The flow is steady, not infinite. A month where SIPs pause, or where small-cap schemes see redemptions, changes the exit multiple more than it changes the business. Every room on the desk shows the trailing and forward P/E against the peer set so that an office can judge how much of the price is the company and how much is the bid.
+
+For now the window is open, and the reason is on page one of the AMFI release rather than in the foreign-flow tables.`,
+    sources: [
+      { title: "Equity MF inflows jump 31% to ₹38,307 crore in September; SIP contributions hit record high (Free Press Journal, 12 October 2026)", url: "https://www.freepressjournal.in/business/equity-mf-inflows-jump-31-to-38307-crore-in-sep-sip-contributions-hit-record-high" },
+      { title: "AMFI September data 2026: AUM falls 5.1%, SIP inflows hit record ₹32,490 crore (Zee Business)", url: "https://www.zeebiz.com/personal-finance/mutual-fund/news-amfi-september-data-2026-mf-aum-falls-51-mom-to-rs-8264-lakh-crore-sip-inflows-hit-record-rs-32490-crore-403757" },
+      { title: "India IPO daily market and IPO updates, 13 October 2026 (indiaipo.in)", url: "https://www.indiaipo.in/daily-reporter/india-ipo-daily-market-ipo-updates-13th-october-2026" },
+      { title: "Upcoming IPOs this week: nine issues to raise ₹10,506 crore (Kotak Neo, 12 October 2026)", url: "https://www.kotakneo.com/news/ipos/upcoming-ipos-this-week-and-companies-raising-10506-crore-in-october-2026/" },
+    ],
+  },
+  {
     slug: "jio-platforms-mega-ipo-season",
     title: "Jio Platforms and the mega-IPO season: where early money actually earns its return",
     dek: "A reported ₹30,200 Cr offer at a valuation of up to ₹10.3 lakh crore is the biggest book of the year. The return in companies like this was made long before the book opened.",
