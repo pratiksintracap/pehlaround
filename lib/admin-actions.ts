@@ -120,7 +120,7 @@ export async function addDeskMember(f: FormData) {
     await db.insert(users).values({ email, name, role, passwordHash: await bcrypt.hash(pw, 10) });
   }
   await log(admin, `Desk added ${email} as ${ROLE_LABEL[role]}`);
-  back("/admin/team", `${name} is on the desk as ${ROLE_LABEL[role].toLowerCase()}.${!u ? " Share the temporary password privately; they can change it after signing in." : ""}`);
+  back("/admin/team", `${name} is on the desk as ${ROLE_LABEL[role].toLowerCase()}.${!u ? " Share the temporary password with them privately." : ""}`);
 }
 
 export async function setDeskRole(f: FormData) {
