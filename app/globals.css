@@ -780,6 +780,7 @@ body:has(.appbar) .an-fab{bottom:84px}
 .an-asks{flex-direction:column;align-items:stretch}
 .an-asks button{text-align:left;padding:8px 11px;border-radius:10px;border:1px dashed var(--accent);background:var(--accent-soft);color:var(--ink);font:500 13px var(--sans);cursor:pointer}
 .an-asks button.done{border-style:solid;border-color:var(--live);background:var(--live-soft)}
+.an-asks button.err{border-color:var(--bad,#c0392b)}.an-asks .an-why{display:block;margin-top:4px;font-weight:400;color:var(--ink3)}
 .an-asks button:disabled{cursor:default}
 .an-foot{border-top:1px solid var(--line);padding:12px 14px calc(12px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;background:var(--bg2)}
 .an-foot textarea{resize:none;font:14px var(--sans);padding:10px 12px;border-radius:12px;border:1px solid var(--line2);background:var(--bg);color:var(--ink);max-height:140px}

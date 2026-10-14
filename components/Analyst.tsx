@@ -43,7 +43,7 @@ const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./,
 
 const Spark = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.5l-1.8-5L5 9.7l5.2-1.8zM18.5 15l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" /></svg>;
 
-export function Analyst({ deal, starters, who }: { deal: { slug: string; company: string } | null; starters: string[]; who: string }) {
+export function Analyst({ deal, starters, who, desk = false }: { deal: { slug: string; company: string } | null; starters: string[]; who: string; desk?: boolean }) {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false); // kept on screen beside the page (wide screens), remembered on this device
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -51,7 +51,7 @@ export function Analyst({ deal, starters, who }: { deal: { slug: string; company
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [q, setQ] = useState("");
-  const [asked, setAsked] = useState<Record<string, "sending" | "done" | "err">>({});
+  const [asked, setAsked] = useState<Record<string, "sending" | "done" | "copied" | `err:${string}`>>({});
   const loaded = useRef(false), box = useRef<HTMLDivElement>(null), ta = useRef<HTMLTextAreaElement>(null);
   const qs = deal ? `?deal=${encodeURIComponent(deal.slug)}` : "";
 
@@ -117,11 +117,21 @@ export function Analyst({ deal, starters, who }: { deal: { slug: string; company
     setBusy(false); setStatus("");
   }, [busy, deal, id]);
 
+  // An office posts the suggestion straight into the deal's private Q&A. The desk has no office to post as, so it copies the text instead.
   const postQ = async (text: string) => {
     if (!deal) return;
+    if (desk) {
+      try { await navigator.clipboard.writeText(text); setAsked((a) => ({ ...a, [text]: "copied" })); } catch { setAsked((a) => ({ ...a, [text]: "err:Could not copy" })); }
+      setTimeout(() => setAsked((a) => { const c = { ...a }; delete c[text]; return c; }), 2500);
+      return;
+    }
     setAsked((a) => ({ ...a, [text]: "sending" }));
     const r = await fetch(`/api/room/${deal.slug}/question`, { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify({ question: text, private: true }) }).catch(() => null);
-    setAsked((a) => ({ ...a, [text]: r && r.ok ? "done" : "err" }));
+    if (r && r.ok) { setAsked((a) => ({ ...a, [text]: "done" })); return; }
+    const j = r ? await r.json().catch(() => ({})) : {};
+    const why = typeof j.error === "string" ? j.error : "Could not post. Please try again.";
+    setAsked((a) => ({ ...a, [text]: `err:${why}` }));
+    setTimeout(() => setAsked((a) => { const c = { ...a }; delete c[text]; return c; }), 6000);
   };
 
   return (
@@ -155,9 +165,9 @@ export function Analyst({ deal, starters, who }: { deal: { slug: string; company
                     : <a key={k} href={c.url} target="_blank" rel="noopener" title={c.title}>{host(c.url || "") || c.title}</a>)}</div>
                 )}
                 {!!asks.length && deal && (!busy || !last) && (
-                  <div className="an-asks"><span>Ask the promoter</span>{asks.map((a) => (
-                    <button key={a} type="button" disabled={!!asked[a]} onClick={() => postQ(a)} className={asked[a] === "done" ? "done" : ""}>
-                      {asked[a] === "done" ? "✓ Posted privately to Q&A: " : asked[a] === "err" ? "Could not post: " : ""}{a}</button>))}</div>
+                  <div className="an-asks"><span>{desk ? "Questions worth putting to the promoter" : "Ask the promoter"}</span>{asks.map((a) => { const st = asked[a]; const err = st?.startsWith("err:") ? st.slice(4) : ""; return (
+                    <button key={a} type="button" disabled={!!st && !err} onClick={() => postQ(a)} className={st === "done" || st === "copied" ? "done" : err ? "err" : ""} title={desk ? "Copy this question" : "Post this privately to the deal's Q&A"}>
+                      {st === "done" ? "✓ Posted privately to Q&A: " : st === "copied" ? "✓ Copied: " : st === "sending" ? "Posting… " : ""}{a}{err ? <small className="an-why">{err}</small> : null}</button>); })}</div>
                 )}
               </div>
             );

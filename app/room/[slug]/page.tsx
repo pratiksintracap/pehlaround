@@ -260,7 +260,7 @@ export default async function Room({ params }: P) {
         </div>
       </div>
     </div>
-    {aiReady() && (await getSettings()).aiAnalyst && <Analyst deal={{ slug: d.slug, company: d.company }} starters={starters(d)} who={user!.name} />}
+    {aiReady() && (await getSettings()).aiAnalyst && <Analyst deal={{ slug: d.slug, company: d.company }} starters={starters(d)} who={user!.name} desk={!user!.officeId} />}
     </main>
   );
 }
