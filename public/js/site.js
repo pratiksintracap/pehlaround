@@ -335,6 +335,24 @@
     $$(".side-nav .tabbtn").forEach(function (t) { t.addEventListener("click", function () { try { t.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) {} }); });
     $$("[data-close-welcome]").forEach(function (a) { a.addEventListener("click", function () { var w = $("#welcome"); if (w && w.open) w.close(); }); });
     window.addEventListener("hashchange", function () { tabFromHash(true); });
+    // two-step forms (registration): check step 1 before showing step 2
+    $$("form[data-steps]").forEach(function (f) {
+      var one = $(".rs-1", f), two = $(".rs-2", f); if (!one || !two) return;
+      f.classList.add("stepped");
+      var go = function (n) { f.classList.toggle("at2", n === 2); var first = $(n === 2 ? ".rs-2 input:not([type=hidden]):not([readonly]), .rs-2 select" : ".rs-1 input:not([type=hidden])", f); if (first) first.focus({ preventScroll: true }); f.scrollIntoView({ block: "nearest" }); };
+      var nx = $("[data-step-next]", f); if (nx) nx.addEventListener("click", function () {
+        var bad = $$(".rs-1 input, .rs-1 select", f).filter(function (el) { return !el.checkValidity(); })[0];
+        if (bad) { bad.reportValidity(); return; } go(2); });
+      var bk = $("[data-step-back]", f); if (bk) bk.addEventListener("click", function () { go(1); });
+      // pressing Enter in step 1 continues instead of submitting
+      one.addEventListener && $$(".rs-1 input", f).forEach(function (el) { el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (nx) nx.click(); } }); });
+    });
+    // copy buttons: <button data-copy="text">
+    document.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest("[data-copy]") : null; if (!b) return;
+      var t = b.getAttribute("data-copy"), done = function () { var o = b.textContent; b.textContent = "Copied"; setTimeout(function () { b.textContent = o; }, 1600); };
+      try { navigator.clipboard.writeText(t).then(done, function () {}); } catch (x) {}
+    });
     // dashboard: on wide screens the side menu stays hidden behind a Menu button
     var dm = $("#dash.dm");
     if (dm) (function () {
@@ -361,13 +379,16 @@
     function show() { if (!g) return; g.hidden = false; document.body.classList.add("disc-open"); var a = $("#disc-agree"); if (a) a.focus({ preventScroll: true }); var c = $(".disc-card", g); if (c) c.scrollTop = 0; }
     function hide() { if (!g) return; g.hidden = true; document.body.classList.remove("disc-open"); }
     var rec = get(), fresh = rec && rec.v === VER && (Date.now() - rec.at) < 30 * 864e5;
-    if (!fresh) show();
+    // Visitors see a slim notice bar instead of a pop-up; signed-in offices accepted the disclaimer when they registered.
+    var bar = $("#disc-bar"), signedIn = !!document.body.getAttribute("data-user");
+    if (!fresh && !signedIn && bar) { bar.hidden = false; document.body.classList.add("disc-bar-on"); }
+    var okb = $("#disc-ok"); if (okb) okb.addEventListener("click", function () { set({ v: VER, at: Date.now() }); if (bar) bar.hidden = true; document.body.classList.remove("disc-bar-on"); });
     // welcome pop-up after approval: once per office, after the disclaimer
     var wl = $("#welcome");
     function welcome() { if (!wl || !wl.showModal) return; var k = wl.getAttribute("data-key"); try { if (localStorage.getItem(k)) return; localStorage.setItem(k, "1"); } catch (e) {} wl.showModal(); }
     if (wl) wl.addEventListener("click", function (e) { if (e.target === wl) wl.close(); });
-    if (fresh) welcome();
-    var ag = $("#disc-agree"); if (ag) ag.addEventListener("click", function () { set({ v: VER, at: Date.now() }); hide(); welcome(); if (document.body.getAttribute("data-user")) api("/api/disclaimer", { version: VER }).catch(function () {}); });
+    welcome();
+    var ag = $("#disc-agree"); if (ag) ag.addEventListener("click", function () { set({ v: VER, at: Date.now() }); hide(); if (bar) bar.hidden = true; document.body.classList.remove("disc-bar-on"); if (document.body.getAttribute("data-user")) api("/api/disclaimer", { version: VER }).catch(function () {}); });
     var lv = $("#disc-leave"); if (lv) lv.addEventListener("click", function () { if (history.length > 1) history.back(); else location.replace("about:blank"); });
     $$("[data-show-disclaimer]").forEach(function (x) { x.addEventListener("click", function (e) { e.preventDefault(); show(); }); });
     if (g) g.addEventListener("keydown", function (e) { if (e.key === "Tab") { var f = $$("button", g); if (!f.length) return; var first = f[0], last = f[f.length - 1];

@@ -39,6 +39,7 @@ export const users = pgTable("users", {
   phone: text("phone"),
   role: text("role").notNull().default("member"),        // member | admin (super admin) | analyst | promoter
   promoterDealId: integer("promoter_deal_id"),            // role promoter: the one company they see in the founder portal
+  intent: text("intent"),                                 // the deal slug they registered from; they land on it once approved
   officeRole: text("office_role"),                        // Principal, CIO, CA ...
   rights: text("rights").notNull().default("View, comment, commit"),
   officeId: integer("office_id").references(() => offices.id),
@@ -295,8 +296,27 @@ export const deskInvites = pgTable("desk_invites", {
   createdBy: text("created_by"),
   usedAt: timestamp("used_at", { withTimezone: true }),
   officeId: integer("office_id"),
+  referrerOfficeId: integer("referrer_office_id"),        // an approved office referred this one
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("desk_invites_token_uq").on(t.token)]);
+
+// A personal link the desk sends for one deal: to an office already on the desk, or to someone new
+// (who registers already approved). It opens that deal's NDA.
+export const dealLinks = pgTable("deal_links", {
+  id: serial("id").primaryKey(),
+  token: text("token").notNull(),
+  dealId: integer("deal_id").notNull(),
+  officeId: integer("office_id"),               // an office already on the desk
+  email: text("email"),                         // or someone new
+  name: text("name"),
+  officeName: text("office_name"),
+  createdBy: text("created_by"),
+  opens: integer("opens").notNull().default(0),
+  openedAt: timestamp("opened_at", { withTimezone: true }),
+  registeredAt: timestamp("registered_at", { withTimezone: true }),
+  registeredOfficeId: integer("registered_office_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("deal_links_token_uq").on(t.token), index("deal_links_deal_idx").on(t.dealId)]);
 
 // Self-serve password reset links (stored hashed, valid for a short time, used once).
 export const passwordResets = pgTable("password_resets", {

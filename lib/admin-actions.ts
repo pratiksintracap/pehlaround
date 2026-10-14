@@ -7,7 +7,7 @@ import { PUBLIC_TAG } from "@/lib/cache";
 import { and, eq, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
-import { articles, broadcasts, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
+import { articles, broadcasts, dealLinks, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
 import { notifyOffices, notifyDesk, ndaOffices, sendEmail, emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { sendRaw } from "@/lib/email";
 import { randomBytes } from "node:crypto";
@@ -55,7 +55,10 @@ export async function setApproval(f: FormData) {
   await log(admin, `Desk set ${o.name} to ${approval}`);
   if (approval === "approved" && o.approval !== "approved") {
     // In-app notice only: the "You're in" email of the onboarding series does the emailing.
-    await notifyOffices([id], { title: "Your office is approved", body: "Every company on Off Market Desk is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: "/deals" }, false);
+    // Back to the deal they registered from, if there was one.
+    const [withIntent] = await db.select({ intent: users.intent }).from(users).where(and(eq(users.officeId, id), sql`${users.intent} is not null`)).limit(1);
+    const [want] = withIntent?.intent ? await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.slug, withIntent.intent)) : [];
+    await notifyOffices([id], { title: "Your office is approved", body: want ? `${want.company} is open to you now: sign its NDA on screen and its room opens.` : "Every company on Off Market Desk is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: want ? `/deals/${want.slug}#sign` : "/deals" }, false);
     const team = await db.select({ id: users.id }).from(users).where(and(eq(users.officeId, id), eq(users.disabled, false)));
     for (const t of team) await startSeries(t.id, "approved").catch(() => 0);
   }
@@ -426,6 +429,7 @@ export async function saveSiteSettings(f: FormData) {
     announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
     promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on", aiBudget: String(Math.max(0, Math.round(Number(s(f, "aiBudget", 10)) || 0))),
     analystContacts: f.get("analystContacts") === "on",
+    referrals: f.get("referrals") === "on", approvalTime: s(f, "approvalTime", 120) || "usually within two hours on working days",
   });
   await log(admin, "Desk changed the site settings");
   revalidatePath("/", "layout");
@@ -522,4 +526,27 @@ export async function removePromoter(f: FormData) {
   await signOutEverywhere(id);
   await log(admin, `Desk removed founder portal access for ${u.email}`, u.promoterDealId);
   back(`/admin/deals/${u.promoterDealId}#promoters`, `${u.name} no longer has founder portal access.`);
+}
+
+// ---------------------------------------------------------------- personal deal links
+/** A link for one deal, for an office on the desk or for someone new (who registers already approved). */
+export async function createDealLink(f: FormData) {
+  const admin = await requirePerm("deals.edit");
+  const dealId = n(f, "dealId"), path = `/admin/deals/${dealId}#share`;
+  const db = await getDb();
+  const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, dealId));
+  if (!d) return;
+  let officeId = n(f, "officeId") || null;
+  const email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), officeName = s(f, "officeName", 160);
+  if (!officeId) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name) back(path, "Pick an office on the desk, or give a name and email for someone new.");
+    const [u] = await db.select({ officeId: users.officeId, role: users.role }).from(users).where(eq(users.email, email));
+    if (u && !u.officeId) back(path, `${email} is a desk or promoter account.`);
+    if (u?.officeId) officeId = u.officeId; // already registered: link to their office
+  }
+  const token = randomBytes(12).toString("base64url");
+  await db.insert(dealLinks).values({ token, dealId, officeId, email: officeId ? null : email, name: officeId ? null : name, officeName: officeId ? null : officeName || null, createdBy: admin.name });
+  await log(admin, `Desk made a personal link to ${d.company} for ${officeId ? `office #${officeId}` : email}`, dealId);
+  revalidatePath(`/admin/deals/${dealId}`);
+  redirect(`/admin/deals/${dealId}?link=${token}#share`);
 }

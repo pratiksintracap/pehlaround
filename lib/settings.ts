@@ -16,8 +16,10 @@ export type Settings = {
   aiAnalyst: boolean;         // the AI analyst in the dashboard and rooms (needs ANTHROPIC_API_KEY)
   aiBudget: string;           // US$ a month the analyst may spend (estimated); 0 for no cap
   analystContacts: boolean;   // desk analysts may see family office people's email and phone
+  referrals: boolean;         // approved offices can refer peers, who are approved when they register
+  approvalTime: string;       // what new offices are told about the wait for approval
 };
-const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false };
+const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false, referrals: true, approvalTime: "usually within two hours on working days" };
 
 const settingRows = cachedPublic(async () => { const db = await getDb(); return db.select().from(settings); }, "settings");
 export async function getSettings(): Promise<Settings> {

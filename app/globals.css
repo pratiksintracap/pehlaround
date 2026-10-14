@@ -1020,3 +1020,29 @@ body:has(.an-fab) .app-wrap{padding-bottom:110px}
 .sr label,.fp .sr{font-size:0}
 .fp .sr textarea{font-size:15px}
 @media (max-width:900px){.fp-tiles{grid-template-columns:1fr 1fr}}
+
+/* ---------- v45: journey ---------- */
+.dl-t td{vertical-align:top}
+.dl-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dl-acts input{min-width:220px;flex:1;font:500 12.5px var(--mono);padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink2)}
+.dl-new td{background:color-mix(in srgb,var(--live) 9%,transparent)}
+.reg-form .rs{display:contents}
+.reg-form .rs-h{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);display:flex;gap:10px;align-items:center}
+.reg-form .rs-h .linkbtn{text-transform:none;letter-spacing:0;font:500 13px var(--sans)}
+.reg-form .rs-next,.reg-form .rs-h{display:none}
+.reg-form.stepped .rs-h,.reg-form.stepped .rs-next{display:flex}
+.reg-form.stepped:not(.at2) .rs-2,.reg-form.stepped.at2 .rs-1{display:none}
+.nda-inline{margin-top:12px;padding:16px;border:1px solid var(--accent);border-radius:14px;background:color-mix(in srgb,var(--accent) 4%,var(--bg2));gap:10px;scroll-margin-top:90px}
+.nda-inline .k{font-weight:700;color:var(--ink);font-size:14.5px;text-transform:none;letter-spacing:0;font-family:var(--sans)}
+.nda-read summary{cursor:pointer;font-weight:600;color:var(--accent);font-size:13.5px}
+.nda-read[open]{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg2);font-size:13px}
+.pend-note{margin:10px 0 0;font-size:13.5px}
+.discbar{position:fixed;left:12px;right:12px;bottom:12px;z-index:900;border:1px solid #ffffff26;max-width:880px;margin:0 auto;display:flex;gap:14px;align-items:center;padding:12px 14px 12px 16px;border-radius:14px;background:var(--navy);color:var(--onnavy);box-shadow:0 18px 50px -18px #0b1730aa}
+.discbar[hidden]{display:none}
+.discbar p{margin:0;font-size:13px;line-height:1.5;flex:1}
+.discbar b{color:#fff}
+.discbar-acts{display:flex;gap:10px;align-items:center;flex:none}
+.discbar .linkbtn{color:var(--onnavy2);font-size:13px}
+body:has(.appbar) .discbar{bottom:78px}
+body.disc-bar-on .an-fab{bottom:96px}
+@media (max-width:640px){.discbar{flex-direction:column;align-items:stretch;gap:8px}.discbar-acts{justify-content:space-between}}

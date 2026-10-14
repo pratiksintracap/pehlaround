@@ -4,9 +4,9 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
-import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT } from "@/db/schema";
+import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT, deskInvites } from "@/db/schema";
 import { CATEGORIES, STATUS, catLabel, ticketNo } from "@/lib/tickets";
-import { listDeals, canSeeNames } from "@/lib/deals";
+import { listDeals, canSeeNames , signedDealIds } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
 import { AppPromo } from "@/components/AppPromo";
 import { GRIEVANCE, DESK_EMAIL } from "@/lib/site";
@@ -16,6 +16,7 @@ import { aiReady, starters } from "@/lib/ai";
 import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, completeness, fit } from "@/lib/profile";
 import { isDesk } from "@/lib/perm";
 import { holding, crore, fmtDay } from "@/lib/portfolio";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
 type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string }> };
@@ -38,6 +39,13 @@ export default async function Dashboard({ searchParams }: P) {
   const user = await requireUser("/dashboard");
   if (isDesk(user) && !user.officeId) redirect("/admin");
   if (user.role === "promoter") redirect("/founder");
+  // Registered from a deal: once approved, take them straight back to it (once).
+  if (user.intent && user.office?.approval === "approved") {
+    const want = user.intent;
+    await (await getDb()).update(users).set({ intent: null }).where(eq(users.id, user.id));
+    const d = (await listDeals()).find((x) => x.slug === want);
+    if (d && d.open && !(await signedDealIds(user.officeId)).has(d.id)) redirect(`/deals/${d.slug}#sign`);
+  }
   const { msg, error, deal: tDeal, cat: tCat } = await searchParams;
   const office = user.office!;
   const db = await getDb();
@@ -59,6 +67,7 @@ export default async function Dashboard({ searchParams }: P) {
     db.select({ at: docViews.at, title: documents.title, dealId: documents.dealId, userId: docViews.userId }).from(docViews)
       .innerJoin(documents, eq(documents.id, docViews.documentId)).where(eq(docViews.officeId, office.id)).orderBy(desc(docViews.at)).limit(100),
   ]);
+  const refs = await db.select().from(deskInvites).where(eq(deskInvites.referrerOfficeId, office.id)).orderBy(desc(deskInvites.createdAt)).limit(10);
   const myTickets = await db.select().from(tickets).where(eq(tickets.officeId, office.id)).orderBy(desc(tickets.updatedAt));
   const ticketsWaiting = myTickets.filter((t) => t.status === "answered").length;
   const signed = new Set(myNdas.map((n) => n.dealId));
@@ -86,7 +95,7 @@ export default async function Dashboard({ searchParams }: P) {
   // progress: four steps, shown until the office has a room open
   const steps: [string, string, "done" | "now" | "todo"][] = [
     ["Registered", "Your office is on the desk", "done"],
-    ["Approved", names ? "Every company is open to you by name" : "The desk reviews new offices, usually within a working day", names ? "done" : "now"],
+    ["Approved", names ? "Every company is open to you by name" : `The desk reviews new offices, ${st.approvalTime}`, names ? "done" : "now"],
     ["First NDA signed", signed.size ? "Signed with your name and an email code" : "Your name and a code we email you; nothing else", signed.size ? "done" : names ? "now" : "todo"],
     ["Rooms open", signed.size ? `${signed.size} ${signed.size === 1 ? "room" : "rooms"} open to you` : "Numbers, documents and Q&A for each company", signed.size ? "done" : "todo"],
   ];
@@ -133,7 +142,7 @@ export default async function Dashboard({ searchParams }: P) {
       </aside>
       <div className="app-main">
       <div className="dashhead">
-        <div className="dh-name"><button type="button" className="dm-btn" data-menu="" aria-expanded="false" aria-controls="dash-menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>Menu <em data-menu-label="">{NAV[0][1]}</em></button><span className="eyebrow">Office dashboard</span><h1>{office.name}</h1></div>
+        <div className="dh-name"><button type="button" className="dm-btn" data-menu="" aria-expanded="false" aria-controls="dash-menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>Menu <em data-menu-label="" suppressHydrationWarning>{NAV[0][1]}</em></button><span className="eyebrow">Office dashboard</span><h1>{office.name}</h1></div>
         <div className="dh-stats">
           <a href="#Rooms"><b>{signed.size}</b><span>{signed.size === 1 ? "room open" : "rooms open"}</span></a>
           <a href="#Rooms"><b>{myQs.length}</b><span>questions</span></a>
@@ -150,7 +159,7 @@ export default async function Dashboard({ searchParams }: P) {
             <li key={t} className={c} aria-current={c === "now" ? "step" : undefined}><span className="dot" aria-hidden="true">{c === "done" ? "✓" : i + 1}</span><div><b>{t}</b><small>{sub}</small></div></li>))}</ol>
           <div className="ns-act">
             {pendingApproval ? <p className="fine">You can browse the shelf below in the meantime. We will tell you under the bell and by email the moment your office is approved.</p>
-              : !signed.size && topPick ? <><a className="btn primary" href={`/nda/${topPick.slug}`}>Open your first room: {topPick.company}</a><a className="btn ghost" href="#Shelf">Or choose from the shelf ↓</a></>
+              : !signed.size && topPick ? <><a className="btn primary" href={`/deals/${topPick.slug}#sign`}>Open your first room: {topPick.company}</a><a className="btn ghost" href="#Shelf">Or choose from the shelf ↓</a></>
               : null}
           </div>
         </section>
@@ -166,7 +175,7 @@ export default async function Dashboard({ searchParams }: P) {
                   : <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>}{!passedBy.has(d.id) && fits.get(d.id) && <span className="fitpill" title={fits.get(d.id)!}>Fits your thesis</span>}</th>
               <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td><td>{d.score != null ? <b>{d.score.toFixed(1)}</b> : "—"}</td>
               <td><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
+                {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
                 <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div></td>
             </tr>
           ))}</tbody></table></div>
@@ -177,7 +186,7 @@ export default async function Dashboard({ searchParams }: P) {
             <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
               <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
             <div className="dc-acts">
-              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a> : null}
+              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
               <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
           </li>))}</ul>
         <p className="fine">Same fields for every deal so offices can compare quickly.</p>
@@ -369,6 +378,14 @@ export default async function Dashboard({ searchParams }: P) {
             <p className="fine">They join your office when they register with this email.</p>
           </form>}
         </div>
+        {names && <div className="chart ref-card" id="refer"><span className="k">Refer a family office</span>
+          <p className="fine">Know a family office that should see these companies? {st.referrals ? "Your referral is approved the moment they register." : "The desk approves them after they register."} Up to five every 30 days.</p>
+          <form method="post" action="/api/office/refer" className="form"><div className="row3"><label>Name<input name="name" required maxLength={120} /></label><label>Email<input name="email" type="email" required maxLength={200} /></label><label>Family office<input name="officeName" maxLength={160} /></label></div>
+            <div><button className="btn" type="submit">Make a referral link</button></div></form>
+          {refs.length > 0 && <ul className="feed ref-list">{refs.map((r) => { const url = `${SITE_URL}/invite/${r.token}`; const text = `${(r.name || "").split(" ")[0]}, I use Off Market Desk to see pre-IPO companies before they list. Register here: ${url}`; return (
+            <li key={r.id}><b>{r.officeName || r.name}</b> · {r.usedAt ? <span className="pill ok">Registered</span> : <span className="pill">Not yet</span>}
+              {!r.usedAt && <div className="dl-acts"><input readOnly value={url} aria-label={`Referral link for ${r.name}`} /><button type="button" className="btn sm" data-copy={url}>Copy</button><a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener">WhatsApp</a></div>}</li>); })}</ul>}
+        </div>}
         <div style={{ marginTop: 12 }}><form method="post" action="/api/auth/signout-all"><button className="btn sm ghost" type="submit">Sign out other devices</button></form></div>
       </section>
 
@@ -399,7 +416,7 @@ export default async function Dashboard({ searchParams }: P) {
           )}
           <span className="k">Highest Desk Scores on the shelf</span>
           <ul className="roomlist">{[...deals].filter((d) => d.open).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3).map((d) => (
-            <li key={d.id}><div><b>{d.company}</b><small>{d.category}{d.score != null ? ` · Desk Score ${d.score.toFixed(1)}` : ""}</small></div><a className="btn sm primary" href={`/nda/${d.slug}`}>Sign NDA</a></li>))}</ul>
+            <li key={d.id}><div><b>{d.company}</b><small>{d.category}{d.score != null ? ` · Desk Score ${d.score.toFixed(1)}` : ""}</small></div><a className="btn sm primary" href={`/deals/${d.slug}#sign`}>Sign NDA</a></li>))}</ul>
           <p className="fine" style={{ marginTop: 12 }}>Tell the desk what you look for in <a href="#Profile" data-close-welcome="">your investment profile</a> and the shelf will mark the deals that fit.</p>
           <form method="dialog"><button className="btn ghost sm">I&apos;ll look around first</button></form>
         </dialog>

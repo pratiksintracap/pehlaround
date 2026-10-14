@@ -7,6 +7,10 @@ import { getDb } from "@/lib/db";
 import { dealViews } from "@/db/schema";
 import { runwayHtml } from "@/lib/render";
 import { isDesk } from "@/lib/perm";
+import { NdaSign } from "@/components/NdaSign";
+import { emailReady } from "@/lib/email";
+import { trustedDevice } from "@/lib/trust";
+import { getSettings } from "@/lib/settings";
 
 type P = { params: Promise<{ slug: string }> };
 
@@ -22,6 +26,9 @@ export default async function Overview({ params }: P) {
   if (!d || (!d.published && !isDesk(user))) notFound();
   const signed = (await signedDealIds(user?.officeId)).has(d.id) || isDesk(user);
   const registered = await canSeeNames(user);
+  const canSign = !!user && !!user.office && registered && !signed && d.open && user.office.status !== "rejected";
+  const trusted = canSign ? await trustedDevice(user!.id) : false;
+  const approvalTime = (await getSettings()).approvalTime;
   if (!isDesk(user)) await (await getDb()).insert(dealViews).values({ dealId: d.id, officeId: user?.officeId ?? null }).catch(() => {});
   const stages = ["Overview", "Room open", "Closing"];
   const now = d.open ? "Room open" : "Overview";
@@ -64,7 +71,7 @@ export default async function Overview({ params }: P) {
                 </ul>
               </div>
               {signed ? <a className="btn primary" href={`/room/${d.slug}`}>Open the deal room</a>
-                : d.open ? <a className="btn primary" href={`/nda/${d.slug}`}>Sign this company&apos;s NDA to open the room</a>
+                : canSign ? <NdaSign deal={d} name={user!.name} office={user!.office!.name} email={user!.email} mailOn={emailReady()} trusted={trusted} />
                 : <span className="btn" aria-disabled="true">Room not open yet</span>}
             </>
           ) : (
@@ -78,11 +85,11 @@ export default async function Overview({ params }: P) {
                   <li>Financials and documents<span className="v">in the room</span></li>
                 </ul>
               </div>
-              {user ? <span className="btn" aria-disabled="true">Your office is being approved</span>
-                : <a className="btn primary" href={`/register?next=${encodeURIComponent(`/deals/${d.slug}`)}`}>Register to see the company</a>}
+              {user ? <p className="notice pend-note"><b>Your office is being approved</b>, {approvalTime}. We bring you back to this company the moment it is, to sign its NDA here.</p>
+                : <a className="btn primary" href={`/register?next=${encodeURIComponent(`/deals/${d.slug}#sign`)}`}>Register to see the company</a>}
             </>
           )}
-          <p className="fine">No fee for family offices, on any deal. Register once; after the desk approves your office, you can open this company&apos;s room by signing its NDA on screen.</p>
+          {!registered && !user && <p className="fine">Register once; after the desk approves your office, you open this company&apos;s room by signing its NDA right on this page.</p>}
         </aside>
       </article>
 

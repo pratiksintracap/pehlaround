@@ -25,7 +25,7 @@ const PRATIK = `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">Pratik S
 export const SERIES: Step[] = [
   { key: "welcome", anchor: "register", days: 0, name: "Welcome", purpose: "Confirms the registration and says what happens next",
     subject: () => "Welcome to Off Market Desk: what happens next",
-    preheader: () => "The desk approves new offices within a working day. Here is what opens after that.",
+    preheader: () => "The desk approves new offices, usually within two hours on working days. Here is what opens after that.",
     skip: (c) => (c.office.approval === "approved" ? "already approved" : null),
     body: (c) => E.h(`Welcome, ${first(c)}`)
       + E.p(`Thank you for registering <b>${c.office.name}</b> on Off Market Desk. The desk reviews every new office, usually within a working day, and you will hear from us the moment yours is approved.`)

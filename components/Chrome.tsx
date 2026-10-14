@@ -19,7 +19,7 @@ export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?
         </nav>
         <div className="acts">
           <button type="button" className="iconbtn" id="shortlist-btn" aria-label="Your shortlist" title="Your shortlist" aria-expanded="false" aria-controls="shortlist">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14l-5-3.5L5 17z" /></svg><span className="badge" id="shortlist-count" hidden>0</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14l-5-3.5L5 17z" /></svg><span className="badge" id="shortlist-count" hidden suppressHydrationWarning>0</span>
           </button>
           {user && (
             <a className="iconbtn" href="/notifications" aria-label={unread ? `${unread} unread notifications` : "Notifications"} title="Notifications">

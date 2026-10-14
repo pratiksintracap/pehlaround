@@ -2,8 +2,9 @@ import { requireDesk } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { calls, deals, documents, ndas, offices, questions, users } from "@/db/schema";
-import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish, addPromoter, removePromoter } from "@/lib/admin-actions";
+import { calls, dealLinks, deals, documents, ndas, offices, questions, users } from "@/db/schema";
+import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish, addPromoter, removePromoter, createDealLink } from "@/lib/admin-actions";
+import { SITE_URL } from "@/lib/site";
 import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { Msg } from "@/components/AdminBits";
@@ -16,14 +17,19 @@ const IN = ({ name, label, value, hint, ph }: { name: string; label: string; val
   <label>{label}<input name={name} defaultValue={value ?? ""} placeholder={ph} />{hint && <span className="hint">{hint}</span>}</label>
 );
 
-export default async function EditDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> }) {
+export default async function EditDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string; link?: string }> }) {
   const me = await requireDesk();
   const id = Number((await params).id);
-  const { msg } = await searchParams;
+  const { msg, link: fresh } = await searchParams;
   const db = await getDb();
   const [d] = await db.select().from(deals).where(eq(deals.id, id));
   if (!d) notFound();
   const signedOffices = await db.select({ id: offices.id, name: offices.name }).from(ndas).innerJoin(offices, eq(offices.id, ndas.officeId)).where(eq(ndas.dealId, id));
+  const [links, approvedOffices] = await Promise.all([
+    db.select().from(dealLinks).where(eq(dealLinks.dealId, id)).orderBy(desc(dealLinks.createdAt)).limit(50),
+    db.select({ id: offices.id, name: offices.name }).from(offices).where(eq(offices.approval, "approved")).orderBy(asc(offices.name)),
+  ]);
+  const officeName = new Map(approvedOffices.map((o) => [o.id, o.name]));
   const promoters = await db.select().from(users).where(and(eq(users.role, "promoter"), eq(users.promoterDealId, id), eq(users.disabled, false)));
   const [docs, qs, cs] = await Promise.all([
     db.select().from(documents).where(eq(documents.dealId, id)).orderBy(asc(documents.sort), asc(documents.id)),
@@ -103,6 +109,25 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
           <label>Note (optional)<input name="note" maxLength={600} placeholder="e.g. Numbers updated to FY26 audited; ready to go live" /></label>
           <div><button className="btn sm primary" type="submit">Send the request</button></div>
         </form>)}
+
+      <h2 id="share">Send this deal to an office</h2>
+      <p className="fine">A personal link that opens this deal&apos;s NDA. An office on the desk goes straight there once signed in. Someone new registers with their details filled in and their office approved, then lands on the NDA. Send it on WhatsApp or email yourself; the message names the sector, not the company.</p>
+      <form action={createDealLink} className="form adm-card" id="make-link"><input type="hidden" name="dealId" value={d.id} />
+        <label>An office on the desk<select name="officeId" defaultValue=""><option value="">— or someone new, below —</option>{approvedOffices.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
+        <div className="row3"><label>Name<input name="name" maxLength={120} /></label><label>Email<input name="email" type="email" maxLength={200} /></label><label>Family office<input name="officeName" maxLength={160} /></label></div>
+        <div><button className="btn sm primary" type="submit">Make the link</button></div>
+      </form>
+      {links.length > 0 && <div className="cmpwrap"><table className="cmp plain dl-t"><thead><tr><th>For</th><th>Made</th><th>Opened</th><th>Link</th></tr></thead><tbody>
+        {links.map((l) => {
+          const url = `${SITE_URL}/go/${l.token}`;
+          const who = l.officeId ? officeName.get(l.officeId) ?? `Office #${l.officeId}` : `${l.name}${l.officeName ? `, ${l.officeName}` : ""}`;
+          const text = `${l.officeId ? "" : `${(l.name || "").split(" ")[0]}, `}a company the desk would like you to see: ${d.title} (${d.category}), target listing ${d.listingLabel}. It opens here: ${url}`;
+          return <tr key={l.id} className={l.token === fresh ? "dl-new" : ""}><td><b>{who}</b>{!l.officeId && <small className="fine"><br />new · {l.registeredAt ? "registered, approved" : "not registered yet"}</small>}</td>
+            <td>{l.createdAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" })} · {l.createdBy}</td>
+            <td>{l.opens ? `${l.opens}× · last ${l.openedAt?.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" })}` : "Not yet"}</td>
+            <td><div className="dl-acts"><input readOnly value={url} aria-label={`Link for ${who}`} /><button type="button" className="btn sm" data-copy={url}>Copy</button>
+              <a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener">WhatsApp</a></div></td></tr>; })}
+      </tbody></table></div>}
 
       <h2 id="promoters">Promoter access (founder portal)</h2>
       <p className="fine">The company&apos;s promoters sign in to see how the round is going: overview views, NDAs, room activity and questions, never which offices. They draft answers and suggest documents; nothing reaches offices until the desk posts it.{d.promoterDemand ? " They also see the total amount indicated." : " They do not see amounts (tick the box under Road to listing to show the total)."}</p>
