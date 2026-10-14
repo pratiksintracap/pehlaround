@@ -28,7 +28,7 @@ export const SERIES: Step[] = [
     preheader: () => "The desk approves new offices, usually within two hours on working days. Here is what opens after that.",
     skip: (c) => (c.office.approval === "approved" ? "already approved" : null),
     body: (c) => E.h(`Welcome, ${first(c)}`)
-      + E.p(`Thank you for registering <b>${c.office.name}</b> on Before the Bell. The desk reviews every new office, usually within a working day, and you will hear from us the moment yours is approved.`)
+      + E.p(`Thank you for registering <b>${c.office.name}</b> on Before the Bell. The desk reviews every new office, usually within two hours on working days, and you will hear from us the moment yours is approved.`)
       + E.p("Once approved, your office sees:")
       + E.list(["Every company on the desk by name, with round size, valuation and trailing and forward P/E", "A deal room for each company, opened with that company's NDA, signed on screen",
         "Questions to the promoter, promoter sessions and allocation requests, all from your dashboard", "A new company about every fortnight, checked by the desk before you see it"])
