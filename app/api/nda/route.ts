@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const r = await checkCode(user.id, d.id, code);
     if (r === "none") return fail(req, json, "That code has expired. Send a new one and enter it within 10 minutes.", back);
     if (r === "expired") return fail(req, json, "Too many wrong tries. Send a new code.", back);
-    if (r === "wrong") return fail(req, json, "That code is not right. Check the latest email from Off Market Desk.", back);
+    if (r === "wrong") return fail(req, json, "That code is not right. Check the latest email from Before the Bell.", back);
     verified = true;
     await trustDevice(user.id);
   }

@@ -1,6 +1,6 @@
 // The NDA wording, in one place, so the on-screen agreement, the signed copy and the PDF always match.
 export const ndaParties = (company: string, office: string, version: string) =>
-  `Agreement between ${company} (“the Company”) and ${office} (“the Office”). Off Market Desk, operated by SintraCap Advisors LLP, facilitates the agreement and hosts the data room. Version ${version}.`;
+  `Agreement between ${company} (“the Company”) and ${office} (“the Office”). Before the Bell, operated by SintraCap Advisors LLP, facilitates the agreement and hosts the data room. Version ${version}.`;
 
 export const NDA_CLAUSES: [string, string][] = [
   ["Confidential information.", "The Company’s financial information, valuation, documents, promoter sessions, questions and answers, and the identity of other investors in this round are confidential, whether marked or not."],

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err(req, "Give the person's name and email.");
   const db = await getDb();
   const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
-  if (taken) return err(req, `${email} is already on Off Market Desk.`);
+  if (taken) return err(req, `${email} is already on Before the Bell.`);
   const recent = await db.select({ id: deskInvites.id }).from(deskInvites).where(and(eq(deskInvites.referrerOfficeId, u.office.id), gt(deskInvites.createdAt, new Date(Date.now() - 30 * 864e5))));
   if (recent.length >= 5) return err(req, "Your office can refer five offices every 30 days. The desk can invite more for you.");
   const token = randomBytes(18).toString("base64url");

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Mark } from "@/components/Mark";
 
-const D = "Install Off Market Desk on your phone: the shelf, deal rooms, NDAs, questions and allocations for your family office, one tap away.";
-export const metadata: Metadata = { title: "Get the app", description: D, openGraph: { title: "The Off Market Desk app", description: D } };
+const D = "Install Before the Bell on your phone: the shelf, deal rooms, NDAs, questions and allocations for your family office, one tap away.";
+export const metadata: Metadata = { title: "Get the app", description: D, openGraph: { title: "The Before the Bell app", description: D } };
 
 const FEATURES: [string, string][] = [
   ["Your shelf, live", "Every company on the desk with round size, valuation and P/E, updated the moment the desk changes them."],
@@ -16,12 +16,12 @@ export default function AppPage() {
     <main>
       <div className="wrap appx" style={{ padding: "clamp(40px,6vw,72px) var(--gutter)" }}>
         <div className="appx-copy">
-          <span className="eyebrow">Off Market Desk app</span>
+          <span className="eyebrow">Before the Bell app</span>
           <h1>Your deal desk, <em>on your phone.</em></h1>
-          <p className="lede">Install Off Market Desk on your iPhone or Android phone and manage your office&apos;s dashboard from anywhere. It opens straight to your dashboard, full screen, like any other app. No app store needed.</p>
+          <p className="lede">Install Before the Bell on your iPhone or Android phone and manage your office&apos;s dashboard from anywhere. It opens straight to your dashboard, full screen, like any other app. No app store needed.</p>
           <div className="appx-cta">
             <a className="btn primary" href="/app?install=1" data-get-app="">Get the app</a>
-            <span className="appx-installed fine" hidden>Installed. Open Off Market Desk from your home screen.</span>
+            <span className="appx-installed fine" hidden>Installed. Open Before the Bell from your home screen.</span>
           </div>
           <div className="appx-steps">
             <div className="appx-step"><b>iPhone (Safari)</b><ol><li>Tap <b>Get the app</b> above (it opens Safari if you are in another app)</li><li>Tap the Share button</li><li>Choose <b>Add to Home Screen</b>, then <b>Add</b></li></ol></div>

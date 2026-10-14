@@ -4,7 +4,7 @@ import { Html } from "@/components/Chrome";
 import { Readiness } from "@/components/Readiness";
 
 const D = "Put your pre-IPO round, secondary or SME-IPO anchor in front of registered family offices. Tell the desk in a minute, or take the free IPO readiness check.";
-export const metadata: Metadata = { title: "List your company", description: D, openGraph: { title: "List your company · Off Market Desk", description: D } };
+export const metadata: Metadata = { title: "List your company", description: D, openGraph: { title: "List your company · Before the Bell", description: D } };
 
 export default function Page() {
   return (

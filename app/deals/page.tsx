@@ -4,7 +4,7 @@ import { listDeals, signedDealIds, canSeeNames } from "@/lib/deals";
 import { shelfHtml } from "@/lib/render";
 
 const D = "Pre-IPO and growth rounds on the desk, with a new one about every fortnight, shown without company names. Registered offices see the company and valuation once the desk approves them.";
-export const metadata: Metadata = { title: "Deals", description: D, openGraph: { title: "Deals · Off Market Desk", description: D } };
+export const metadata: Metadata = { title: "Deals", description: D, openGraph: { title: "Deals · Before the Bell", description: D } };
 
 export default async function DealsPage() {
   const [user, deals] = await Promise.all([getUser(), listDeals()]);

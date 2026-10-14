@@ -34,7 +34,7 @@ export default async function Ticket({ params }: { params: Promise<{ no: string 
       </header>
       <ol className="tk-thread">{msgs.map((m) => m.from === "system"
         ? <li key={m.id} className="sys"><span>{m.body}</span><time>{fmtT(m.createdAt)}</time></li>
-        : <li key={m.id} className={m.from}><div className="tk-by"><b>{m.from === "desk" ? "Off Market Desk" : m.who}</b>{m.from === "desk" && m.who && <small> · {m.who}</small>}<time>{fmtT(m.createdAt)}</time></div><p>{m.body}</p></li>)}</ol>
+        : <li key={m.id} className={m.from}><div className="tk-by"><b>{m.from === "desk" ? "Before the Bell" : m.who}</b>{m.from === "desk" && m.who && <small> · {m.who}</small>}<time>{fmtT(m.createdAt)}</time></div><p>{m.body}</p></li>)}</ol>
       {t.status === "resolved" && !t.rating && (
         <form className="form tk-rate" method="post" action={`/api/tickets/${ticketNo(t.id)}/rate`} data-api="">
           <span className="k">How did the desk do?</span>

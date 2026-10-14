@@ -1,7 +1,7 @@
 {
   "id": "/dashboard",
-  "name": "Off Market Desk",
-  "short_name": "Off Market Desk",
+  "name": "Before the Bell",
+  "short_name": "Before the Bell",
   "description": "Your family office's deal desk: IPO-bound companies, deal rooms, NDAs, questions and allocations.",
   "start_url": "/dashboard?source=app",
   "scope": "/",

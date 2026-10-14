@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   if (!emailReady()) return NextResponse.json({ ok: true, noEmail: true });
   if (!(await allow(`ndacode:${user.id}`, 6, 3600))) return jerr(TOO_MANY, 429);
   const code = await issueCode(user.id, d.id);
-  const body = E.h(`Your code: ${code}`) + E.p(`Enter this code on Off Market Desk to sign the non-disclosure agreement with <b>${esc(d.company)}</b> on behalf of <b>${esc(user.office.name)}</b>. It works for ${CODE_MINUTES} minutes.`)
+  const body = E.h(`Your code: ${code}`) + E.p(`Enter this code on Before the Bell to sign the non-disclosure agreement with <b>${esc(d.company)}</b> on behalf of <b>${esc(user.office.name)}</b>. It works for ${CODE_MINUTES} minutes.`)
     + E.p("If you did not ask for it, ignore this email; nothing is signed without the code.");
   const sent = await sendRaw([user.email], `${code} is your code to sign the ${d.company} NDA`, layout(body, { preheader: `Code ${code}, valid ${CODE_MINUTES} minutes` }));
   if (!sent) return jerr("The code could not be sent. Please try again, or write to the desk.", 502);

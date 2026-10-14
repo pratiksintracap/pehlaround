@@ -17,7 +17,7 @@ type P = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const d = await getDeal((await params).slug);
   if (!d || !d.published) return {};
-  return { title: `${d.title} · ${d.category}`, description: d.headline, openGraph: { title: `${d.title} · Off Market Desk`, description: d.headline } };
+  return { title: `${d.title} · ${d.category}`, description: d.headline, openGraph: { title: `${d.title} · Before the Bell`, description: d.headline } };
 }
 
 export default async function Overview({ params }: P) {
@@ -97,7 +97,7 @@ export default async function Overview({ params }: P) {
         <div className="sec-head rv inview"><div>
           <span className="eyebrow">Curated by the desk</span>
           <h2 style={{ fontSize: 26 }}>How this company scores</h2>
-          <p>Before it gets a room, every company goes through Off Market Desk&apos;s proprietary diligence: site, factory and plant visits, customer orders verified, customer and supplier feedback taken and the numbers reconciled. The findings, the risks and the documents behind the score open in the room, under NDA.</p>
+          <p>Before it gets a room, every company goes through Before the Bell&apos;s proprietary diligence: site, factory and plant visits, customer orders verified, customer and supplier feedback taken and the numbers reconciled. The findings, the risks and the documents behind the score open in the room, under NDA.</p>
         </div></div>
         <div className="chart rv inview">
           {d.score != null ? <ScoreBadge score={d.score} /> : <p className="fine">The desk is completing its assessment of this company.</p>}

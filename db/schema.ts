@@ -246,7 +246,7 @@ export const articles = pgTable("articles", {
   sources: jsonb("sources").$type<{ title: string; url: string }[]>().notNull().default([]),
   externalUrl: text("external_url"),
   image: text("image"),                         // optional cover image URL; a generated cover is used otherwise
-  author: text("author").notNull().default("Off Market Desk team"),
+  author: text("author").notNull().default("Before the Bell team"),
   published: boolean("published").notNull().default(true),
   publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

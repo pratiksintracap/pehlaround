@@ -382,7 +382,7 @@ export default async function Dashboard({ searchParams }: P) {
           <p className="fine">Know a family office that should see these companies? {st.referrals ? "Your referral is approved the moment they register." : "The desk approves them after they register."} Up to five every 30 days.</p>
           <form method="post" action="/api/office/refer" className="form"><div className="row3"><label>Name<input name="name" required maxLength={120} /></label><label>Email<input name="email" type="email" required maxLength={200} /></label><label>Family office<input name="officeName" maxLength={160} /></label></div>
             <div><button className="btn" type="submit">Make a referral link</button></div></form>
-          {refs.length > 0 && <ul className="feed ref-list">{refs.map((r) => { const url = `${SITE_URL}/invite/${r.token}`; const text = `${(r.name || "").split(" ")[0]}, I use Off Market Desk to see pre-IPO companies before they list. Register here: ${url}`; return (
+          {refs.length > 0 && <ul className="feed ref-list">{refs.map((r) => { const url = `${SITE_URL}/invite/${r.token}`; const text = `${(r.name || "").split(" ")[0]}, I use Before the Bell to see pre-IPO companies before they list. Register here: ${url}`; return (
             <li key={r.id}><b>{r.officeName || r.name}</b> · {r.usedAt ? <span className="pill ok">Registered</span> : <span className="pill">Not yet</span>}
               {!r.usedAt && <div className="dl-acts"><input readOnly value={url} aria-label={`Referral link for ${r.name}`} /><button type="button" className="btn sm" data-copy={url}>Copy</button><a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener">WhatsApp</a></div>}</li>); })}</ul>}
         </div>}

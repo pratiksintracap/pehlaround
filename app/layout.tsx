@@ -18,13 +18,13 @@ const DESC = "Undiscovered, profitable, IPO-bound private companies for family o
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "Off Market Desk · A front-row seat before the listing", template: "%s · Off Market Desk" },
+  title: { default: "Before the Bell · A front-row seat to India’s next listings", template: "%s · Before the Bell" },
   description: DESC,
   icons: { icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/favicon-32.png", type: "image/png", sizes: "32x32" }], apple: "/apple-touch-icon.png" },
   manifest: "/site.webmanifest",
-  appleWebApp: { capable: true, title: "Off Market Desk", statusBarStyle: "black-translucent" },
-  openGraph: { type: "website", siteName: "Off Market Desk", title: "Off Market Desk · A front-row seat before the listing", description: DESC,
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Off Market Desk: a front-row seat before the listing." }] },
+  appleWebApp: { capable: true, title: "Before the Bell", statusBarStyle: "black-translucent" },
+  openGraph: { type: "website", siteName: "Before the Bell", title: "Before the Bell · A front-row seat to India’s next listings", description: DESC,
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Before the Bell: a front-row seat to India’s next listings." }] },
   twitter: { card: "summary_large_image", images: ["/og.jpg"] },
 };
 export const viewport: Viewport = { themeColor: "#0b1730", width: "device-width", initialScale: 1, viewportFit: "cover" };
@@ -51,7 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
         <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
         <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />
-        <Script src="/js/site.js?v=44" strategy="afterInteractive" />
+        <Script src="/js/site.js?v=45" strategy="afterInteractive" />
         <Analytics />
       </body>
     </html>

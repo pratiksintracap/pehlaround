@@ -20,15 +20,15 @@ type Step = { key: string; anchor: "register" | "approved"; days: number; name: 
 
 const first = (c: Ctx) => c.user.name.split(" ")[0];
 const dealList = (list: Ctx["deals"]) => list.map((d) => E.deal(d.title, `${d.category} · target listing ${d.listingLabel}`, d.score, `/deals/${d.slug}`)).join("");
-const PRATIK = `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">Pratik Saraogi<br>CEO, Off Market Desk</p>`;
+const PRATIK = `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">Pratik Saraogi<br>CEO, Before the Bell</p>`;
 
 export const SERIES: Step[] = [
   { key: "welcome", anchor: "register", days: 0, name: "Welcome", purpose: "Confirms the registration and says what happens next",
-    subject: () => "Welcome to Off Market Desk: what happens next",
+    subject: () => "Welcome to Before the Bell: what happens next",
     preheader: () => "The desk approves new offices, usually within two hours on working days. Here is what opens after that.",
     skip: (c) => (c.office.approval === "approved" ? "already approved" : null),
     body: (c) => E.h(`Welcome, ${first(c)}`)
-      + E.p(`Thank you for registering <b>${c.office.name}</b> on Off Market Desk. The desk reviews every new office, usually within a working day, and you will hear from us the moment yours is approved.`)
+      + E.p(`Thank you for registering <b>${c.office.name}</b> on Before the Bell. The desk reviews every new office, usually within a working day, and you will hear from us the moment yours is approved.`)
       + E.p("Once approved, your office sees:")
       + E.list(["Every company on the desk by name, with round size, valuation and trailing and forward P/E", "A deal room for each company, opened with that company's NDA, signed on screen",
         "Questions to the promoter, promoter sessions and allocation requests, all from your dashboard", "A new company about every fortnight, checked by the desk before you see it"])
@@ -59,7 +59,7 @@ export const SERIES: Step[] = [
       + E.p(`${first(c)}, most companies the desk meets never reach you. Before one gets a room, the desk does its own diligence on it:`)
       + E.list(["Promoter and management meetings", "Site, factory and plant visits", "Customer orders verified, and customer and supplier feedback taken", "Audited numbers reconciled across sources, and the valuation set against listed peers"])
       + E.p("Every company then carries a <b>Desk Score</b> out of 10: the desk's own view of how strongly it fits a first institutional round ahead of its listing. It is not a rating or a recommendation; the findings behind it are in the room.")
-      + E.p("Off Market Desk is backed by SintraCap, a family office that invests its own capital.")
+      + E.p("Before the Bell is backed by SintraCap, a family office that invests its own capital.")
       + E.btn("See the scores on the desk", "/deals") },
   { key: "team_app", anchor: "approved", days: 9, name: "Your team, and the app", purpose: "Add CIO/CFO/CA; install the app",
     subject: () => "Bring your CIO, CFO or CA, and put the desk on your phone",
@@ -67,7 +67,7 @@ export const SERIES: Step[] = [
     body: (c) => E.h("Two things that make the desk easier")
       + E.p(`<b>Your team.</b> ${c.teamSize > 1 ? `${c.teamSize} people from your office are on the desk already.` : "Add your CIO, CFO or CA as viewers."} They see the same rooms, and every NDA, document view and request is logged against a name.`)
       + E.btn("Add your team", "/dashboard#Team")
-      + E.p("<b>The app.</b> Install Off Market Desk on your phone and it opens straight to your dashboard: new deals, promoter answers and approvals arrive as they happen. On iPhone, open the link in Safari; on Android, in Chrome.")
+      + E.p("<b>The app.</b> Install Before the Bell on your phone and it opens straight to your dashboard: new deals, promoter answers and approvals arrive as they happen. On iPhone, open the link in Safari; on Android, in Chrome.")
       + E.btn("Get the app", "/app?install=1") },
   { key: "whats_new", anchor: "approved", days: 14, name: "What's new on the desk", purpose: "Fortnight recap: new deals and articles",
     subject: (c) => (c.newDeals.length ? `New on the desk: ${c.newDeals.length} ${c.newDeals.length === 1 ? "company" : "companies"} since you joined` : "Your fortnight on the desk"),

@@ -3,7 +3,7 @@ import { listArticles, artDate, artHref } from "@/lib/articles";
 import { Cover } from "@/components/Cover";
 
 const D = "Notes from the desk on IPOs, private rounds and the market, for family offices.";
-export const metadata: Metadata = { title: "Articles", description: D, openGraph: { title: "Articles · Off Market Desk", description: D } };
+export const metadata: Metadata = { title: "Articles", description: D, openGraph: { title: "Articles · Before the Bell", description: D } };
 
 export default async function Articles() {
   const list = await listArticles();

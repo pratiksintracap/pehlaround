@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const r = u && !u.disabled ? await checkCode(u.id, LOGIN, code) : "none";
     if (r !== "ok") {
       await new Promise((res) => setTimeout(res, 400));
-      return fail(req, json, r === "wrong" ? "That code is not right. Check the latest email from Off Market Desk." : r === "expired" ? "Too many wrong tries. Send a new code." : "That code has expired. Send a new one.", back, 401);
+      return fail(req, json, r === "wrong" ? "That code is not right. Check the latest email from Before the Bell." : r === "expired" ? "Too many wrong tries. Send a new code." : "That code has expired. Send a new one.", back, 401);
     }
   } else if (!u || u.disabled || !(await bcrypt.compare(password, u.passwordHash))) {
     await new Promise((r) => setTimeout(r, 400));

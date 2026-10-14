@@ -1,4 +1,4 @@
-# Off Market Desk
+# Before the Bell
 
 Pre-IPO deal desk for family offices — offmarketdesk.in. Operated by SintraCap Advisors LLP.
 

@@ -26,7 +26,7 @@ export default async function Summary({ params }: P) {
       <p className="crumb"><a href={`/room/${d.slug}`}>← Back to the deal room</a></p>
       <article className="memo">
         <header>
-          <div><span className="eyebrow">Deal summary · prepared by Off Market Desk</span><h1>{d.company}</h1><p>{r.lede}</p></div>
+          <div><span className="eyebrow">Deal summary · prepared by Before the Bell</span><h1>{d.company}</h1><p>{r.lede}</p></div>
           <div className="memometa"><span>{today}</span><span>Confidential · for {user?.office?.name || "the registered office"} only</span></div>
         </header>
         <section><h2>The transaction</h2><dl className="terms compact">{r.terms.slice(0, 6).map((t, i) => <div key={i}><dt>{t.k}</dt><dd>{t.v}</dd></div>)}</dl></section>

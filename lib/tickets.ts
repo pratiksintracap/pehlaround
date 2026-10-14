@@ -16,8 +16,8 @@ export const CATEGORIES: { id: string; label: string; help: string[] }[] = [
   { id: "other", label: "Feedback or something else", help: [] },
 ];
 export const catLabel = (id: string) => CATEGORIES.find((c) => c.id === id)?.label ?? id;
-export const ticketNo = (id: number) => `OMD-${1000 + id}`;
-export const idFromNo = (no: string) => { const m = /^OMD-(\d+)$/i.exec(no.trim()); return m ? Number(m[1]) - 1000 : NaN; };
+export const ticketNo = (id: number) => `BTB-${1000 + id}`;
+export const idFromNo = (no: string) => { const m = /^(?:BTB|OMD)-(\d+)$/i.exec(no.trim()); return m ? Number(m[1]) - 1000 : NaN; };
 
 export const STATUS: Record<string, { label: string; office: string; pill: string }> = {
   open: { label: "With the desk", office: "With the desk", pill: "mid" },

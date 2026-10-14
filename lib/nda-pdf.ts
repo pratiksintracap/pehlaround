@@ -29,7 +29,7 @@ export const ndaFingerprint = (r: NdaRecord) =>
 
 export async function ndaPdf(r: NdaRecord): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
-  pdf.setTitle(`NDA – ${r.company} – ${r.officeName}`); pdf.setAuthor("Off Market Desk"); pdf.setCreator("Off Market Desk");
+  pdf.setTitle(`NDA – ${r.company} – ${r.officeName}`); pdf.setAuthor("Before the Bell"); pdf.setCreator("Before the Bell");
   const reg = await pdf.embedFont(StandardFonts.Helvetica), bold = await pdf.embedFont(StandardFonts.HelveticaBold), ital = await pdf.embedFont(StandardFonts.HelveticaOblique);
   const W = 595.28, H = 841.89, M = 56, CW = W - 2 * M;
   let page = pdf.addPage([W, H]); let y = H - M;
@@ -40,9 +40,13 @@ export async function ndaPdf(r: NdaRecord): Promise<Uint8Array> {
   };
   // header
   page.drawRectangle({ x: M, y: y - 4, width: 22, height: 22, color: NAVY });
-  page.drawCircle({ x: M + 9.7, y: y + 5.5, size: 5.4, borderColor: rgb(1, 1, 1), borderWidth: 2.2 });
-  page.drawCircle({ x: M + 17, y: y + 12.6, size: 2.6, color: rgb(0.18, 0.83, 0.6) });
-  page.drawText("Off Market Desk", { x: M + 30, y: y + 2, size: 13, font: bold, color: NAVY });
+  { // the bell mark, drawn in the mark's 26-unit grid scaled to the 22pt tile
+    const k = 22 / 26, top = y + 18;
+    page.drawSvgPath("M5.6 18.2V12.4a6.4 6.4 0 0 1 12.8 0v5.8l1.9 2.1H3.7z", { x: M, y: top, scale: k, borderColor: rgb(1, 1, 1), borderWidth: 1.9 });
+    page.drawCircle({ x: M + 12 * k, y: top - 23.2 * k, size: 1.7 * k, color: rgb(1, 1, 1) });
+    page.drawCircle({ x: M + 21 * k, y: top - 5 * k, size: 3 * k, color: rgb(0.18, 0.83, 0.6) });
+  }
+  page.drawText("Before the Bell", { x: M + 30, y: y + 2, size: 13, font: bold, color: NAVY });
   page.drawText("Signed non-disclosure agreement", { x: W - M - bold.widthOfTextAtSize("Signed non-disclosure agreement", 9), y: y + 4, size: 9, font: bold, color: INK3 });
   y -= 34;
   para(`${r.company}`, bold, 18, NAVY, 2);
@@ -75,9 +79,9 @@ export async function ndaPdf(r: NdaRecord): Promise<Uint8Array> {
   ];
   for (const [k, v] of rows) { page.drawText(k, { x: M + 16, y: sy, size: 9, font: bold, color: INK3 }); page.drawText(safe(v).slice(0, 95), { x: M + 120, y: sy, size: 9, font: reg, color: INK2 }); sy -= 13; }
   y -= 168;
-  para(`Executed electronically on Off Market Desk: the signatory, signed in to the office's account, typed their name, confirmed the agreement on screen${r.codeVerified ? " and entered a one-time code emailed to their address" : ""}. Record fingerprint (SHA-256): ${ndaFingerprint(r)}`, reg, 8, INK3, 0);
+  para(`Executed electronically on Before the Bell: the signatory, signed in to the office's account, typed their name, confirmed the agreement on screen${r.codeVerified ? " and entered a one-time code emailed to their address" : ""}. Record fingerprint (SHA-256): ${ndaFingerprint(r)}`, reg, 8, INK3, 0);
   // footer on every page
   const pages = pdf.getPages();
-  pages.forEach((p, i) => p.drawText(`Off Market Desk · operated by SintraCap Advisors LLP · Confidential · Page ${i + 1} of ${pages.length}`, { x: M, y: 28, size: 7.5, font: reg, color: INK3 }));
+  pages.forEach((p, i) => p.drawText(`Before the Bell · operated by SintraCap Advisors LLP · Confidential · Page ${i + 1} of ${pages.length}`, { x: M, y: 28, size: 7.5, font: reg, color: INK3 }));
   return pdf.save();
 }

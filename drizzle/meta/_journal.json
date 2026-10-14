@@ -127,6 +127,13 @@
       "when": 1791973296776,
       "tag": "0017_journey",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791982449042,
+      "tag": "0018_rebrand_before_the_bell",
+      "breakpoints": true
     }
   ]
 }
