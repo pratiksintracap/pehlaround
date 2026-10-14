@@ -32,8 +32,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <label>What new offices are told about approval<input name="approvalTime" maxLength={120} defaultValue={st.approvalTime} /><span className="hint">Shown on registration, the deal page and the dashboard, e.g. &quot;usually within two hours on working days&quot;.</span></label>
         <label className="check"><input type="checkbox" name="referrals" defaultChecked={st.referrals} /> <span><b>Approve offices referred by an approved office</b><br /><small className="fine">Offices refer peers from their dashboard (five every 30 days). Off: referred offices wait for your approval like anyone else.</small></span></label>
         <span className="k eyebrow" style={{ marginTop: 14 }}>Desk alerts</span>
-        <label>Email new registrations, NDAs, questions and requests to<input name="notifyDeskEmail" type="email" defaultValue={st.notifyDeskEmail} placeholder="desk@offmarketdesk.in" /></label>
-        <p className="fine">{mail ? "Email is set up." : "Email is not set up yet: alerts show on the admin overview only. To switch email on, add RESEND_API_KEY (and EMAIL_FROM, for example Before the Bell <desk@offmarketdesk.in>) in Vercel's environment variables and redeploy."}</p>
+        <label>Email new registrations, NDAs, questions and requests to<input name="notifyDeskEmail" type="email" defaultValue={st.notifyDeskEmail} placeholder="desk@beforethebell.in" /></label>
+        <p className="fine">{mail ? "Email is set up." : "Email is not set up yet: alerts show on the admin overview only. To switch email on, add RESEND_API_KEY (and EMAIL_FROM, for example Before the Bell <desk@beforethebell.in>) in Vercel's environment variables and redeploy."}</p>
         <div><button className="btn primary" type="submit">Save settings</button></div>
       </form>
     </>

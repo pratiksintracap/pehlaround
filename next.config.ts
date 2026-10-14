@@ -7,7 +7,9 @@ const config: NextConfig = {
   async redirects() {
     return [
       // The old address moves to the new domain (API routes stay reachable on both).
-      { source: "/:path((?!api/).*)", has: [{ type: "host", value: "pehlaround.vercel.app" }], destination: "https://offmarketdesk.in/:path", permanent: true },
+      { source: "/:path((?!api/).*)", has: [{ type: "host", value: "pehlaround.vercel.app" }], destination: "https://beforethebell.in/:path", permanent: true },
+      { source: "/:path((?!api/).*)", has: [{ type: "host", value: "offmarketdesk.in" }], destination: "https://beforethebell.in/:path", permanent: true },
+      { source: "/:path((?!api/).*)", has: [{ type: "host", value: "www.offmarketdesk.in" }], destination: "https://beforethebell.in/:path", permanent: true },
       { source: "/index.html", destination: "/", permanent: true },
       { source: "/diary", destination: "/dashboard", permanent: true },
       { source: "/diligence", destination: "/how-it-works", permanent: true },

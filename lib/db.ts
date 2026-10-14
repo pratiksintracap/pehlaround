@@ -113,7 +113,7 @@ async function bootstrap(db: DB) {
   if (!mark) await db.insert(schema.settings).values({ key: "seeded_articles", value: all }).onConflictDoNothing();
   else if (mark.value !== all) await db.update(schema.settings).set({ value: JSON.stringify([...new Set([...done, ...SEED_ARTICLES.map((x) => x.slug)])]) }).where(eq(schema.settings.key, "seeded_articles"));
   // The admin account comes from the environment, so no password is ever in the code.
-  const email = (process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== "production" ? "admin@offmarketdesk.in" : "")).toLowerCase().trim();
+  const email = (process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== "production" ? "admin@beforethebell.in" : "")).toLowerCase().trim();
   const pass = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "omd-local-admin" : "");
   if (email && pass) {
     const existing = await db.select({ id: schema.users.id, role: schema.users.role }).from(schema.users).where(eq(schema.users.email, email));

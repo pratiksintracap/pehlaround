@@ -45,7 +45,7 @@ export type Attachment = { filename: string; content: Uint8Array | Buffer };
 /** Sends one email per address through Resend. Returns how many were accepted. */
 export async function sendRaw(to: string[], subject: string, html: string, attachments: Attachment[] = [], replyTo?: string) {
   if (!emailReady() || !to.length) return 0;
-  const from = process.env.EMAIL_FROM || "Before the Bell <desk@offmarketdesk.in>";
+  const from = process.env.EMAIL_FROM || "Before the Bell <desk@beforethebell.in>";
   let sent = 0;
   for (const addr of to) {
     try {
