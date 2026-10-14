@@ -5,6 +5,7 @@ import { shelfHtml } from "@/lib/render";
 import { Html } from "@/components/Chrome";
 import { listArticles, artDate, artHref } from "@/lib/articles";
 import { esc } from "@/lib/render";
+import { isDesk } from "@/lib/perm";
 
 export default async function Home() {
   const [user, deals] = await Promise.all([getUser(), listDeals()]);
@@ -13,6 +14,6 @@ export default async function Home() {
   const items = arts.map((a) => `<li><span class="mono">${esc(artDate(a.publishedAt))}</span><a class="feedart" href="${esc(artHref(a))}"${a.externalUrl ? ' target="_blank" rel="noopener"' : ""}>${esc(a.title)}</a></li>`).join("");
   let html = content("home").replace("<!--SHELF-->", shelfHtml(deals, signed, await canSeeNames(user))).replace("<!--NEWS-->", items + items);
   // members get their dashboard, not a register button, in the hero
-  if (user) html = html.replace('<div class="ctas"><a class="btn primary" href="/register">Register</a></div>', `<div class="ctas"><a class="btn primary" href="${user.role === "admin" ? "/admin" : "/dashboard"}">${user.role === "admin" ? "Open the admin" : "Open your dashboard"}</a></div>`);
+  if (user) html = html.replace('<div class="ctas"><a class="btn primary" href="/register">Register</a></div>', `<div class="ctas"><a class="btn primary" href="${isDesk(user) ? "/admin" : "/dashboard"}">${isDesk(user) ? "Open the admin" : "Open your dashboard"}</a></div>`);
   return <Html html={html} />;
 }

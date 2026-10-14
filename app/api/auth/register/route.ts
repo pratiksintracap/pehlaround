@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
   await log({ id: u.id, name: u.name, officeId }, (inv ? "Joined the office by invitation" : "Registered the office") + (viaProvider ? ` (email confirmed by ${pend!.provider})` : password ? "" : " (signs in with email codes)"));
   if (!inv) await notifyDesk(invited
     ? { title: `Invited office registered: ${entity}`, body: `${name} · ${email} · ${phone}. Approved through the desk's invitation.`, link: "/admin/offices" }
-    : { title: `New family office registered: ${entity}`, body: `${name} · ${email} · ${phone} · ${str(data.role, 80)} · ${str(data.ticket, 60)}. Approve or hold it in the admin.`, link: "/admin/offices?show=pending" });
+    : { title: `New family office registered: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}. Approve or hold it in the admin.`, link: "/admin/offices?show=pending" });
   // The onboarding email series: from approval if the office is already approved, otherwise from registration.
   const [off] = await db.select({ approval: offices.approval }).from(offices).where(eq(offices.id, officeId));
   await startSeries(u.id, off?.approval === "approved" ? "approved" : "register").catch(() => 0);

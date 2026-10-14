@@ -1,9 +1,10 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { calls, deals, documents, ndas, offices, questions } from "@/db/schema";
-import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall } from "@/lib/admin-actions";
+import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish } from "@/lib/admin-actions";
+import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { Msg } from "@/components/AdminBits";
 import ART from "@/lib/deal-art.json";
@@ -16,7 +17,7 @@ const IN = ({ name, label, value, hint, ph }: { name: string; label: string; val
 );
 
 export default async function EditDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
   const id = Number((await params).id);
   const { msg } = await searchParams;
   const db = await getDb();
@@ -29,6 +30,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
     db.select().from(calls).where(eq(calls.dealId, id)).orderBy(desc(calls.createdAt)),
   ]);
   const r = d.room;
+  const pub = can(me, "deals.publish"), del = can(me, "delete");
   const artKey = Object.entries(ART as Record<string, string>).find(([, v]) => v === d.art)?.[0] || "";
   return (
     <>
@@ -52,9 +54,11 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><IN name="peLabel" label="P/E trailing · forward" value={d.peLabel} /><IN name="minTicket" label="Minimum ticket" value={d.minTicket} /></div>
         <div className="row"><label>Card illustration<select name="artKey" defaultValue={artKey}>{Object.keys(ART).map((k) => <option key={k} value={k}>{k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
+        {pub ? <>
         <label className="chk"><input type="checkbox" name="published" defaultChecked={d.published} /> Published (shown on the site)</label>
         {!d.published && <label className="chk"><input type="checkbox" name="announce" defaultChecked /> When I publish it, tell every approved office (in the app, and by email once email is set up)</label>}
         <label className="chk"><input type="checkbox" name="open" defaultChecked={d.open} /> Room open (offices can sign the NDA and enter)</label>
+        </> : <p className="notice adm-locked"><b>{d.published ? "Published" : "Hidden draft"}</b> · {d.open ? "room open" : "room closed"}. Publishing and opening the room are done by a super admin; use <a href="#ask-publish">Ask to publish</a> below the form when it is ready.</p>}
         <TA name="publicRisks" label="Short risk list (kept for the desk; no longer shown publicly, the room's risks are under In the room)" value={toText.list(d.publicRisks)} rows={3} />
 
         <h2>In the room</h2>
@@ -83,6 +87,12 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         </details>
         <div className="adm-save"><button className="btn primary" type="submit">Save deal</button></div>
       </form>
+      {!pub && (
+        <form action={requestPublish} className="form adm-card" id="ask-publish"><input type="hidden" name="id" value={d.id} />
+          <b>Ask a super admin to {!d.published ? "publish this deal" : !d.open ? "open the room" : "review this deal"}</b>
+          <label>Note (optional)<input name="note" maxLength={600} placeholder="e.g. Numbers updated to FY26 audited; ready to go live" /></label>
+          <div><button className="btn sm primary" type="submit">Send the request</button></div>
+        </form>)}
 
       <h2 id="docs">Documents</h2>
       <p className="fine">Paste a link to the file (for example a Google Drive file shared with “anyone with the link”, or any secure URL). Offices only reach it through the room, and every view is logged. Status “on request” shows the file exists but is shared only with offices that indicate interest.
@@ -99,7 +109,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
           <select name="officeIds" multiple defaultValue={(doc?.officeIds ?? []).map(String)} title="Selected offices (hold Ctrl/Cmd to pick several)" className="adm-multi">
             {signedOffices.length ? signedOffices.map((o) => <option key={o.id} value={o.id}>{o.name}</option>) : <option disabled value="">No office has signed this NDA yet</option>}</select>
           <input name="sort" defaultValue={doc?.sort ?? 100 + i} style={{ maxWidth: 60 }} />
-          {doc && <label className="chk"><input type="checkbox" name="delete" /> delete</label>}
+          {doc && del && <label className="chk"><input type="checkbox" name="delete" /> delete</label>}
           <button className="btn sm" type="submit">{doc ? "Save" : "Add"}</button>
         </form>
       ))}

@@ -6,6 +6,7 @@ import { aiUsage, documents, interests, questions } from "@/db/schema";
 import { listDeals, signedDealIds, docAccess, type Deal } from "@/lib/deals";
 import { completeness } from "@/lib/profile";
 import type { SessionUser } from "@/lib/auth";
+import { isDesk } from "@/lib/perm";
 
 // The desk analyst: Claude, answering an office's questions from the rooms it has opened (the data bank)
 // and from the web for listed peers, sectors and markets. It only ever sees rooms this office has signed for.
@@ -18,7 +19,7 @@ export type AiEvent = { t: "status"; d: string } | { t: "text"; d: string } | { 
 export type Ctx = { user: SessionUser; admin: boolean; names: boolean; signed: Set<number>; deals: Deal[]; deal: Deal | null };
 
 export async function context(user: SessionUser, names: boolean, deal: Deal | null): Promise<Ctx> {
-  const admin = user.role === "admin";
+  const admin = isDesk(user);
   return { user, admin, names, signed: await signedDealIds(user.officeId), deals: await listDeals(admin), deal };
 }
 const canOpen = (c: Ctx, d: Deal) => c.admin || c.signed.has(d.id);

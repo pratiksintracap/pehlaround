@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
+import { can, mask } from "@/lib/perm";
+import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
 import { offices, ticketMessages, tickets, users } from "@/db/schema";
 import { listDeals } from "@/lib/deals";
@@ -11,7 +13,8 @@ import { deskReply } from "../actions";
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
 
 export default async function DeskTicket({ params, searchParams }: { params: Promise<{ no: string }>; searchParams: Promise<{ msg?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
+  const seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const { no } = await params, { msg } = await searchParams;
   const db = await getDb();
   const [t] = await db.select().from(tickets).where(eq(tickets.id, idFromNo(no) || -1));
@@ -35,7 +38,7 @@ export default async function DeskTicket({ params, searchParams }: { params: Pro
       </header>
       <div className="tk-who chart">
         <span><b>{o?.name ?? "—"}</b> <small className="fine">{o?.approval ?? ""}</small></span>
-        <span>{u?.name} · <a href={`mailto:${u?.email}`}>{u?.email}</a>{u?.phone ? ` · ${u.phone}` : ""}</span>
+        <span>{u?.name} · {seeContacts ? <a href={`mailto:${u?.email}`}>{u?.email}</a> : mask(u?.email)}{u?.phone ? ` · ${seeContacts ? u.phone : mask(u.phone)}` : ""}</span>
         {t.rating && <span>Rated <b>{t.rating}/5</b>{t.ratingNote ? `: “${t.ratingNote}”` : ""}</span>}
         <a href="/admin/offices">Open in Family offices →</a>
       </div>

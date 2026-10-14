@@ -5,6 +5,7 @@ import { cachedPublic } from "@/lib/cache";
 import { deals, ndas } from "@/db/schema";
 import type { SessionUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
+import { isDesk } from "@/lib/perm";
 
 export type Deal = typeof deals.$inferSelect;
 
@@ -37,7 +38,7 @@ export type Access =
 
 export async function roomAccess(user: SessionUser | null, deal: Deal): Promise<Access> {
   if (!user) return { state: "anon" };
-  if (user.role === "admin") return { state: "open", admin: true };
+  if (isDesk(user)) return { state: "open", admin: true };
   if (!user.office) return { state: "no-office" };
   const st = await getSettings();
   if (user.office.status === "rejected" || user.office.approval === "rejected") return { state: "blocked" };
@@ -63,7 +64,7 @@ export function publicData(list: Deal[]) {
 /** Whether this visitor sees company names and round terms (registered and, if required, approved). */
 export async function canSeeNames(user: SessionUser | null) {
   if (!user) return false;
-  if (user.role === "admin") return true;
+  if (isDesk(user)) return true;
   if (!user.office || user.office.approval === "rejected") return false;
   const st = await getSettings();
   return !st.requireApproval || user.office.approval === "approved";

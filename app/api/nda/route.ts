@@ -41,6 +41,6 @@ export async function POST(req: NextRequest) {
     version: d.ndaVersion, ip: await clientIp(), userAgent: str(req.headers.get("user-agent"), 300) }).onConflictDoNothing().returning({ id: ndas.id });
   if (signed) await emailSignedNda(signed.id).catch(() => 0);
   await log(user, `Signed the NDA with ${d.company} (version ${d.ndaVersion})`, d.id);
-  await notifyDesk({ title: `${user.office.name} signed the NDA with ${d.company}`, body: `Signed by ${sig} (${user.email}${verified ? ", email code confirmed" : ""}).`, link: "/admin/offices" });
+  await notifyDesk({ title: `${user.office.name} signed the NDA with ${d.company}`, body: `Signed by ${sig}${verified ? ", email code confirmed" : ""}.`, link: "/admin/offices" });
   return done(req, json, `/room/${slug}`);
 }

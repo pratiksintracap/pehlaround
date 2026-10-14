@@ -7,6 +7,7 @@ import { passwordResets, users } from "@/db/schema";
 import { createSession, log, signOutEverywhere } from "@/lib/auth";
 import { readBody, str, done, fail } from "@/lib/http";
 import { allowIp, TOO_MANY } from "@/lib/rate";
+import { isDesk } from "@/lib/perm";
 
 export async function POST(req: NextRequest) {
   const { data, json } = await readBody(req);
@@ -25,5 +26,5 @@ export async function POST(req: NextRequest) {
   await createSession(r.userId);
   const [u] = await db.select().from(users).where(eq(users.id, r.userId));
   await log(u ? { id: u.id, name: u.name, officeId: u.officeId } : null, "Reset the password; other sign-ins were ended");
-  return done(req, json, u?.role === "admin" ? "/admin" : "/dashboard?msg=" + encodeURIComponent("Password changed. Any other signed-in devices have been signed out."));
+  return done(req, json, isDesk(u) ? "/admin" : "/dashboard?msg=" + encodeURIComponent("Password changed. Any other signed-in devices have been signed out."));
 }

@@ -7,6 +7,7 @@ import { createSession, log } from "@/lib/auth";
 import { readBody, str, safeNext, done, fail } from "@/lib/http";
 import { allow, allowIp, TOO_MANY } from "@/lib/rate";
 import { checkCode, LOGIN } from "@/lib/sign-code";
+import { isDesk } from "@/lib/perm";
 
 export async function POST(req: NextRequest) {
   const { data, json } = await readBody(req);
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
   const password = typeof data.password === "string" ? data.password : "";
   const db = await getDb();
   const [u] = await db.select().from(users).where(eq(users.email, email));
-  const fallback = u?.role === "admin" ? "/admin" : "/dashboard";
+  const fallback = isDesk(u) ? "/admin" : "/dashboard";
   const next = safeNext(data.next, fallback);
   const back = "/login" + (data.next ? `?next=${encodeURIComponent(next)}` : "");
   if (!(await allowIp("login", 30, 900)) || !(await allow(`login:email:${email}`, 10, 900))) return fail(req, json, TOO_MANY, back, 429);

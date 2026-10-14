@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, gt, inArray, lte, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, lte, notInArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { articles, deals, emailQueue, interests, ndas, offices, users } from "@/db/schema";
 import { E, emailReady, layout, sendRaw } from "@/lib/email";
@@ -184,7 +184,7 @@ export async function queueStats() {
 /** Start the series for people who registered before it existed: only future steps, never the past ones. */
 export async function backfill() {
   const db = await getDb();
-  const people = await db.select({ id: users.id, officeId: users.officeId }).from(users).where(and(ne(users.role, "admin"), gt(users.id, 0)));
+  const people = await db.select({ id: users.id, officeId: users.officeId }).from(users).where(and(notInArray(users.role, ["admin", "analyst"]), gt(users.id, 0)));
   const offs = people.length ? await db.select().from(offices).where(inArray(offices.id, people.map((p) => p.officeId!).filter(Boolean))) : [];
   let n = 0;
   for (const p of people) {

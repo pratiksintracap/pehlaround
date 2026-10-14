@@ -6,6 +6,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { users, offices, audit } from "@/db/schema";
+import { can, isDesk, isSuper, type Perm } from "@/lib/perm";
 
 const COOKIE = "pr_session";
 const MAX_AGE = 60 * 60 * 24 * 30;
@@ -61,10 +62,25 @@ export async function requireUser(next = "/dashboard") {
   return u;
 }
 
+/** Super admin only. Anything not explicitly opened to analysts stays here, so a missed check fails closed. */
 export async function requireAdmin() {
+  const u = await requireDesk();
+  if (!isSuper(u)) redirect("/admin?msg=" + encodeURIComponent("Only a super admin can do that."));
+  return u;
+}
+
+/** Anyone on the desk: super admin or analyst. */
+export async function requireDesk() {
   const u = await getUser();
   if (!u) redirect("/login?next=/admin");
-  if (u.role !== "admin") redirect("/dashboard");
+  if (!isDesk(u)) redirect("/dashboard");
+  return u;
+}
+
+/** A desk member allowed this action (see lib/perm.ts). */
+export async function requirePerm(p: Perm) {
+  const u = await requireDesk();
+  if (!can(u, p)) redirect("/admin?msg=" + encodeURIComponent("Only a super admin can do that."));
   return u;
 }
 

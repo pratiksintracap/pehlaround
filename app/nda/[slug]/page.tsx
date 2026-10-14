@@ -4,6 +4,7 @@ import { getUser } from "@/lib/auth";
 import { emailReady } from "@/lib/email";
 import { getDeal, signedDealIds, roomAccess } from "@/lib/deals";
 import { NdaText } from "@/components/NdaText";
+import { isDesk } from "@/lib/perm";
 
 export const metadata: Metadata = { title: "NDA", robots: { index: false } };
 type P = { params: Promise<{ slug: string }>; searchParams: Promise<{ error?: string }> };
@@ -15,7 +16,7 @@ export default async function Nda({ params, searchParams }: P) {
   if (!user) redirect(`/register?next=${encodeURIComponent(`/nda/${slug}`)}`);
   const d = await getDeal(slug);
   if (!d || !d.published) notFound();
-  if (user.role === "admin" || (await signedDealIds(user.officeId)).has(d.id)) redirect(`/room/${slug}`);
+  if (isDesk(user) || (await signedDealIds(user.officeId)).has(d.id)) redirect(`/room/${slug}`);
   if (!d.open) redirect(`/deals/${slug}`);
   const acc = await roomAccess(user, d);
   if (acc.state === "pending-approval" || acc.state === "blocked") redirect(`/room/${slug}`);

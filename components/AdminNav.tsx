@@ -1,5 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
+import { SUPER_ONLY_PAGES } from "@/lib/perm";
 
 const GROUPS: [string, [string, string, string][]][] = [
   ["Desk", [
@@ -20,16 +21,17 @@ const GROUPS: [string, [string, string, string][]][] = [
   ]],
   ["System", [
     ["/admin/settings", "Settings", "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"],
+    ["/admin/team", "Desk team", "M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zM4 21a8 8 0 0 1 16 0M19 4l2 2-2 2"],
     ["/admin/log", "Audit log", "M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"],
   ]],
 ];
 
-export function AdminNav({ counts }: { counts: Record<string, number> }) {
+export function AdminNav({ counts, full }: { counts: Record<string, number>; full: boolean }) {
   const path = usePathname() || "/admin";
   const on = (h: string) => (h === "/admin" ? path === "/admin" : path.startsWith(h));
   return (
     <nav className="side-nav adm-side-nav" aria-label="Desk admin">
-      {GROUPS.map(([g, items]) => (
+      {GROUPS.map(([g, all]) => [g, full ? all : all.filter(([h]) => !SUPER_ONLY_PAGES.includes(h))] as const).filter(([, items]) => items.length).map(([g, items]) => (
         <div key={g} className="sn-group"><span className="sn-h">{g}</span>
           {items.map(([h, t, ic]) => (
             <a key={h} href={h} className="tabbtn-like" aria-current={on(h) ? "page" : undefined}>

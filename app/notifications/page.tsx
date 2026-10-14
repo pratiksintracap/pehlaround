@@ -3,6 +3,7 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { notifications } from "@/db/schema";
+import { isDesk } from "@/lib/perm";
 
 export const metadata: Metadata = { title: "Notifications", robots: { index: false } };
 
@@ -11,7 +12,7 @@ const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "sh
 export default async function Notifications() {
   const user = await requireUser("/notifications");
   const db = await getDb();
-  const admin = user.role === "admin";
+  const admin = isDesk(user);
   const mine = admin ? eq(notifications.toAdmin, true) : user.office ? eq(notifications.officeId, user.office.id) : undefined;
   const rows = mine ? await db.select().from(notifications).where(mine).orderBy(desc(notifications.createdAt)).limit(100) : [];
   if (mine) await db.update(notifications).set({ readAt: new Date() }).where(and(mine, isNull(notifications.readAt)));

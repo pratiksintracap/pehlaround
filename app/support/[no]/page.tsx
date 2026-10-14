@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 import { ticketMessages, tickets, users } from "@/db/schema";
 import { listDeals } from "@/lib/deals";
 import { STATUS, catLabel, idFromNo, ticketNo } from "@/lib/tickets";
+import { isDesk } from "@/lib/perm";
 
 export const metadata: Metadata = { title: "Support ticket", robots: { index: false } };
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
@@ -15,7 +16,7 @@ export default async function Ticket({ params }: { params: Promise<{ no: string 
   const user = await requireUser(`/support/${no}`);
   const db = await getDb();
   const [t] = await db.select().from(tickets).where(eq(tickets.id, idFromNo(no) || -1));
-  if (!t || (user.role !== "admin" && (!user.officeId || t.officeId !== user.officeId))) notFound();
+  if (!t || (!isDesk(user) && (!user.officeId || t.officeId !== user.officeId))) notFound();
   const [msgs, raiser, deals] = await Promise.all([
     db.select().from(ticketMessages).where(and(eq(ticketMessages.ticketId, t.id), eq(ticketMessages.internal, false))).orderBy(asc(ticketMessages.createdAt)),
     db.select({ name: users.name }).from(users).where(eq(users.id, t.userId)), listDeals(),

@@ -1,5 +1,5 @@
 import { desc, inArray } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { deals, offices, ticketMessages, tickets, users } from "@/db/schema";
 import { STATUS, catLabel, ticketNo } from "@/lib/tickets";
@@ -10,7 +10,7 @@ const dur = (ms: number) => { const h = ms / 36e5; return h < 1 ? `${Math.round(
 
 /** The desk's support inbox. */
 export default async function TicketInbox({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
   const { view = "open" } = await searchParams;
   const v = VIEWS.find((x) => x[0] === view) ?? VIEWS[0];
   const db = await getDb();

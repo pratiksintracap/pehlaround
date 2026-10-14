@@ -1,11 +1,11 @@
 import { desc } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { articles } from "@/db/schema";
 import { Msg } from "@/components/AdminBits";
 
 export default async function AdminArticles({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
   const { msg } = await searchParams;
   const db = await getDb();
   const list = await db.select().from(articles).orderBy(desc(articles.publishedAt));

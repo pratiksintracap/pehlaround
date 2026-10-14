@@ -1,5 +1,5 @@
 import { desc } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { aiChats, deals, offices, users } from "@/db/schema";
 import { aiReady, monthSpend } from "@/lib/ai";
@@ -9,7 +9,7 @@ const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "sh
 
 /** What offices ask the AI analyst: a read on what they care about, and a check on what it tells them. */
 export default async function AnalystLog() {
-  await requireAdmin();
+  const me = await requireDesk();
   const db = await getDb();
   const [chats, ds, os, us, st, spent] = await Promise.all([
     db.select().from(aiChats).orderBy(desc(aiChats.updatedAt)).limit(200),

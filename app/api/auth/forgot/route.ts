@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   // Same answer whether or not the email is registered, so the form can't be used to discover members.
   if (!u || u.disabled) return done(req, json, SENT);
   if (!emailReady()) {
-    await notifyDesk({ title: `Password reset requested: ${u.name}`, body: `${u.email}. Email is not set up yet, so set a new password for them under Offices and share it privately.`, link: "/admin/offices" });
+    await notifyDesk({ title: `Password reset requested: ${u.name}`, body: "Email is not set up yet, so a super admin sets a new password for them under Family offices and shares it privately.", link: "/admin/offices" });
     return done(req, json, SENT);
   }
   const token = randomBytes(32).toString("base64url");

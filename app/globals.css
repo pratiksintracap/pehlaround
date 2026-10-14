@@ -920,3 +920,7 @@ body:has(.an-fab) .app-wrap{padding-bottom:110px}
 .nextstep>*{min-width:0}
 .osteps li div{min-width:0;overflow-wrap:anywhere}
 .nextstep .btn{white-space:normal;max-width:100%;text-align:center}
+.perm-t{min-width:0!important;width:100%;table-layout:auto}
+.perm-t th:not(:first-child),.perm-t td:not(:first-child){width:88px;text-align:center;white-space:nowrap}
+.perm-t td:first-child{white-space:normal}
+.adm-locked{margin:6px 0 4px}

@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { dealPrefs, ndas, notifications, offices, users } from "@/db/schema";
 import { getSettings } from "@/lib/settings";
 import { emailReady, sendRaw, layout, E, esc } from "@/lib/email";
+import { isDesk } from "@/lib/perm";
 
 type Msg = { title: string; body?: string | null; link?: string | null; broadcastId?: number };
 
@@ -72,7 +73,7 @@ export async function notifyDesk(m: Msg) {
 export async function unreadCount(user: { role: string; office?: { id: number } | null } | null) {
   if (!user) return 0;
   const db = await getDb();
-  const where = user.role === "admin" ? and(eq(notifications.toAdmin, true), isNull(notifications.readAt))
+  const where = isDesk(user) ? and(eq(notifications.toAdmin, true), isNull(notifications.readAt))
     : user.office ? and(eq(notifications.officeId, user.office.id), isNull(notifications.readAt)) : null;
   if (!where) return 0;
   return (await db.select({ id: notifications.id }).from(notifications).where(where)).length;

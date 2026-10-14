@@ -14,6 +14,7 @@ import { parsePromises, answerStats } from "@/lib/promises";
 import { Analyst } from "@/components/Analyst";
 import { aiReady, starters } from "@/lib/ai";
 import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, completeness, fit } from "@/lib/profile";
+import { isDesk } from "@/lib/perm";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
 type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string }> };
@@ -34,7 +35,7 @@ const PR_ICONS = [
 
 export default async function Dashboard({ searchParams }: P) {
   const user = await requireUser("/dashboard");
-  if (user.role === "admin" && !user.officeId) redirect("/admin");
+  if (isDesk(user) && !user.officeId) redirect("/admin");
   const { msg, error, deal: tDeal, cat: tCat } = await searchParams;
   const office = user.office!;
   const db = await getDb();

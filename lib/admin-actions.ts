@@ -8,12 +8,13 @@ import { and, eq, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
 import { articles, broadcasts, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
-import { notifyOffices, ndaOffices, sendEmail, emailReady, ALERT_TOPICS } from "@/lib/notify";
+import { notifyOffices, notifyDesk, ndaOffices, sendEmail, emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { sendRaw } from "@/lib/email";
 import { randomBytes } from "node:crypto";
 import { SITE_URL } from "@/lib/site";
 import { saveSettings } from "@/lib/settings";
-import { requireAdmin, log, signOutEverywhere } from "@/lib/auth";
+import { requireAdmin, requireDesk, requirePerm, log, signOutEverywhere } from "@/lib/auth";
+import { can, isDesk, isSuper, ROLE_LABEL, type DeskRole } from "@/lib/perm";
 import { fromText } from "@/lib/pipes";
 import type { RoomContent } from "@/lib/types";
 import ART from "@/lib/deal-art.json";
@@ -44,7 +45,7 @@ export async function setOfficeStatus(f: FormData) {
 }
 
 export async function setApproval(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requirePerm("offices.approve");
   const id = n(f, "id"), approval = s(f, "approval");
   if (!["approved", "pending", "rejected"].includes(approval)) return;
   const db = await getDb();
@@ -65,7 +66,7 @@ export async function setApproval(f: FormData) {
 }
 
 export async function saveOfficeNotes(f: FormData) {
-  await requireAdmin();
+  await requirePerm("offices.notes");
   const db = await getDb();
   await db.update(offices).set({ notes: s(f, "notes", 2000) || null }).where(eq(offices.id, n(f, "id")));
   back("/admin/offices", "Notes saved.");
@@ -87,7 +88,7 @@ export async function toggleUser(f: FormData) {
   const db = await getDb();
   const id = n(f, "id");
   const [u] = await db.select().from(users).where(eq(users.id, id));
-  if (u && u.role !== "admin") { await db.update(users).set({ disabled: !u.disabled }).where(eq(users.id, id)); await signOutEverywhere(id); }
+  if (u && !isDesk(u)) { await db.update(users).set({ disabled: !u.disabled }).where(eq(users.id, id)); await signOutEverywhere(id); }
   back("/admin/offices", "User updated.");
 }
 
@@ -99,21 +100,61 @@ export async function revokeNda(f: FormData) {
   back("/admin/offices", "NDA access revoked.");
 }
 
-export async function addAdmin(f: FormData) {
+// ---------------------------------------------------------------- desk team (super admin only)
+const asRole = (v: string): DeskRole => (v === "admin" ? "admin" : "analyst");
+async function superCount() {
+  const db = await getDb();
+  return (await db.select({ id: users.id }).from(users).where(and(eq(users.role, "admin"), eq(users.disabled, false)))).length;
+}
+
+export async function addDeskMember(f: FormData) {
   const admin = await requireAdmin();
-  const email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), pw = s(f, "password", 200);
-  if (!email || !name || pw.length < 8) back("/admin", "Name, email and a password of 8+ characters are needed.");
+  const email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), pw = s(f, "password", 200), role = asRole(s(f, "role", 20));
+  if (!email || !name) back("/admin/team", "Name and email are needed.");
   const db = await getDb();
   const [u] = await db.select().from(users).where(eq(users.email, email));
-  if (u) await db.update(users).set({ role: "admin" }).where(eq(users.id, u.id));
-  else await db.insert(users).values({ email, name, role: "admin", passwordHash: await bcrypt.hash(pw, 10) });
-  await log(admin, `Desk added ${email} as an admin`);
-  back("/admin", `${email} is now an admin.`);
+  if (u?.officeId) back("/admin/team", `${email} belongs to a family office. Desk members need their own email.`);
+  if (u) await db.update(users).set({ role, disabled: false, ...(pw.length >= 8 ? { passwordHash: await bcrypt.hash(pw, 10) } : {}) }).where(eq(users.id, u.id));
+  else {
+    if (pw.length < 8) back("/admin/team", "Set a temporary password of at least 8 characters for a new desk member.");
+    await db.insert(users).values({ email, name, role, passwordHash: await bcrypt.hash(pw, 10) });
+  }
+  await log(admin, `Desk added ${email} as ${ROLE_LABEL[role]}`);
+  back("/admin/team", `${name} is on the desk as ${ROLE_LABEL[role].toLowerCase()}.${!u ? " Share the temporary password privately; they can change it after signing in." : ""}`);
+}
+
+export async function setDeskRole(f: FormData) {
+  const admin = await requireAdmin();
+  const id = n(f, "id"), role = asRole(s(f, "role", 20));
+  const db = await getDb();
+  const [u] = await db.select().from(users).where(eq(users.id, id));
+  if (!u || !isDesk(u)) back("/admin/team", "That person is not on the desk.");
+  if (u.id === admin.id) back("/admin/team", "You cannot change your own role.");
+  if (isSuper(u) && role !== "admin" && (await superCount()) <= 1) back("/admin/team", "The desk needs at least one super admin.");
+  await db.update(users).set({ role }).where(eq(users.id, id));
+  await signOutEverywhere(id);
+  await log(admin, `Desk made ${u.email} ${ROLE_LABEL[role]}`);
+  back("/admin/team", `${u.name} is now ${ROLE_LABEL[role].toLowerCase()}. They sign in again to pick it up.`);
+}
+
+export async function removeDeskMember(f: FormData) {
+  const admin = await requireAdmin();
+  const id = n(f, "id");
+  const db = await getDb();
+  const [u] = await db.select().from(users).where(eq(users.id, id));
+  if (!u || !isDesk(u)) back("/admin/team", "That person is not on the desk.");
+  if (u.id === admin.id) back("/admin/team", "You cannot remove yourself.");
+  if (isSuper(u) && (await superCount()) <= 1) back("/admin/team", "The desk needs at least one super admin.");
+  await db.update(users).set({ disabled: true }).where(eq(users.id, id));
+  await signOutEverywhere(id);
+  await log(admin, `Desk removed ${u.email} from the desk`);
+  back("/admin/team", `${u.name} is removed and signed out everywhere.`);
 }
 
 // ---------------------------------------------------------------- deals
 export async function saveDeal(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requirePerm("deals.edit");
+  const pub = can(admin, "deals.publish"); // analysts edit content; publishing and opening stay with a super admin
   const id = n(f, "id");
   const db = await getDb();
   const [cur] = await db.select().from(deals).where(eq(deals.id, id));
@@ -152,7 +193,7 @@ export async function saveDeal(f: FormData) {
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
     score: (() => { const v = parseFloat(s(f, "score", 10)); return isFinite(v) ? Math.round(Math.min(10, Math.max(0, v)) * 10) / 10 : null; })(),
     roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null, minTicket: s(f, "minTicket", 80) || null,
-    open: f.get("open") === "on", published: f.get("published") === "on", sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
+    open: pub ? f.get("open") === "on" : cur.open, published: pub ? f.get("published") === "on" : cur.published, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
     publicRisks: fromText.list(s(f, "publicRisks", 6000)),
     art: artKey && (ART as Record<string, string>)[artKey] ? (ART as Record<string, string>)[artKey] : cur.art,
@@ -160,7 +201,7 @@ export async function saveDeal(f: FormData) {
   }).where(eq(deals.id, id));
   await log(admin, `Desk updated the deal: ${s(f, "company", 200)}`, id);
   // Newly published: tell approved offices, if the desk ticked the box.
-  if (!cur.published && f.get("published") === "on" && f.get("announce") === "on") {
+  if (pub && !cur.published && f.get("published") === "on" && f.get("announce") === "on") {
     const ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id);
     await notifyOffices(ids, { title: `New on the desk: ${s(f, "company", 200)}`, body: `${s(f, "title", 200)} · ${s(f, "category", 80)}. ${s(f, "headline", 600)}`, link: `/deals/${cur.slug}` });
   }
@@ -169,7 +210,7 @@ export async function saveDeal(f: FormData) {
 }
 
 export async function createDeal(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requirePerm("deals.edit");
   const slug = s(f, "slug", 80).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
   const company = s(f, "company", 200), title = s(f, "title", 200);
   if (!slug || !company || !title) back("/admin/deals", "Slug, company and public title are needed.");
@@ -182,18 +223,33 @@ export async function createDeal(f: FormData) {
   const [row] = await db.insert(deals).values({ slug, company, title, category: "Pre-IPO primary", stage: "Draft", status: "In diligence · not open", headline: "",
     listingLabel: "To be set", open: false, published: false, sort: 200, art: Object.values(ART as Record<string, string>)[0], room }).returning({ id: deals.id });
   await log(admin, `Desk created the deal: ${company}`, row.id);
-  redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent("Created as a hidden draft. Fill it in, then tick Published.")}`);
+  redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent(can(admin, "deals.publish") ? "Created as a hidden draft. Fill it in, then tick Published." : "Created as a hidden draft. Fill it in, then ask a super admin to publish it.")}`);
+}
+
+/** An analyst asks a super admin to publish (or open) a deal. */
+export async function requestPublish(f: FormData) {
+  const me = await requirePerm("deals.edit");
+  const id = n(f, "id");
+  const db = await getDb();
+  const [d] = await db.select({ company: deals.company, published: deals.published, open: deals.open }).from(deals).where(eq(deals.id, id));
+  if (!d) return;
+  const what = !d.published ? "publish" : !d.open ? "open for allocation requests" : "review";
+  const note = s(f, "note", 600);
+  await notifyDesk({ title: `${me.name} asks you to ${what}: ${d.company}`, body: note || "Check the deal and tick Published (and Open) if it is ready.", link: `/admin/deals/${id}` });
+  await log(me, `Desk asked a super admin to ${what} the deal: ${d.company}`, id);
+  back(`/admin/deals/${id}`, "Sent to a super admin. You will see it go live when they publish it.");
 }
 
 // ---------------------------------------------------------------- documents
 export async function saveDocument(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requirePerm("deals.edit");
   const dealId = n(f, "dealId"), id = n(f, "id");
   const db = await getDb();
   const audience = ["nda", "allocation", "offices"].includes(s(f, "audience", 20)) ? s(f, "audience", 20) : "nda";
   const officeIds = f.getAll("officeIds").map(Number).filter((x) => x > 0);
   const vals = { title: s(f, "title", 300), kind: s(f, "kind", 80) || null, status: s(f, "status", 20) || "available", url: s(f, "url", 2000) || null, sort: n(f, "sort") || 100, audience, officeIds };
   const [prev] = id ? await db.select().from(documents).where(eq(documents.id, id)) : [];
+  if (f.get("delete") === "on" && id && !can(admin, "delete")) back(`/admin/deals/${dealId}#docs`, "Only a super admin can delete a document. Set it to Hidden instead.");
   if (f.get("delete") === "on" && id) await db.delete(documents).where(eq(documents.id, id));
   else if (id) await db.update(documents).set(vals).where(eq(documents.id, id));
   else if (vals.title) await db.insert(documents).values({ ...vals, dealId });
@@ -214,7 +270,7 @@ export async function saveDocument(f: FormData) {
 
 // ---------------------------------------------------------------- Q&A, calls, interests, leads
 export async function answerQuestion(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requirePerm("deals.edit");
   const id = n(f, "id"), answer = s(f, "answer", 4000);
   const db = await getDb();
   const [q] = await db.select().from(questions).where(eq(questions.id, id));
@@ -235,7 +291,7 @@ export async function answerQuestion(f: FormData) {
 }
 
 export async function addQuestion(f: FormData) {
-  await requireAdmin();
+  await requirePerm("deals.edit");
   const db = await getDb();
   const q = s(f, "question", 1000), a = s(f, "answer", 4000);
   if (q) await db.insert(questions).values({ dealId: n(f, "dealId"), question: q, answer: a || null, answeredBy: a ? (s(f, "by", 80) || "Desk") : null, answeredAt: a ? new Date() : null });
@@ -243,7 +299,7 @@ export async function addQuestion(f: FormData) {
 }
 
 export async function saveCall(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requirePerm("deals.edit");
   const db = await getDb();
   const id = n(f, "id");
   const vals = { status: s(f, "status", 40) || "Requested", scheduledFor: s(f, "scheduledFor", 120) || null, summary: s(f, "summary", 4000) || null, title: s(f, "title", 200) || null };
@@ -276,7 +332,7 @@ export async function saveInterest(f: FormData) {
 }
 
 export async function saveLead(f: FormData) {
-  await requireAdmin();
+  await requirePerm("leads");
   const db = await getDb();
   await db.update(leads).set({ status: s(f, "status", 40) }).where(eq(leads.id, n(f, "id")));
   back("/admin/activity#leads", "Lead updated.");
@@ -284,16 +340,20 @@ export async function saveLead(f: FormData) {
 
 // ---------------------------------------------------------------- articles
 export async function saveArticle(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requirePerm("articles.edit");
   const db = await getDb();
   const id = n(f, "id");
+  const pub = can(admin, "articles.publish");
+  const [cur] = id ? await db.select({ published: articles.published }).from(articles).where(eq(articles.id, id)) : [];
+  if (!pub && cur?.published) back(`/admin/articles/${id}`, "This article is live. Only a super admin can change it.");
+  if (!pub && f.get("delete") === "on") back(`/admin/articles/${id}`, "Only a super admin can delete an article.");
   const slug = s(f, "slug", 120).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
   const title = s(f, "title", 300);
   if (!slug || !title) back(id ? `/admin/articles/${id}` : "/admin/articles/new", "A title and a web address slug are needed.");
   const sources = s(f, "sources", 4000).split(/\r?\n/).map((l) => l.split("|").map((x) => x.trim())).filter((x) => x[1]?.startsWith("http")).map(([t, u]) => ({ title: t || u, url: u }));
   const when = s(f, "publishedAt", 40);
   const vals = { slug, title, dek: s(f, "dek", 600) || null, body: s(f, "body", 40000), sources, externalUrl: s(f, "externalUrl", 1000) || null, image: s(f, "image", 1000) || null,
-    author: s(f, "author", 120) || "Off Market Desk team", published: f.get("published") === "on",
+    author: s(f, "author", 120) || "Off Market Desk team", published: pub && f.get("published") === "on",
     publishedAt: when ? new Date(when + (when.length <= 10 ? "T09:00:00+05:30" : "")) : new Date(), updatedAt: new Date() };
   if (f.get("delete") === "on" && id) {
     await db.delete(articles).where(eq(articles.id, id));
@@ -304,15 +364,23 @@ export async function saveArticle(f: FormData) {
   if (id) await db.update(articles).set(vals).where(eq(articles.id, id));
   else rid = (await db.insert(articles).values(vals).returning({ id: articles.id }))[0].id;
   await log(admin, `Desk saved the article: ${title}`);
+  if (!pub && f.get("askPublish") === "on") await notifyDesk({ title: `${admin.name} asks you to publish an article: ${title}`, body: vals.dek, link: `/admin/articles/${rid}` });
   revalidatePath("/", "layout");
-  back(`/admin/articles/${rid}`, "Saved.");
+  back(`/admin/articles/${rid}`, pub ? "Saved." : f.get("askPublish") === "on" ? "Saved as a draft and sent to a super admin to publish." : "Saved as a draft.");
 }
 
 // ---------------------------------------------------------------- notifications and settings
 export async function sendBroadcast(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireDesk();
   const title = s(f, "title", 200), body = s(f, "body", 4000), link = s(f, "link", 500), audience = s(f, "audience", 40);
   if (!title) back("/admin/notify", "A title is needed.");
+  if (!can(admin, "broadcast.send")) {
+    // Analysts draft; a super admin reviews the same form, prefilled, and sends it.
+    const draft = Buffer.from(JSON.stringify({ title, body, link, audience, dealId: s(f, "dealId", 12), officeId: s(f, "officeId", 12), topic: s(f, "topic", 20), email: f.get("email") === "on", by: admin.name })).toString("base64url");
+    await notifyDesk({ title: `${admin.name} drafted a message to offices: ${title}`, body: body.slice(0, 300) || null, link: `/admin/notify?draft=${draft}` });
+    await log(admin, `Desk drafted "${title}" for a super admin to send`);
+    back("/admin/notify", "Sent to a super admin to review and send.");
+  }
   const db = await getDb();
   let ids: number[] = [];
   let dealId: number | null = null;
@@ -337,6 +405,7 @@ export async function saveSiteSettings(f: FormData) {
     requireApproval: f.get("requireApproval") === "on", requirePan: false,
     announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
     promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on", aiBudget: String(Math.max(0, Math.round(Number(s(f, "aiBudget", 10)) || 0))),
+    analystContacts: f.get("analystContacts") === "on",
   });
   await log(admin, "Desk changed the site settings");
   revalidatePath("/", "layout");
@@ -344,7 +413,7 @@ export async function saveSiteSettings(f: FormData) {
 }
 
 export async function markDeskRead() {
-  await requireAdmin();
+  await requireDesk();
   const db = await getDb();
   await db.update(notifications).set({ readAt: new Date() }).where(sql`to_admin = true and read_at is null`);
   back("/admin", "Alerts marked read.");

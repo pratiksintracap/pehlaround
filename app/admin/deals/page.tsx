@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { listDeals } from "@/lib/deals";
 import { createDeal } from "@/lib/admin-actions";
 import { Msg } from "@/components/AdminBits";
 
 export default async function AdminDeals({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
   const { msg } = await searchParams;
   const deals = await listDeals(true);
   const db = await getDb();

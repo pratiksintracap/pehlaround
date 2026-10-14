@@ -1,23 +1,27 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
+import { can, isSuper, mask, ROLE_LABEL, type DeskRole } from "@/lib/perm";
+import { getSettings } from "@/lib/settings";
 import { desc, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { audit, calls, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
-import { addAdmin, markDeskRead } from "@/lib/admin-actions";
+import { markDeskRead } from "@/lib/admin-actions";
 import { Msg } from "@/components/AdminBits";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
 
 export default async function AdminHome({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
   const { msg } = await searchParams;
+  const seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const db = await getDb();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const count = async (t: any, where?: ReturnType<typeof sql>) => (await db.select({ n: sql<number>`count(*)::int` }).from(t).where(where))[0].n as number;
   const [o, appr, nd, intr, q, c, l, admins, recent, alerts] = await Promise.all([
     count(offices), count(offices, sql`approval = 'pending'`), count(ndas), count(interests, sql`status = 'Indicated'`),
     count(questions, sql`answer is null and hidden = false`), count(calls, sql`status = 'Requested'`), count(leads, sql`status = 'New'`),
-    db.select().from(users).where(sql`role = 'admin'`),
-    db.select().from(audit).orderBy(desc(audit.at)).limit(25),
+    db.select().from(users).where(sql`role in ('admin', 'analyst') and disabled = false`),
+    // An analyst sees office activity and their own desk actions, not other desk members'.
+    db.select().from(audit).where(isSuper(me) ? undefined : sql`office_id is not null or user_id = ${me.id}`).orderBy(desc(audit.at)).limit(25),
     db.select().from(notifications).where(sql`to_admin = true`).orderBy(desc(notifications.createdAt)).limit(12),
   ]);
   const unread = alerts.filter((a) => !a.readAt).length;
@@ -47,19 +51,16 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       <div className="chart" style={{ marginTop: 24 }}><span className="k">Who to call today</span>
         <p className="fine" style={{ margin: "4px 0 8px" }}>Offices that opened a room, read documents or asked a question in the last seven days, and have not yet indicated an amount or passed.</p>
         {toCall.length ? <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Office</th><th>Company</th><th>Actions this week</th><th>Last seen</th><th>Contact</th></tr></thead><tbody>
-          {toCall.map((r, i) => <tr key={i}><th scope="row">{r.office}</th><td>{r.company}</td><td>{r.n}</td><td>{fmtT(new Date(r.last))}</td><td>{r.contact || "—"}{r.phone ? <> · <a href={`tel:${r.phone.replace(/\s/g, "")}`}>{r.phone}</a></> : null}</td></tr>)}
+          {toCall.map((r, i) => <tr key={i}><th scope="row">{r.office}</th><td>{r.company}</td><td>{r.n}</td><td>{fmtT(new Date(r.last))}</td><td>{r.contact || "—"}{r.phone ? (seeContacts ? <> · <a href={`tel:${r.phone.replace(/\s/g, "")}`}>{r.phone}</a></> : <> · <span className="mono">{mask(r.phone)}</span></>) : null}</td></tr>)}
         </tbody></table></div> : <p className="fine">Nobody to chase this week.</p>}</div>
       <div className="two" style={{ marginTop: 24 }}>
         <div className="chart"><span className="k">Recent activity</span>
           <ul className="feed">{recent.map((a) => <li key={a.id}><span className="mono">{fmtT(a.at)}</span>{a.who ? `${a.who}: ` : ""}{a.action}</li>)}</ul>
           <a className="btn sm" href="/admin/log">Full log</a></div>
-        <div className="chart"><span className="k">Admins</span>
-          <ul className="feed">{admins.map((a) => <li key={a.id}><b>{a.name}</b> · {a.email}</li>)}</ul>
-          <form action={addAdmin} className="form" style={{ marginTop: 10 }}>
-            <div className="row"><label>Name<input name="name" required /></label><label>Email<input name="email" type="email" required /></label></div>
-            <label>Password<input name="password" type="password" minLength={8} required /></label>
-            <div><button className="btn sm" type="submit">Add an admin</button></div>
-          </form></div>
+        <div className="chart"><span className="k">Desk team</span>
+          <ul className="feed">{admins.map((a) => <li key={a.id}><b>{a.name}</b> · {ROLE_LABEL[a.role as DeskRole] ?? a.role}{a.id === me.id ? " · you" : ""}</li>)}</ul>
+          {isSuper(me) ? <a className="btn sm" href="/admin/team">Manage the desk team</a>
+            : <p className="fine">You are signed in as an analyst. Publishing, allocations, messages to all offices and settings go to a super admin.</p>}</div>
       </div>
     </>
   );

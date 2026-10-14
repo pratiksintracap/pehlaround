@@ -1,4 +1,6 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
+import { can, mask } from "@/lib/perm";
+import { getSettings } from "@/lib/settings";
 import { desc, eq, isNull, and } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { calls, deals, interests, leads, offices, passes, questions, users } from "@/db/schema";
@@ -8,8 +10,10 @@ import { Msg } from "@/components/AdminBits";
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
 export default async function Activity({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
   const { msg } = await searchParams;
+  const confirm = can(me, "allocations.confirm"), seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
+  const em = (v?: string | null) => (seeContacts ? v : mask(v));
   const db = await getDb();
   const [ds, os, us, ins, ps, qs, cs, ls] = await Promise.all([
     db.select({ id: deals.id, company: deals.company }).from(deals), db.select({ id: offices.id, name: offices.name }).from(offices),
@@ -27,11 +31,11 @@ export default async function Activity({ searchParams }: { searchParams: Promise
       <h2>Allocation requests</h2>
       <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>When</th><th>Office · person</th><th>Deal</th><th>Amount</th><th>Status</th></tr></thead><tbody>
         {ins.length ? ins.map((i) => { const u = user.get(i.userId); return (
-          <tr key={i.id}><td>{fmtD(i.createdAt)}</td><td>{office.get(i.officeId)}<br /><small className="fine">{u?.name} · {u?.email} · {u?.phone}</small></td><td>{deal.get(i.dealId)}</td>
+          <tr key={i.id}><td>{fmtD(i.createdAt)}</td><td>{office.get(i.officeId)}<br /><small className="fine">{u?.name} · {em(u?.email)} · {em(u?.phone)}</small></td><td>{deal.get(i.dealId)}</td>
             <td>₹{Number(i.amountCr)} Cr{i.colead ? " · co-lead" : ""}</td>
-            <td><form action={saveInterest} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}><input type="hidden" name="id" value={i.id} />
+            <td>{!confirm ? <><span className="pill">{i.status}</span>{i.note ? <><br /><small className="fine">{i.note}</small></> : null}<br /><small className="fine">A super admin confirms allocations.</small></> : <form action={saveInterest} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}><input type="hidden" name="id" value={i.id} />
               <select name="status" defaultValue={i.status}>{["Indicated", "Term sheet", "Documents", "Allotted", "Withdrawn"].map((s) => <option key={s}>{s}</option>)}</select>
-              <input name="note" defaultValue={i.note ?? ""} placeholder="Note" style={{ maxWidth: 160 }} /><button className="btn sm" type="submit">Save</button></form></td></tr>); })
+              <input name="note" defaultValue={i.note ?? ""} placeholder="Note" style={{ maxWidth: 160 }} /><button className="btn sm" type="submit">Save</button></form>}</td></tr>); })
           : <tr><td colSpan={5} className="fine">None yet.</td></tr>}
       </tbody></table></div>
 

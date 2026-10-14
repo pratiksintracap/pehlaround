@@ -10,6 +10,7 @@ import { content } from "@/lib/content";
 import { SITE_URL } from "@/lib/site";
 import { getSettings } from "@/lib/settings";
 import { unreadCount } from "@/lib/notify";
+import { isDesk } from "@/lib/perm";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: THEME }} /></head>
-      <body data-user={user ? (user.role === "admin" ? "admin" : "member") : ""}>
+      <body data-user={user ? (isDesk(user) ? "admin" : "member") : ""}>
         {st.announcement && (
           <div className="annc"><div className="wrap">{st.announcementLink ? <a href={st.announcementLink}>{st.announcement} <span aria-hidden="true">→</span></a> : st.announcement}</div></div>)}
         <Header user={user} unread={unread} />

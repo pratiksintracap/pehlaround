@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
-import { requireAdmin, log } from "@/lib/auth";
+import { requireDesk, log } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { tickets } from "@/db/schema";
 import { addMessage, idFromNo, tellOffice, ticketNo } from "@/lib/tickets";
@@ -11,7 +11,7 @@ const s = (f: FormData, k: string, max = 5000) => String(f.get(k) ?? "").trim().
 
 /** The desk replies (or leaves an internal note) and sets where the ticket stands. */
 export async function deskReply(f: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireDesk();
   const no = s(f, "no", 20), body = s(f, "body"), internal = f.get("internal") === "on", next = s(f, "status", 20);
   const db = await getDb();
   const [t] = await db.select().from(tickets).where(eq(tickets.id, idFromNo(no) || -1));

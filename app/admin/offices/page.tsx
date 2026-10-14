@@ -1,4 +1,6 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
+import { can, mask } from "@/lib/perm";
+import { getSettings } from "@/lib/settings";
 import { desc, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { deals, invites, ndas, offices, users } from "@/db/schema";
@@ -9,8 +11,10 @@ import { Msg } from "@/components/AdminBits";
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
 export default async function Offices({ searchParams }: { searchParams: Promise<{ msg?: string; show?: string }> }) {
-  await requireAdmin();
+  const me = await requireDesk();
   const { msg, show } = await searchParams;
+  const manage = can(me, "offices.manage"), seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
+  const em = (v?: string | null) => (seeContacts ? v : mask(v));
   const db = await getDb();
   const [os, us, ns, ds, inv] = await Promise.all([
     db.select().from(offices).orderBy(desc(offices.createdAt)),
@@ -28,7 +32,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
     <>
       <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Family offices</h1>
-      <p className="fine" style={{ marginBottom: 10 }}>New registrations wait here for the desk. An office sees company names, terms and NDAs only after you approve it, and it is told in its dashboard (and by email, once email is set up). Approval can be switched off in <a href="/admin/settings">Settings</a>.</p>
+      <p className="fine" style={{ marginBottom: 10 }}>New registrations wait here for the desk. An office sees company names, terms and NDAs only after you approve it, and it is told in its dashboard (and by email, once email is set up). {manage ? <>Approval can be switched off in <a href="/admin/settings">Settings</a>.</> : null}</p>
       <div className="adm-filter">{[["", `All (${os.length})`], ["pending", `Awaiting approval (${pendingN})`], ["approved", "Approved"], ["rejected", "Declined"]].map(([k, l]) =>
         <a key={k} href={k ? `/admin/offices?show=${k}` : "/admin/offices"} className={(show || "") === k ? "on" : ""}>{l}</a>)}</div>
       <p className="fine" style={{ marginBottom: 16 }}>Putting an office on hold closes every room to it. NDAs are signed with the signatory&apos;s name and a one-time code emailed to them; no PAN is asked until an office invests.</p>
@@ -53,7 +57,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
               <div>
                 <dl className="terms compact">
                   <div><dt>Investing entity</dt><dd>{o.entityName || "—"}</dd></div>
-                  {o.pan && <div><dt>PAN (given before PAN was dropped)</dt><dd className="mono">{o.pan}</dd></div>}
+                  {o.pan && manage && <div><dt>PAN (given before PAN was dropped)</dt><dd className="mono">{o.pan}</dd></div>}
                   <div><dt>Invests as · residency</dt><dd>{o.category || "—"} · {o.residency || "—"}</dd></div>
                   <div><dt>Ticket · AUM</dt><dd>{o.ticket || "—"} · {o.aum || "—"}</dd></div>
                   <div><dt>City · website</dt><dd>{o.city || "—"}{o.website ? <> · <a href={o.website.startsWith("http") ? o.website : `https://${o.website}`} target="_blank" rel="noopener">{o.website.replace(/^https?:\/\//, "")}</a></> : ""}</dd></div>
@@ -63,10 +67,10 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
                   <div><dt>Approved</dt><dd>{o.approval === "approved" ? fmtD(o.approvedAt) : "—"}</dd></div>
                   <div><dt>Consents</dt><dd>{Object.entries(o.consents || {}).filter(([, v]) => v).map(([k]) => k).join(", ") || "—"}</dd></div>
                 </dl>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                {manage && <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
                   <form action={setOfficeStatus}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="status" value={o.status === "rejected" ? "registered" : "rejected"} />
                     <button className="btn sm ghost" type="submit">{o.status === "rejected" ? "Release the hold" : "Put on hold (closes every room)"}</button></form>
-                </div>
+                </div>}
                 {o.approval === "approved" && <form action={setApproval} style={{ marginTop: 6 }}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="approval" value="pending" /><button className="btn sm ghost" type="submit">Withdraw approval</button></form>}
                 <form action={saveOfficeNotes} className="form" style={{ marginTop: 10 }}><input type="hidden" name="id" value={o.id} />
                   <label>Desk notes<textarea name="notes" rows={2} defaultValue={o.notes || ""} /></label><div><button className="btn sm" type="submit">Save notes</button></div></form>
@@ -74,18 +78,18 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
               <div>
                 <span className="k eyebrow">People</span>
                 <ul className="feed">{people.map((u) => (
-                  <li key={u.id}><b>{u.name}</b> · {u.email} · {u.phone || "—"} · {u.officeRole || "—"} · {u.rights}{u.disabled ? " · disabled" : ""}<br />
+                  <li key={u.id}><b>{u.name}</b> · {em(u.email)} · {em(u.phone) || "—"} · {u.officeRole || "—"} · {u.rights}{u.disabled ? " · disabled" : ""}<br />
                     <small className="fine">last sign-in {fmtD(u.lastLoginAt)}</small>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
+                    {manage && <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
                       <form action={resetPassword} style={{ display: "flex", gap: 6 }}><input type="hidden" name="id" value={u.id} /><input name="password" placeholder="New password" minLength={8} required style={{ maxWidth: 160 }} /><button className="btn sm" type="submit">Reset</button></form>
                       <form action={toggleUser}><input type="hidden" name="id" value={u.id} /><button className="btn sm ghost" type="submit">{u.disabled ? "Enable" : "Disable"}</button></form>
-                    </div></li>))}
-                  {inv.filter((i) => i.officeId === o.id).map((i) => <li key={`i${i.id}`}>{i.email} · invited · {i.rights}</li>)}
+                    </div>}</li>))}
+                  {inv.filter((i) => i.officeId === o.id).map((i) => <li key={`i${i.id}`}>{em(i.email)} · invited · {i.rights}</li>)}
                 </ul>
                 <span className="k eyebrow">NDAs</span>
                 <ul className="feed">{nn.length ? nn.map((x) => (
                   <li key={x.id}>{dealName.get(x.dealId)} · {x.signerName} · {fmtD(x.signedAt)} · v{x.version}{x.revokedAt ? " · revoked" : ""} · <a href={`/dashboard/nda/${x.id}`}>copy</a>
-                    {!x.revokedAt && <form action={revokeNda} style={{ display: "inline" }}><input type="hidden" name="id" value={x.id} /> <button className="btn sm ghost" type="submit">Revoke</button></form>}</li>))
+                    {!x.revokedAt && manage && <form action={revokeNda} style={{ display: "inline" }}><input type="hidden" name="id" value={x.id} /> <button className="btn sm ghost" type="submit">Revoke</button></form>}</li>))
                   : <li className="empty-li">None yet.</li>}</ul>
               </div>
             </div>

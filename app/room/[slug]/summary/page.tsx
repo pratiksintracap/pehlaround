@@ -5,6 +5,7 @@ import { getDeal, roomAccess } from "@/lib/deals";
 import { Bars, barSeries } from "@/components/Charts";
 import { ScoreBadge } from "@/components/Score";
 import { GateCard } from "@/components/Gate";
+import { isDesk } from "@/lib/perm";
 
 type P = { params: Promise<{ slug: string }> };
 export const metadata: Metadata = { title: "Deal summary", robots: { index: false } };
@@ -13,7 +14,7 @@ const PILL: Record<string, [string, string]> = { done: ["ok", "Done"], "in-progr
 export default async function Summary({ params }: P) {
   const { slug } = await params;
   const [user, d] = await Promise.all([getUser(), getDeal(slug)]);
-  if (!d || (!d.published && user?.role !== "admin")) notFound();
+  if (!d || (!d.published && !isDesk(user))) notFound();
   const access = await roomAccess(user, d);
   if (access.state !== "open") {
     return <main><div className="wrap" style={{ paddingTop: 24, paddingBottom: 56 }}><GateCard deal={d} state={access.state} /></div></main>;

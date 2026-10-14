@@ -6,6 +6,7 @@ import { getUser } from "@/lib/auth";
 import { readBody, str, done, fail } from "@/lib/http";
 import { allow, TOO_MANY } from "@/lib/rate";
 import { addMessage, idFromNo, tellDesk, ticketNo } from "@/lib/tickets";
+import { isDesk } from "@/lib/perm";
 
 /** The office side of a ticket: reply, mark resolved, or rate the desk's help. */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ no: string; action: string }> }) {
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ no:
   if (!user) return fail(req, json, "Please sign in again.", `/login?next=${encodeURIComponent(back)}`, 401);
   const db = await getDb();
   const [t] = await db.select().from(tickets).where(eq(tickets.id, idFromNo(no) || -1));
-  if (!t || (user.role !== "admin" && (!user.officeId || t.officeId !== user.officeId))) return fail(req, json, "That ticket was not found.", "/dashboard#Support", 404);
+  if (!t || (!isDesk(user) && (!user.officeId || t.officeId !== user.officeId))) return fail(req, json, "That ticket was not found.", "/dashboard#Support", 404);
   if (!(await allow(`ticketact:${user.id}`, 40, 3600))) return fail(req, json, TOO_MANY, back, 429);
   const now = new Date();
   if (action === "reply") {

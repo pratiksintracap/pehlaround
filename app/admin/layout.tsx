@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth";
+import { requireDesk } from "@/lib/auth";
+import { isSuper, ROLE_LABEL, type DeskRole } from "@/lib/perm";
 import { dbKind, getDb } from "@/lib/db";
 import { offices, questions, interests, tickets } from "@/db/schema";
 import { AdminNav } from "@/components/AdminNav";
@@ -8,7 +9,7 @@ import { AdminNav } from "@/components/AdminNav";
 export const metadata: Metadata = { title: "Desk admin", robots: { index: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const me = await requireAdmin();
+  const me = await requireDesk();
   const kind = dbKind();
   const db = await getDb();
   const n = async (q: Promise<{ n: number }[]>) => (await q)[0]?.n ?? 0;
@@ -23,9 +24,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <aside className="app-side" aria-label="Desk admin">
         <div className="as-office">
           <span className="as-av desk" aria-hidden="true">D</span>
-          <div><b>Desk admin</b><small>{me.name}</small></div>
+          <div><b>Desk admin</b><small>{me.name} · {ROLE_LABEL[me.role as DeskRole]}</small></div>
         </div>
-        <AdminNav counts={{ "/admin/offices": pending, "/admin/activity": qs + reqs, "/admin/tickets": tks }} />
+        <AdminNav full={isSuper(me)} counts={{ "/admin/offices": pending, "/admin/activity": qs + reqs, "/admin/tickets": tks }} />
         <div className="as-foot"><a href="/deals">View the site</a><a href="/dashboard">Office view</a></div>
       </aside>
       <div className="app-main">

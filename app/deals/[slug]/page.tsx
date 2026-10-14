@@ -6,6 +6,7 @@ import { ScoreBadge } from "@/components/Score";
 import { getDb } from "@/lib/db";
 import { dealViews } from "@/db/schema";
 import { runwayHtml } from "@/lib/render";
+import { isDesk } from "@/lib/perm";
 
 type P = { params: Promise<{ slug: string }> };
 
@@ -18,10 +19,10 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
 export default async function Overview({ params }: P) {
   const { slug } = await params;
   const [user, d, all] = await Promise.all([getUser(), getDeal(slug), listDeals()]);
-  if (!d || (!d.published && user?.role !== "admin")) notFound();
-  const signed = (await signedDealIds(user?.officeId)).has(d.id) || user?.role === "admin";
+  if (!d || (!d.published && !isDesk(user))) notFound();
+  const signed = (await signedDealIds(user?.officeId)).has(d.id) || isDesk(user);
   const registered = await canSeeNames(user);
-  if (user?.role !== "admin") await (await getDb()).insert(dealViews).values({ dealId: d.id, officeId: user?.officeId ?? null }).catch(() => {});
+  if (!isDesk(user)) await (await getDb()).insert(dealViews).values({ dealId: d.id, officeId: user?.officeId ?? null }).catch(() => {});
   const stages = ["Overview", "Room open", "Closing"];
   const now = d.open ? "Room open" : "Overview";
   const others = all.filter((x) => x.id !== d.id);

@@ -11,6 +11,7 @@ import { GateCard } from "@/components/Gate";
 import { Analyst } from "@/components/Analyst";
 import { aiReady, starters } from "@/lib/ai";
 import { getSettings } from "@/lib/settings";
+import { isDesk } from "@/lib/perm";
 
 type P = { params: Promise<{ slug: string }> };
 export const metadata: Metadata = { title: "Deal room", robots: { index: false } };
@@ -21,7 +22,7 @@ const PILL: Record<string, [string, string]> = { done: ["ok", "Done"], "in-progr
 export default async function Room({ params }: P) {
   const { slug } = await params;
   const [user, d] = await Promise.all([getUser(), getDeal(slug)]);
-  if (!d || (!d.published && user?.role !== "admin")) notFound();
+  if (!d || (!d.published && !isDesk(user))) notFound();
   const access = await roomAccess(user, d);
 
   if (access.state !== "open") {

@@ -5,6 +5,7 @@ import { users } from "@/db/schema";
 import { provider, finish } from "@/lib/oauth";
 import { createSession, log, signTemp, verifyTemp, OAUTH_PENDING } from "@/lib/auth";
 import { allowIp, TOO_MANY } from "@/lib/rate";
+import { isDesk } from "@/lib/perm";
 
 type Tx = { state: string; verifier: string; nonce: string; next: string; provider: string };
 
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
     await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, u.id));
     await createSession(u.id);
     await log(u, `Signed in with ${p.name}`);
-    const r = NextResponse.redirect(new URL(tx.next || (u.role === "admin" ? "/admin" : "/dashboard"), req.url), 303);
+    const r = NextResponse.redirect(new URL(tx.next || (isDesk(u) ? "/admin" : "/dashboard"), req.url), 303);
     r.cookies.delete({ name: "omd_oauth_tx", path: "/api/auth/oauth" });
     return r;
   }
