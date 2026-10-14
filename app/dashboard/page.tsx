@@ -99,8 +99,9 @@ export default async function Dashboard({ searchParams }: P) {
   ];
 
   return (
-    <main><div className="wrap app-wrap"><div className="app" id="dash">
-      <aside className="app-side" aria-label="Your office">
+    <main><div className="wrap app-wrap"><div className="app dm" id="dash">
+      <div className="dm-scrim" aria-hidden="true" />
+      <aside className="app-side" id="dash-menu" aria-label="Your office">
         <div className="as-office">
           <span className="as-av" aria-hidden="true">{office.name.trim().slice(0, 1).toUpperCase()}</span>
           <div><b>{office.name}</b><small>{names ? "Approved by the desk" : "Awaiting approval"}{office.city ? ` · ${office.city}` : ""}</small></div>
@@ -122,7 +123,7 @@ export default async function Dashboard({ searchParams }: P) {
       </aside>
       <div className="app-main">
       <div className="dashhead">
-        <div className="dh-name"><span className="eyebrow">Office dashboard</span><h1>{office.name}</h1></div>
+        <div className="dh-name"><button type="button" className="dm-btn" data-menu="" aria-expanded="false" aria-controls="dash-menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>Menu <em data-menu-label="">{NAV[0][1]}</em></button><span className="eyebrow">Office dashboard</span><h1>{office.name}</h1></div>
         <div className="dh-stats">
           <a href="#Rooms"><b>{signed.size}</b><span>{signed.size === 1 ? "room open" : "rooms open"}</span></a>
           <a href="#Rooms"><b>{myQs.length}</b><span>questions</span></a>

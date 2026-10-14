@@ -335,6 +335,19 @@
     $$(".side-nav .tabbtn").forEach(function (t) { t.addEventListener("click", function () { try { t.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) {} }); });
     $$("[data-close-welcome]").forEach(function (a) { a.addEventListener("click", function () { var w = $("#welcome"); if (w && w.open) w.close(); }); });
     window.addEventListener("hashchange", function () { tabFromHash(true); });
+    // dashboard: on wide screens the side menu stays hidden behind a Menu button
+    var dm = $("#dash.dm");
+    if (dm) (function () {
+      var btn = $("[data-menu]", dm), lab = $("[data-menu-label]", dm), scrim = $(".dm-scrim", dm);
+      var sync = function () { var t = $(".side-nav .tabbtn[aria-selected=true] span", dm); if (lab && t) lab.textContent = t.textContent; };
+      var set = function (on) { dm.classList.toggle("menu-open", on); if (btn) btn.setAttribute("aria-expanded", on ? "true" : "false"); if (on) { var f = $(".side-nav .tabbtn[aria-selected=true]", dm); if (f) setTimeout(function () { f.focus({ preventScroll: true }); }, 60); } };
+      if (btn) btn.addEventListener("click", function () { set(!dm.classList.contains("menu-open")); });
+      if (scrim) scrim.addEventListener("click", function () { set(false); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && dm.classList.contains("menu-open")) { set(false); if (btn) btn.focus(); } });
+      $$(".app-side a, .app-side button", dm).forEach(function (a) { a.addEventListener("click", function () { setTimeout(function () { set(false); sync(); }, 0); }); });
+      window.addEventListener("hashchange", function () { setTimeout(sync, 0); });
+      sync();
+    })();
     // deal switcher: close the menu on an outside click or Escape
     $$(".ds-menu").forEach(function (m) {
       document.addEventListener("click", function (e) { if (m.open && !m.contains(e.target)) m.open = false; });

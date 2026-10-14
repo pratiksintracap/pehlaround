@@ -45,6 +45,7 @@ const Spark = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1
 
 export function Analyst({ deal, starters, who }: { deal: { slug: string; company: string } | null; starters: string[]; who: string }) {
   const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(false); // kept on screen beside the page (wide screens), remembered on this device
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [id, setId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -55,9 +56,25 @@ export function Analyst({ deal, starters, who }: { deal: { slug: string; company
   const qs = deal ? `?deal=${encodeURIComponent(deal.slug)}` : "";
 
   useEffect(() => {
+    let pin = false; try { pin = localStorage.getItem("omd_an_pin") === "1"; } catch {}
+    if (pin && window.matchMedia("(min-width:1100px)").matches) { setPinned(true); setOpen(true); }
+  }, []);
+  useEffect(() => {
+    // Pinned: the analyst sits under the site header and the page narrows beside it, so nothing is covered.
+    const on = open && pinned, root = document.documentElement;
+    document.body.classList.toggle("an-docked", on);
+    if (!on) return () => document.body.classList.remove("an-docked");
+    let raf = 0;
+    const top = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { const h = document.querySelector(".hdr"); root.style.setProperty("--an-top", `${Math.max(0, h ? h.getBoundingClientRect().bottom : 0)}px`); }); };
+    top(); window.addEventListener("scroll", top, { passive: true }); window.addEventListener("resize", top);
+    return () => { document.body.classList.remove("an-docked"); window.removeEventListener("scroll", top); window.removeEventListener("resize", top); cancelAnimationFrame(raf); };
+  }, [open, pinned]);
+  const pin = (v: boolean) => { setPinned(v); try { localStorage.setItem("omd_an_pin", v ? "1" : "0"); } catch {} };
+  const close = () => { setOpen(false); if (pinned) pin(false); };
+  useEffect(() => {
     const o = () => setOpen(true);
     window.addEventListener("omd-analyst", o);
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !document.body.classList.contains("an-docked")) setOpen(false); };
     window.addEventListener("keydown", onKey);
     return () => { window.removeEventListener("omd-analyst", o); window.removeEventListener("keydown", onKey); };
   }, []);
@@ -110,12 +127,13 @@ export function Analyst({ deal, starters, who }: { deal: { slug: string; company
   return (
     <>
       {!open && <button type="button" className="an-fab" onClick={() => setOpen(true)} aria-haspopup="dialog"><Spark /><span>Ask the analyst</span></button>}
-      <aside className={`an-drawer${open ? " on" : ""}`} role="dialog" aria-modal="false" aria-label="AI analyst" hidden={!open}>
+      <aside className={`an-drawer${open ? " on" : ""}${pinned ? " dock" : ""}`} role="dialog" aria-modal="false" aria-label="AI analyst" hidden={!open}>
         <header className="an-head">
           <span className="an-logo"><Spark /></span>
           <div><b>Desk analyst</b><small>{deal ? `${deal.company} room` : "All your rooms"} · AI</small></div>
           <button type="button" className="btn sm ghost" onClick={() => { setMsgs([]); setId(null); setAsked({}); ta.current?.focus(); }} disabled={busy}>New chat</button>
-          <button type="button" className="an-x" onClick={() => setOpen(false)} aria-label="Close the analyst">✕</button>
+          <button type="button" className="an-pin" aria-pressed={pinned} onClick={() => pin(!pinned)} title={pinned ? "Let the page use the full width again" : "Keep the analyst open beside the page"}>{pinned ? "Unpin" : "Keep on screen"}</button>
+          <button type="button" className="an-x" onClick={close} aria-label="Close the analyst">✕</button>
         </header>
         <div className="an-body" ref={box} aria-live="polite">
           {!msgs.length && (
