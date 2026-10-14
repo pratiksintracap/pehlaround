@@ -1,5 +1,5 @@
 import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex, index, numeric, doublePrecision } from "drizzle-orm/pg-core";
-import type { RoomContent } from "@/lib/types";
+import type { RoomContent, IpoProgress } from "@/lib/types";
 
 // A family office (the investing entity). Several users can belong to one office.
 export const offices = pgTable("offices", {
@@ -37,7 +37,8 @@ export const users = pgTable("users", {
   email: text("email").notNull(),
   name: text("name").notNull(),
   phone: text("phone"),
-  role: text("role").notNull().default("member"),        // member | admin
+  role: text("role").notNull().default("member"),        // member | admin (super admin) | analyst | promoter
+  promoterDealId: integer("promoter_deal_id"),            // role promoter: the one company they see in the founder portal
   officeRole: text("office_role"),                        // Principal, CIO, CA ...
   rights: text("rights").notNull().default("View, comment, commit"),
   officeId: integer("office_id").references(() => offices.id),
@@ -84,6 +85,9 @@ export const deals = pgTable("deals", {
   asOf: text("as_of"),                          // "11 Oct 2026"
   ndaVersion: text("nda_version").notNull().default("2026-10-12"),
   room: jsonb("room").$type<RoomContent>().notNull(),
+  roundCr: doublePrecision("round_cr"),                       // round size in ₹ crore, for the allocation book
+  ipo: jsonb("ipo").$type<IpoProgress>().notNull().default({}), // the road to listing, shown to holders
+  promoterDemand: boolean("promoter_demand").notNull().default(false), // the founder portal shows the total indicated
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("deals_slug_uq").on(t.slug)]);
 
@@ -127,6 +131,7 @@ export const documents = pgTable("documents", {
   audience: text("audience").notNull().default("nda"),
   officeIds: jsonb("office_ids").$type<number[]>().notNull().default([]),
   sort: integer("sort").notNull().default(100),
+  proposedBy: text("proposed_by"),              // a promoter suggested it from the founder portal (status "proposed" until the desk accepts)
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -151,6 +156,8 @@ export const questions = pgTable("questions", {
   answeredAt: timestamp("answered_at", { withTimezone: true }),
   hidden: boolean("hidden").notNull().default(false),
   private: boolean("private").notNull().default(false),   // asked privately: only the asking office sees it and the answer
+  draftAnswer: text("draft_answer"),            // the promoter's answer from the founder portal, waiting for the desk
+  draftAt: timestamp("draft_at", { withTimezone: true }),
 }, (t) => [index("questions_deal_idx").on(t.dealId)]);
 
 export const calls = pgTable("calls", {
@@ -178,6 +185,9 @@ export const interests = pgTable("interests", {
   colead: boolean("colead").notNull().default(false),
   status: text("status").notNull().default("Indicated"), // Indicated | Term sheet | Documents | Allotted | Withdrawn
   note: text("note"),
+  shares: integer("shares"),                    // allotted shares
+  price: doublePrecision("price"),              // ₹ per share at allotment
+  allottedAt: timestamp("allotted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

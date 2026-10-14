@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { and, asc, desc, eq, gt, like, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, or, ne } from "drizzle-orm";
 import { getUser, log } from "@/lib/auth";
 import { getDeal, listDeals, signedDealIds, roomAccess, trackerCounts, docAccess, type Deal } from "@/lib/deals";
 import { getDb } from "@/lib/db";
@@ -36,7 +36,7 @@ export default async function Room({ params }: P) {
   const db = await getDb();
   const officeId = user!.officeId ?? -1;
   const [docs, qs, prefs, myInterest, myPass, allDeals, mine] = await Promise.all([
-    db.select().from(documents).where(eq(documents.dealId, d.id)).orderBy(asc(documents.sort), asc(documents.id)),
+    db.select().from(documents).where(and(eq(documents.dealId, d.id), ne(documents.status, "proposed"))).orderBy(asc(documents.sort), asc(documents.id)),
     // private questions are visible only to the office that asked (and the desk)
     db.select().from(questions).where(and(eq(questions.dealId, d.id), eq(questions.hidden, false),
       access.admin ? undefined : or(eq(questions.private, false), eq(questions.officeId, officeId)))).orderBy(asc(questions.askedAt)),

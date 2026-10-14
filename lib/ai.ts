@@ -1,6 +1,6 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
-import { and, asc, eq, gte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gte, or, sql, ne } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { aiUsage, documents, interests, questions } from "@/db/schema";
 import { listDeals, signedDealIds, docAccess, type Deal } from "@/lib/deals";
@@ -102,7 +102,7 @@ async function runTool(c: Ctx, name: string, input: Record<string, unknown>): Pr
       text: JSON.stringify(qs.map((q) => ({ question: q.question, answer: q.answer || "(not answered yet)", answeredBy: q.answeredBy, private: q.private }))) };
   }
   if (name === "get_documents") {
-    const docs = await db.select().from(documents).where(eq(documents.dealId, deal.id)).orderBy(asc(documents.sort));
+    const docs = await db.select().from(documents).where(and(eq(documents.dealId, deal.id), ne(documents.status, "proposed"))).orderBy(asc(documents.sort));
     const req = c.user.officeId ? (await db.select({ id: interests.id }).from(interests).where(and(eq(interests.dealId, deal.id), eq(interests.officeId, c.user.officeId)))).length > 0 : false;
     const list = docs.map((x) => ({ x, a: docAccess(x as never, c.user.officeId, req, c.admin) })).filter(({ a }) => a !== "no");
     return { label: `Listing ${deal.company}'s documents`, text: JSON.stringify(list.map(({ x, a }) => ({ title: x.title, kind: (x as { kind?: string }).kind, available: a === "yes" ? "open now" : "opens after an allocation request" }))) };

@@ -16,7 +16,7 @@ import { saveSettings } from "@/lib/settings";
 import { requireAdmin, requireDesk, requirePerm, log, signOutEverywhere } from "@/lib/auth";
 import { can, isDesk, isSuper, ROLE_LABEL, type DeskRole } from "@/lib/perm";
 import { fromText } from "@/lib/pipes";
-import type { RoomContent } from "@/lib/types";
+import type { RoomContent, IpoProgress } from "@/lib/types";
 import ART from "@/lib/deal-art.json";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -188,6 +188,10 @@ export async function saveDeal(f: FormData) {
     return;
   }
   const artKey = s(f, "artKey");
+  const day = (k: string) => { const v = s(f, k, 10); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined; };
+  const rs = (k: string) => { const v = parseFloat(s(f, k, 20).replace(/[₹,\s]/g, "")); return isFinite(v) && v > 0 ? v : undefined; };
+  const ipo: IpoProgress = { closed: day("ipo_closed"), drhp: day("ipo_drhp"), sebi: day("ipo_sebi"), rhp: day("ipo_rhp"), priceBand: s(f, "ipo_priceBand", 60) || undefined,
+    listing: day("ipo_listing"), listPrice: rs("ipo_listPrice"), lastPrice: rs("ipo_lastPrice"), lastAt: day("ipo_lastAt"), note: s(f, "ipo_note", 300) || undefined };
   await db.update(deals).set({
     company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80), stage: s(f, "stage", 80), status: s(f, "status", 200),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
@@ -196,10 +200,19 @@ export async function saveDeal(f: FormData) {
     open: pub ? f.get("open") === "on" : cur.open, published: pub ? f.get("published") === "on" : cur.published, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
     publicRisks: fromText.list(s(f, "publicRisks", 6000)),
+    roundCr: (() => { const v = parseFloat(s(f, "roundCr", 20).replace(/,/g, "")); return isFinite(v) && v > 0 ? v : null; })(),
+    ipo, promoterDemand: f.get("promoterDemand") === "on",
     art: artKey && (ART as Record<string, string>)[artKey] ? (ART as Record<string, string>)[artKey] : cur.art,
     room, updatedAt: new Date(),
   }).where(eq(deals.id, id));
   await log(admin, `Desk updated the deal: ${s(f, "company", 200)}`, id);
+  // A new step on the road to listing: tell the offices that hold shares.
+  const STEP: [keyof IpoProgress, string][] = [["closed", "the round has closed"], ["drhp", "the draft offer document is filed"], ["sebi", "SEBI observations are in"], ["rhp", "the price band is out"], ["listing", "the listing date is set"]];
+  const fresh = STEP.filter(([k]) => ipo[k] && !(cur.ipo || {})[k]);
+  if (fresh.length) {
+    const holders = [...new Set((await db.select({ o: interests.officeId }).from(interests).where(and(eq(interests.dealId, id), eq(interests.status, "Allotted")))).map((r) => r.o))];
+    if (holders.length) await notifyOffices(holders, { title: `${s(f, "company", 200)}: ${fresh[fresh.length - 1][1]}`, body: ipo.note || null, link: "/dashboard#Portfolio" });
+  }
   // Newly published: tell approved offices, if the desk ticked the box.
   if (pub && !cur.published && f.get("published") === "on" && f.get("announce") === "on") {
     const ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id);
@@ -278,6 +291,7 @@ export async function answerQuestion(f: FormData) {
   await db.update(questions).set({
     question: s(f, "question", 1000) || q.question, answer: answer || null, answeredBy: answer ? (s(f, "by", 80) || "Desk") : null,
     answeredAt: answer ? (q.answeredAt ?? new Date()) : null, hidden: f.get("hidden") === "on",
+    ...(answer ? { draftAnswer: null, draftAt: null } : {}),
   }).where(eq(questions.id, id));
   await log(admin, `Desk ${answer ? "answered" : "updated"} a question`, q.dealId);
   if (answer && !q.answer && f.get("hidden") !== "on") {
@@ -322,13 +336,19 @@ export async function saveInterest(f: FormData) {
   const admin = await requireAdmin();
   const db = await getDb();
   const [prev] = await db.select().from(interests).where(eq(interests.id, n(f, "id")));
-  await db.update(interests).set({ status: s(f, "status", 40), note: s(f, "note", 1000) || null }).where(eq(interests.id, n(f, "id")));
-  if (prev && prev.status !== s(f, "status", 40)) {
+  if (!prev) return;
+  const status = s(f, "status", 40) || prev.status;
+  const num = (k: string) => { const v = parseFloat(s(f, k, 20).replace(/,/g, "")); return isFinite(v) && v > 0 ? v : null; };
+  const shares = f.has("shares") ? (num("shares") !== null ? Math.round(num("shares") as number) : null) : prev.shares;
+  const price = f.has("price") ? num("price") : prev.price;
+  await db.update(interests).set({ status, note: f.has("note") ? s(f, "note", 1000) || null : prev.note, shares, price,
+    allottedAt: status === "Allotted" ? (prev.allottedAt ?? new Date()) : prev.allottedAt }).where(eq(interests.id, prev.id));
+  if (prev.status !== status) {
     const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, prev.dealId));
-    await notifyOffices([prev.officeId], { title: `${d?.company}: your allocation request is ${s(f, "status", 40).toLowerCase()}`, body: s(f, "note", 1000) || null, link: "/dashboard" });
+    await notifyOffices([prev.officeId], { title: `${d?.company}: your allocation request is ${status.toLowerCase()}`, body: s(f, "note", 1000) || null, link: status === "Allotted" ? "/dashboard#Portfolio" : "/dashboard" });
   }
-  await log(admin, `Desk set allocation #${n(f, "id")} to ${s(f, "status", 40)}`);
-  back("/admin/activity", "Allocation updated.");
+  await log(admin, `Desk set allocation #${prev.id} to ${status}${shares ? ` · ${shares.toLocaleString("en-IN")} shares` : ""}${price ? ` at ₹${price}` : ""}`, prev.dealId);
+  back(s(f, "back") || "/admin/activity", "Allocation updated.");
 }
 
 export async function saveLead(f: FormData) {
@@ -470,4 +490,36 @@ export async function backfillOnboarding() {
   const n = await backfill();
   await log(admin, `Desk queued ${n} onboarding emails for existing offices`);
   back("/admin/emails", n ? `${n} upcoming emails queued for offices approved before the series existed. Past steps are not sent.` : "Nothing to queue: every approved office is already past the series or already queued.");
+}
+
+// ---------------------------------------------------------------- founder portal: promoter access to one deal
+export async function addPromoter(f: FormData) {
+  const admin = await requirePerm("deals.edit");
+  const dealId = n(f, "dealId"), email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), pw = s(f, "password", 200);
+  const path = `/admin/deals/${dealId}#promoters`;
+  if (!email || !name) back(path, "Name and email are needed.");
+  const db = await getDb();
+  const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, dealId));
+  if (!d) return;
+  const [u] = await db.select().from(users).where(eq(users.email, email));
+  if (u && (u.officeId || isDesk(u))) back(path, `${email} is already a family office or desk account. Use the promoter's own email.`);
+  if (u) await db.update(users).set({ role: "promoter", promoterDealId: dealId, disabled: false, ...(pw.length >= 8 ? { passwordHash: await bcrypt.hash(pw, 10) } : {}) }).where(eq(users.id, u.id));
+  else {
+    if (pw.length < 8) back(path, "Set a temporary password of at least 8 characters.");
+    await db.insert(users).values({ email, name, role: "promoter", promoterDealId: dealId, passwordHash: await bcrypt.hash(pw, 10) });
+  }
+  await log(admin, `Desk gave ${email} founder portal access for ${d.company}`, dealId);
+  back(path, `${name} can now sign in to the founder portal for ${d.company}. Share the temporary password with them privately.`);
+}
+
+export async function removePromoter(f: FormData) {
+  const admin = await requirePerm("deals.edit");
+  const id = n(f, "id");
+  const db = await getDb();
+  const [u] = await db.select().from(users).where(eq(users.id, id));
+  if (!u || u.role !== "promoter") return;
+  await db.update(users).set({ disabled: true }).where(eq(users.id, id));
+  await signOutEverywhere(id);
+  await log(admin, `Desk removed founder portal access for ${u.email}`, u.promoterDealId);
+  back(`/admin/deals/${u.promoterDealId}#promoters`, `${u.name} no longer has founder portal access.`);
 }

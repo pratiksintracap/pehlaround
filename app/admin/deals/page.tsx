@@ -27,7 +27,7 @@ export default async function AdminDeals({ searchParams }: { searchParams: Promi
         {deals.map((d) => { return (
           <tr key={d.id}><th scope="row">{d.company}</th><td>{d.title}</td><td>{d.category}</td><td>{d.listingLabel}</td><td>{d.score != null ? d.score.toFixed(1) : "—"}</td><td>{views.get(d.id) ?? 0}</td><td>{rooms.get(d.id) ?? 0}</td><td>{ndaN.get(d.id) ?? 0}</td><td>{asks.get(d.id) ?? 0}</td>
             <td>{d.published ? (d.open ? "Live · room open" : "Live · room closed") : "Hidden"}</td>
-            <td><div style={{ display: "flex", gap: 6 }}><a className="btn sm primary" href={`/admin/deals/${d.id}`}>Edit</a><a className="btn sm" href={`/room/${d.slug}`}>Room</a></div></td></tr>); })}
+            <td><div style={{ display: "flex", gap: 6 }}><a className="btn sm primary" href={`/admin/deals/${d.id}`}>Edit</a><a className="btn sm" href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a><a className="btn sm" href={`/room/${d.slug}`}>Room</a></div></td></tr>); })}
       </tbody></table></div>
       <div className="chart" style={{ marginTop: 22 }}><span className="k">Add a deal</span>
         <form action={createDeal} className="form"><div className="row">

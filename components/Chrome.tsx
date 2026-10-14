@@ -32,7 +32,7 @@ export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?
           {user ? (
             <>
               <a className="btn ghost sm hide-xs" href="/logout">Sign out</a>
-              <a className="btn primary sm hide-xs" href="/dashboard">{user.office?.name ? "My office" : "Dashboard"}</a>
+              <a className="btn primary sm hide-xs" href={user.role === "promoter" ? "/founder" : "/dashboard"}>{user.office?.name ? "My office" : user.role === "promoter" ? "My company" : "Dashboard"}</a>
             </>
           ) : (
             <>

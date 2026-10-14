@@ -4,7 +4,7 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
-import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users } from "@/db/schema";
+import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT } from "@/db/schema";
 import { CATEGORIES, STATUS, catLabel, ticketNo } from "@/lib/tickets";
 import { listDeals, canSeeNames } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
@@ -15,6 +15,7 @@ import { Analyst } from "@/components/Analyst";
 import { aiReady, starters } from "@/lib/ai";
 import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, completeness, fit } from "@/lib/profile";
 import { isDesk } from "@/lib/perm";
+import { holding, crore, fmtDay } from "@/lib/portfolio";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
 type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string }> };
@@ -36,6 +37,7 @@ const PR_ICONS = [
 export default async function Dashboard({ searchParams }: P) {
   const user = await requireUser("/dashboard");
   if (isDesk(user) && !user.officeId) redirect("/admin");
+  if (user.role === "promoter") redirect("/founder");
   const { msg, error, deal: tDeal, cat: tCat } = await searchParams;
   const office = user.office!;
   const db = await getDb();
@@ -63,6 +65,13 @@ export default async function Dashboard({ searchParams }: P) {
   const sessions = signed.size ? await db.select().from(calls).where(and(eq(calls.kind, "session"), inArray(calls.dealId, [...signed]))).orderBy(desc(calls.createdAt)) : [];
   const userName = new Map(team.map((u) => [u.id, u.name]));
   const allotted = myInterests.filter((i) => i.status === "Allotted");
+  // The road to listing straight from the database, so a step the desk just added shows at once.
+  const ipoNow = new Map(allotted.length ? (await db.select({ id: dealsT.id, ipo: dealsT.ipo }).from(dealsT).where(inArray(dealsT.id, allotted.map((x) => x.dealId)))).map((r) => [r.id, r.ipo]) : []);
+  const holdings = allotted.map((a) => { const b = byId.get(a.dealId); const d = b ? { ...b, ipo: ipoNow.get(a.dealId) ?? b.ipo } : b; return { a, d, h: holding(a, d?.ipo ?? {}) }; });
+  const pfCost = holdings.reduce((t, x) => t + x.h.costRs, 0);
+  const marked = holdings.filter((x) => x.h.value);
+  const pfMarked = marked.length, pfValue = marked.reduce((t, x) => t + x.h.value!.rs, 0), pfMarkedCost = marked.reduce((t, x) => t + x.h.costRs, 0);
+  const pfNext = holdings.map((x) => { const st = x.h.steps.find((z) => z.now); return st ? { step: st.label, company: x.d?.company ?? "" } : null; }).find(Boolean) ?? null;
   const indicated = myInterests.filter((i) => i.status !== "Withdrawn");
   const totalInd = indicated.reduce((s, i) => s + Number(i.amountCr), 0);
   // deals this office has passed on (its latest word on the deal, unless it asked for an allocation after passing)
@@ -237,13 +246,31 @@ export default async function Dashboard({ searchParams }: P) {
       </section>
 
       <section className="panel" data-panel="Portfolio" hidden>
-        {allotted.length ? <div className="two">{allotted.map((a) => { const d = byId.get(a.dealId); return (
-          <div className="chart" key={a.id}><span className="k">Holding</span><h3 style={{ margin: "4px 0" }}>{d?.company}</h3>
-            <div className="kv"><span>Allocation</span><b>₹{Number(a.amountCr)} Cr</b></div>
-            <div className="kv"><span>Structure</span><b>{d?.category}</b></div>
-            <div className="kv"><span>Target listing</span><b>{d?.listingLabel}{d?.listingNote ? `, ${d.listingNote}` : ""}</b></div>
-            <div className="kv"><span>Lock-in</span><b>Six months from listing</b></div></div>); })}</div>
-          : <div className="chart"><span className="k">Holdings</span><p>Nothing allotted yet. Once shares are credited to your demat, each holding appears here with its listing milestones, lock-in dates and the company&apos;s quarterly updates.</p></div>}
+        {holdings.length ? <>
+          <div className="pf-sum">
+            <div><span className="k">Invested</span><b>{crore(pfCost)}</b><small>{holdings.length} {holdings.length === 1 ? "holding" : "holdings"}</small></div>
+            <div><span className="k">Marked value</span><b>{pfMarked ? crore(pfValue) : "—"}</b><small>{pfMarked ? `${pfMarked} of ${holdings.length} priced · ${(pfValue / pfMarkedCost).toFixed(2)}x on those` : "Valued once a company lists"}</small></div>
+            <div><span className="k">Next step</span><b>{pfNext ? pfNext.step : "—"}</b><small>{pfNext ? pfNext.company : "All holdings listed"}</small></div>
+          </div>
+          <div className="pf-list">{holdings.map(({ a, d, h }) => (
+            <article className="chart pf-card" key={a.id}>
+              <div className="pf-head"><div><span className="k">{d?.category}</span><h3>{d?.company}</h3></div>
+                <a className="btn sm" href={`/room/${d?.slug}`}>Room and updates</a></div>
+              <div className="pf-kv">
+                <div><span>Invested</span><b>{crore(h.costRs)}</b><small>{h.shares ? `${h.shares.toLocaleString("en-IN")} shares at ₹${h.price}` : `₹${Number(a.amountCr)} Cr allotted`}{a.allottedAt ? ` · ${fmtDay(a.allottedAt)}` : ""}</small></div>
+                <div><span>{h.value ? "Value now" : h.band ? "At the top of the price band" : "Value"}</span>
+                  <b>{h.value ? crore(h.value.rs) : h.band ? crore(h.band.rs) : "Once it lists"}{h.value || h.band ? <em className={(h.value ?? h.band)!.multiple >= 1 ? "up" : "down"}> {(h.value ?? h.band)!.multiple.toFixed(2)}x</em> : null}</b>
+                  <small>{h.value ? `At ${h.value.basis}` : h.band ? `At ₹${h.band.upper} a share, before listing` : `Target listing ${d?.listingLabel}${d?.listingNote ? `, ${d.listingNote}` : ""}`}</small></div>
+                <div><span>Lock-in</span><b>{h.lockIn.ends ? fmtDay(h.lockIn.ends) : "Six months"}</b><small>{h.lockIn.text}</small></div>
+              </div>
+              <ol className="pf-road" aria-label="Road to listing">{h.steps.map((st) => (
+                <li key={st.label} className={st.done ? "done" : st.now ? "now" : ""}><i aria-hidden="true" /><b>{st.label}</b><small>{st.date ? fmtDay(st.date) : st.now ? "Next" : ""}</small></li>))}</ol>
+              {d?.ipo.priceBand && !h.listed && <p className="fine">Price band {d.ipo.priceBand}.</p>}
+              {d?.ipo.note && <p className="pf-note">{d.ipo.note}</p>}
+            </article>))}</div>
+          <p className="fine">Values are indicative, at the prices shown, before taxes and costs. Shares held before an IPO stay locked in for six months from the IPO allotment.</p>
+        </>
+          : <div className="chart"><span className="k">Holdings</span><p>Nothing allotted yet. Once shares are credited to your demat, each holding appears here with its road to listing, lock-in date and value.</p></div>}
       </section>
 
       <section className="panel" data-panel="Profile" hidden>

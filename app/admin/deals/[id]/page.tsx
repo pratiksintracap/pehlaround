@@ -1,9 +1,9 @@
 import { requireDesk } from "@/lib/auth";
 import { notFound } from "next/navigation";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { calls, deals, documents, ndas, offices, questions } from "@/db/schema";
-import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish } from "@/lib/admin-actions";
+import { calls, deals, documents, ndas, offices, questions, users } from "@/db/schema";
+import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish, addPromoter, removePromoter } from "@/lib/admin-actions";
 import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { Msg } from "@/components/AdminBits";
@@ -24,6 +24,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   const [d] = await db.select().from(deals).where(eq(deals.id, id));
   if (!d) notFound();
   const signedOffices = await db.select({ id: offices.id, name: offices.name }).from(ndas).innerJoin(offices, eq(offices.id, ndas.officeId)).where(eq(ndas.dealId, id));
+  const promoters = await db.select().from(users).where(and(eq(users.role, "promoter"), eq(users.promoterDealId, id), eq(users.disabled, false)));
   const [docs, qs, cs] = await Promise.all([
     db.select().from(documents).where(eq(documents.dealId, id)).orderBy(asc(documents.sort), asc(documents.id)),
     db.select().from(questions).where(eq(questions.dealId, id)).orderBy(desc(questions.askedAt)),
@@ -35,7 +36,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   return (
     <>
       <Msg msg={msg} />
-      <p className="crumb"><a href="/admin/deals">← All deals</a> · <a href={`/deals/${d.slug}`}>Public overview</a> · <a href={`/room/${d.slug}`}>Room</a></p>
+      <p className="crumb"><a href="/admin/deals">← All deals</a> · <a href={`/deals/${d.slug}`}>Public overview</a> · <a href={`/room/${d.slug}`}>Room</a> · <a href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a> · <a href="#promoters">Promoter access</a></p>
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>{d.company}</h1>
       <p className="fine" style={{ marginBottom: 16 }}>Lists take one item per line, with fields separated by a vertical bar ( | ). Statuses are done, in progress or pending. Never put the floor valuation, fees or confidential process detail anywhere here.</p>
 
@@ -51,6 +52,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><IN name="listingLabel" label="Target listing (label)" value={d.listingLabel} ph="Sept 2028" /><IN name="listingMonth" label="Target listing month" value={d.listingMonth} ph="2028-09" hint="YYYY-MM; leave empty if not set" /></div>
         <div className="row"><IN name="listingNote" label="Listing note" value={d.listingNote} ph="main board" /><IN name="sort" label="Order on the shelf" value={d.sort} /></div>
         <div className="row"><IN name="roundLabel" label="Round (registered offices)" value={d.roundLabel} /><IN name="preMoney" label="Pre-money" value={d.preMoney} /></div>
+        <div className="row"><IN name="roundCr" label="Round size, ₹ crore (allocation book)" value={d.roundCr ?? ""} ph="50" hint="Used for coverage in the Pipeline; read from the round label when empty" /><span /></div>
         <div className="row"><IN name="peLabel" label="P/E trailing · forward" value={d.peLabel} /><IN name="minTicket" label="Minimum ticket" value={d.minTicket} /></div>
         <div className="row"><label>Card illustration<select name="artKey" defaultValue={artKey}>{Object.keys(ART).map((k) => <option key={k} value={k}>{k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
@@ -85,6 +87,14 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
           <TA name="interest" label="Allocation slider" value={JSON.stringify(r.interest, null, 1)} rows={5} />
           <TA name="scenario" label="Scenario calculator (optional)" value={r.scenario ? JSON.stringify(r.scenario, null, 1) : ""} rows={5} />
         </details>
+
+        <h2 id="ipo">Road to listing (offices that hold shares see this)</h2>
+        <p className="fine">Fill each date as it happens; holders are told when a step is added. Dates as YYYY-MM-DD.</p>
+        <div className="row3"><IN name="ipo_closed" label="Round closed, shares allotted" value={d.ipo.closed} ph="2026-11-20" /><IN name="ipo_drhp" label="Draft offer document filed" value={d.ipo.drhp} /><IN name="ipo_sebi" label="SEBI observations / exchange approval" value={d.ipo.sebi} /></div>
+        <div className="row3"><IN name="ipo_rhp" label="Price band announced" value={d.ipo.rhp} /><IN name="ipo_priceBand" label="Price band" value={d.ipo.priceBand} ph="₹420–440" /><IN name="ipo_listing" label="Listing date" value={d.ipo.listing} /></div>
+        <div className="row3"><IN name="ipo_listPrice" label="Listing-day close, ₹ per share" value={d.ipo.listPrice ?? ""} /><IN name="ipo_lastPrice" label="Latest price, ₹ per share" value={d.ipo.lastPrice ?? ""} /><IN name="ipo_lastAt" label="Latest price as of" value={d.ipo.lastAt} /></div>
+        <IN name="ipo_note" label="One line for holders (optional)" value={d.ipo.note} ph="SEBI observations received; RHP expected in March" />
+        <label className="chk"><input type="checkbox" name="promoterDemand" defaultChecked={d.promoterDemand} /> Show the promoter the total amount indicated (founder portal). Off: they see activity counts only.</label>
         <div className="adm-save"><button className="btn primary" type="submit">Save deal</button></div>
       </form>
       {!pub && (
@@ -94,15 +104,28 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
           <div><button className="btn sm primary" type="submit">Send the request</button></div>
         </form>)}
 
+      <h2 id="promoters">Promoter access (founder portal)</h2>
+      <p className="fine">The company&apos;s promoters sign in to see how the round is going: overview views, NDAs, room activity and questions, never which offices. They draft answers and suggest documents; nothing reaches offices until the desk posts it.{d.promoterDemand ? " They also see the total amount indicated." : " They do not see amounts (tick the box under Road to listing to show the total)."}</p>
+      <ul className="feed">{promoters.length ? promoters.map((p) => (
+        <li key={p.id}><b>{p.name}</b> · {p.email} · last sign-in {p.lastLoginAt ? p.lastLoginAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }) : "never"}
+          <form action={removePromoter} style={{ display: "inline" }}><input type="hidden" name="id" value={p.id} /> <button className="btn sm ghost" type="submit">Remove access</button></form></li>))
+        : <li className="empty-li">No promoter has access yet.</li>}</ul>
+      <form action={addPromoter} className="form adm-card" id="add-promoter"><input type="hidden" name="dealId" value={d.id} />
+        <div className="row3"><label>Name<input name="name" required maxLength={120} /></label><label>Email<input name="email" type="email" required maxLength={200} /></label>
+          <label>Temporary password<input name="password" minLength={8} maxLength={200} autoComplete="off" placeholder="8 characters or more" /></label></div>
+        <div><button className="btn sm primary" type="submit">Give founder portal access</button> <a className="btn sm ghost" href={`/founder?deal=${d.slug}`}>See what they see</a></div>
+      </form>
+
       <h2 id="docs">Documents</h2>
       <p className="fine">Paste a link to the file (for example a Google Drive file shared with “anyone with the link”, or any secure URL). Offices only reach it through the room, and every view is logged. Status “on request” shows the file exists but is shared only with offices that indicate interest.
         Choose who sees each file: every office that signed this NDA, only offices that requested an allocation (for a draft term sheet, say: others see it listed as opening after their request), or only the offices you pick (hold Ctrl or Cmd to pick several).</p>
       {[...docs, null].map((doc, i) => (
         <form key={doc?.id ?? "new"} action={saveDocument} className="form adm-row">
           <input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="id" value={doc?.id ?? 0} />
+          {doc?.status === "proposed" && <span className="pill mid" title={`Suggested by ${doc.proposedBy ?? "the promoter"} from the founder portal`}>From the promoter</span>}
           <input name="title" defaultValue={doc?.title} placeholder={doc ? "" : "New document title"} required={!doc} />
           <input name="kind" defaultValue={doc?.kind ?? ""} placeholder="PDF · 48 pp" style={{ maxWidth: 130 }} />
-          <select name="status" defaultValue={doc?.status ?? "available"}><option value="available">Available</option><option value="on_request">On request</option><option value="requested">Requested from company</option></select>
+          <select name="status" defaultValue={doc?.status ?? "available"}><option value="available">Available</option><option value="on_request">On request</option><option value="requested">Requested from company</option>{doc?.status === "proposed" && <option value="proposed">Proposed by the promoter (hidden)</option>}</select>
           <input name="url" defaultValue={doc?.url ?? ""} placeholder="https://… link to the file" />
           <select name="audience" defaultValue={doc?.audience ?? "nda"} title="Who sees it">
             <option value="nda">All offices with the NDA</option><option value="allocation">Only offices that requested an allocation</option><option value="offices">Only the offices selected</option></select>
@@ -119,7 +142,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <form key={q.id} action={answerQuestion} className="form adm-card">
           <input type="hidden" name="id" value={q.id} /><input type="hidden" name="back" value={`/admin/deals/${d.id}#qa`} />
           <label>Question{q.officeId ? (q.private ? " (private to the office that asked)" : " (from an office)") : ""}<input name="question" defaultValue={q.question} /></label>
-          <div className="row"><label>Answer<textarea name="answer" rows={2} defaultValue={q.answer ?? ""} /></label><label>Answered by<input name="by" defaultValue={q.answeredBy ?? "Promoter"} /></label></div>
+          <div className="row"><label>Answer<textarea name="answer" rows={2} defaultValue={q.answer ?? q.draftAnswer ?? ""} />{!q.answer && q.draftAnswer && <span className="hint">Drafted by the promoter; save to post it.</span>}</label><label>Answered by<input name="by" defaultValue={q.answeredBy ?? "Promoter"} /></label></div>
           <label className="chk"><input type="checkbox" name="hidden" defaultChecked={q.hidden} /> Hide from the room</label>
           <div><button className="btn sm" type="submit">Save</button></div>
         </form>

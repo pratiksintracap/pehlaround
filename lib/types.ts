@@ -25,3 +25,17 @@ export type RoomContent = {
   alerts: string[];
   passReasons: string[];
 };
+
+/** The road to listing for a deal, kept by the desk and shown to offices that hold shares. Dates as YYYY-MM-DD. */
+export type IpoProgress = {
+  closed?: string;      // pre-IPO round closed / shares allotted
+  drhp?: string;        // draft offer document filed (SEBI for main board, the exchange for SME)
+  sebi?: string;        // SEBI observations (or exchange in-principle approval)
+  rhp?: string;         // red herring prospectus / price band announced
+  priceBand?: string;   // "₹420–440"
+  listing?: string;     // listing date
+  listPrice?: number;   // ₹ per share, listing-day close
+  lastPrice?: number;   // ₹ per share, latest
+  lastAt?: string;      // date of the latest price
+  note?: string;        // one line from the desk
+};

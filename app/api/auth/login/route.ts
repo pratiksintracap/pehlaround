@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const password = typeof data.password === "string" ? data.password : "";
   const db = await getDb();
   const [u] = await db.select().from(users).where(eq(users.email, email));
-  const fallback = isDesk(u) ? "/admin" : "/dashboard";
+  const fallback = isDesk(u) ? "/admin" : u?.role === "promoter" ? "/founder" : "/dashboard";
   const next = safeNext(data.next, fallback);
   const back = "/login" + (data.next ? `?next=${encodeURIComponent(next)}` : "");
   if (!(await allowIp("login", 30, 900)) || !(await allow(`login:email:${email}`, 10, 900))) return fail(req, json, TOO_MANY, back, 429);
