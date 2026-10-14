@@ -6,6 +6,19 @@ export const emailReady = () => !!process.env.RESEND_API_KEY;
 export const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 export const abs = (link: string) => (link.startsWith("http") ? link : SITE_URL + link);
 
+/** Turns URLs, bare domains and email addresses in already-escaped text into proper links, so mail clients
+ *  show the readable text instead of rewriting it into a tracking URL. */
+export function linkify(escapedText: string) {
+  const RE = /(https?:\/\/[^\s<>"]+[^\s<>".,;:!?)])|(\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b)|(\b(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:in|com|io|co|net|org|club)(?:\/[^\s<>"]*[^\s<>".,;:!?)])?\b)/gi;
+  const A = 'style="color:#1f4fff"';
+  return escapedText.replace(RE, (m, url, mail, dom) => {
+    if (url) return `<a href="${url}" ${A}>${url.replace(/^https?:\/\//, "")}</a>`;
+    if (mail) return `<a href="mailto:${mail}" ${A}>${mail}</a>`;
+    if (dom) return `<a href="https://${dom}" ${A}>${dom}</a>`;
+    return m;
+  });
+}
+
 const secret = () => process.env.SESSION_SECRET || process.env.DATABASE_URL || "pehla-round-local-dev";
 export const unsubToken = (userId: number) => `${userId}.${createHmac("sha256", secret()).update("unsub|" + userId).digest("base64url").slice(0, 22)}`;
 export function unsubUser(token: string) {

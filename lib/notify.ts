@@ -3,7 +3,7 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { dealPrefs, ndas, notifications, offices, users } from "@/db/schema";
 import { getSettings } from "@/lib/settings";
-import { emailReady, sendRaw, layout, E, esc } from "@/lib/email";
+import { emailReady, sendRaw, layout, E, esc, linkify } from "@/lib/email";
 import { isDesk } from "@/lib/perm";
 
 type Msg = { title: string; body?: string | null; link?: string | null; broadcastId?: number };
@@ -12,7 +12,7 @@ export { emailReady } from "@/lib/email";
 
 export async function sendEmail(to: string[], m: Msg) {
   const link = m.link || "/dashboard";
-  const body = E.h(m.title) + (m.body ? E.p(esc(m.body).replace(/\n/g, "<br>")) : "") + E.btn("Open Before the Bell", link);
+  const body = E.h(m.title) + (m.body ? E.p(linkify(esc(m.body)).replace(/\n/g, "<br>")) : "") + E.btn("Open Before the Bell", link);
   return sendRaw(to, m.title, layout(body, { preheader: m.body?.slice(0, 120) || "" }));
 }
 
