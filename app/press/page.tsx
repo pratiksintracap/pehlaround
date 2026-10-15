@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { COVERAGE, PRESS_CONTACT, BOILERPLATE, FACTS } from "@/lib/press";
+import { notFound } from "next/navigation";
+import { COVERAGE, PRESS_CONTACT, BOILERPLATE, FACTS, PRESS_PUBLIC } from "@/lib/press";
 import { SITE_URL } from "@/lib/site";
 
 const D = "Press kit for Before the Bell: what the desk is, facts, boilerplate, logos and who to call.";
@@ -7,6 +8,8 @@ export const metadata: Metadata = { title: "Press", description: D, openGraph: {
 const fmt = (d: string) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
 
 export default function Press() {
+  if (!PRESS_PUBLIC) notFound();
+  if (!PRESS_PUBLIC) notFound();
   return (
     <main>
       <div className="wrap phead"><span className="eyebrow">Press</span>

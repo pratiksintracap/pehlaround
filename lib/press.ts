@@ -1,3 +1,6 @@
+/** Set to true to show /press, its footer link and sitemap entry again. While false the page returns 404. */
+export const PRESS_PUBLIC = false;
+
 /** Press coverage of Before the Bell. Add an entry when a piece runs; the home-page strip and /press show
  *  nothing until there is at least one. Never list a piece that has not been published. */
 export type Coverage = { outlet: string; title: string; url: string; date: string; kind?: "article" | "mention" | "podcast" | "tv" };
