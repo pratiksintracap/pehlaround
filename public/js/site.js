@@ -647,3 +647,30 @@
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
 })();
+
+/* v50: horizontal tab strips (dashboard sections on phones): show that more tabs sit off-screen.
+   Fades the cut-off edge, adds a chevron, nudges the strip once, and keeps the selected tab in view. */
+(function () {
+  function setup(nav) {
+    if (nav.dataset.scrollHint) return; nav.dataset.scrollHint = "1";
+    var wrap = document.createElement("div"); wrap.className = "tabscroll";
+    nav.parentNode.insertBefore(wrap, nav); wrap.appendChild(nav);
+    var btn = document.createElement("button"); btn.type = "button"; btn.className = "tabscroll-more"; btn.setAttribute("aria-label", "More sections");
+    btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>'; wrap.appendChild(btn);
+    btn.addEventListener("click", function () { nav.scrollBy({ left: nav.clientWidth * 0.7, behavior: "smooth" }); });
+    function update() {
+      var over = nav.scrollWidth > nav.clientWidth + 4;
+      wrap.classList.toggle("over", over);
+      wrap.classList.toggle("at-start", nav.scrollLeft < 4);
+      wrap.classList.toggle("at-end", nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 4);
+    }
+    nav.addEventListener("scroll", update, { passive: true }); window.addEventListener("resize", update); update();
+    nav.addEventListener("click", function (e) { var b = e.target.closest(".tabbtn"); if (b && wrap.classList.contains("over")) b.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }); });
+    try { if (wrap.classList.contains("over") && !sessionStorage.getItem("btb-nudge")) {
+      sessionStorage.setItem("btb-nudge", "1");
+      setTimeout(function () { nav.scrollTo({ left: 70, behavior: "smooth" }); setTimeout(function () { nav.scrollTo({ left: 0, behavior: "smooth" }); }, 650); }, 700);
+    } } catch (e) {}
+  }
+  function init() { document.querySelectorAll(".side-nav, .tabs[role=tablist]").forEach(setup); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();

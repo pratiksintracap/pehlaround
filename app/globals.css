@@ -1078,16 +1078,16 @@ body.disc-bar-on .an-fab{bottom:96px}
 .reg-form .only-ind legend{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:0 6px}
 .pill.bad{color:var(--bad);background:#c0392b1f}
 /* v49: the three-layer journey (register · see the company · NDA and data bank) */
-.journey{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media (max-width:760px){.journey{grid-template-columns:1fr}}
-.journey li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--bg2)}
-.journey li.now{border-color:var(--live);box-shadow:0 0 0 3px var(--live-soft)}
-.journey li.done{opacity:.75}
-.journey .jn{font:600 12px var(--mono);width:26px;height:26px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--line2);color:var(--ink3)}
-.journey li.now .jn{background:var(--live);border-color:var(--live);color:#fff}
-.journey li.done .jn{background:var(--ink3);border-color:var(--ink3);color:#fff}
-.journey b{display:block;font-size:15px;margin:3px 0 4px}
-.journey p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--ink2)}
+.steps3{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.steps3{grid-template-columns:1fr}}
+.steps3 li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--bg2)}
+.steps3 li.now{border-color:var(--live);box-shadow:0 0 0 3px var(--live-soft)}
+.steps3 li.done{opacity:.75}
+.steps3 .jn{font:600 12px var(--mono);width:26px;height:26px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--line2);color:var(--ink3)}
+.steps3 li.now .jn{background:var(--live);border-color:var(--live);color:#fff}
+.steps3 li.done .jn{background:var(--ink3);border-color:var(--ink3);color:#fff}
+.steps3 b{display:block;font-size:15px;margin:3px 0 4px}
+.steps3 p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--ink2)}
 .deck-list{max-width:760px;margin-bottom:6px}
 .databank{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;border:1px solid var(--line2);border-radius:12px;padding:16px 18px;margin:0 0 18px;background:var(--bg)}
 @media (max-width:640px){.databank{grid-template-columns:1fr}}
@@ -1122,3 +1122,17 @@ body.disc-bar-on .an-fab{bottom:96px}
 .an-fab:hover span,.an-fab:focus-visible span{max-width:160px;opacity:1;margin-left:8px}
 body:has(.an-fab) main{padding-bottom:84px}
 @media (hover:none){.an-fab:hover span{max-width:0;opacity:0;margin-left:0}}
+/* v50: scroll affordance for horizontal tab strips */
+.tabscroll{position:relative;min-width:0}
+.tabscroll.over>nav,.tabscroll.over>.tabs{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18px,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 18px,#000 calc(100% - 56px),transparent)}
+.tabscroll.over.at-start>nav,.tabscroll.over.at-start>.tabs{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent)}
+.tabscroll.over.at-end>nav,.tabscroll.over.at-end>.tabs{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18px);mask-image:linear-gradient(90deg,transparent 0,#000 18px)}
+.tabscroll-more{display:none}
+.tabscroll.over:not(.at-end) .tabscroll-more{display:grid;place-items:center;position:absolute;right:0;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:99px;border:1px solid var(--line2);background:var(--bg2);color:var(--ink);cursor:pointer;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.tabscroll-more svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabscroll>.tabs{scrollbar-width:none}.tabscroll>.tabs::-webkit-scrollbar{display:none}
+.tabscroll:has(>.tabs) .tabscroll-more{top:calc(50% + 13px)}
+/* v50: the three-step strip never wider than the screen on phones */
+.steps3 li{min-width:0}
+.steps3 p{overflow-wrap:anywhere}
+@media (max-width:760px){.steps3{grid-template-columns:minmax(0,1fr)}}
