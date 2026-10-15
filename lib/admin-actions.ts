@@ -169,7 +169,7 @@ export async function saveDeal(f: FormData) {
   try {
     room = {
       ...cur.room,
-      lede: s(f, "lede"), why: s(f, "why"), round: s(f, "round"), ticket: s(f, "ticket"), committed: s(f, "committed") || undefined,
+      lede: s(f, "lede"), why: s(f, "why"), founders: fromText.founders(s(f, "founders", 4000)), round: s(f, "round"), ticket: s(f, "ticket"), committed: s(f, "committed") || undefined,
       snapshot: fromText.cells(s(f, "snapshot", 8000)),
       risks: fromText.risks(s(f, "risks", 12000)),
       feed: fromText.feed(s(f, "feed", 8000)),

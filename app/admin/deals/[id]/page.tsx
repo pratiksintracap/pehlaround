@@ -84,6 +84,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <h2>In the room</h2>
         <TA name="lede" label="Lede under the company name" value={r.lede} rows={2} />
         <TA name="why" label="Why it is on the desk" value={r.why} rows={2} />
+        <TA name="founders" label="Founders and management: name | role | LinkedIn URL" value={toText.founders(r.founders)} rows={3} hint="One person per line, e.g. Anil Mehta | Founder and MD | https://www.linkedin.com/in/anilmehta. Shown with the company name to approved investors, on the overview and in the room. The link is optional." />
         <div className="row"><IN name="round" label="Round line" value={r.round} /><IN name="ticket" label="Family office ticket" value={r.ticket} /></div>
         <IN name="committed" label="Committed so far (optional)" value={r.committed} />
         <TA name="snapshot" label="Snapshot: label | value | note" value={toText.cells(r.snapshot)} rows={6} />

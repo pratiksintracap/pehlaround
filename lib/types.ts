@@ -4,6 +4,7 @@ export type Status = "done" | "in-progress" | "pending";
 export type RoomContent = {
   lede: string;                       // one line under the company name
   why: string;                        // "Why it is on the desk"
+  founders?: { name: string; role: string; url?: string }[]; // promoters and key management, with LinkedIn; shown to approved investors
   round: string;                      // "₹50 Cr · Secondary, pre-IPO"
   ticket: string;                     // "₹1 Cr"
   committed?: string;                 // "₹12 Cr of ₹35 Cr committed"

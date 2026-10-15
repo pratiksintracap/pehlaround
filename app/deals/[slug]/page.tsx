@@ -4,6 +4,7 @@ import { getUser } from "@/lib/auth";
 import { getDeal, listDeals, signedDealIds, canSeeNames } from "@/lib/deals";
 import { ScoreBadge } from "@/components/Score";
 import { Journey } from "@/components/Journey";
+import { Founders } from "@/components/Founders";
 import { getDb } from "@/lib/db";
 import { and, asc, eq } from "drizzle-orm";
 import { dealViews, documents } from "@/db/schema";
@@ -107,6 +108,7 @@ export default async function Overview({ params }: P) {
           <h2 style={{ fontSize: 26 }}>{registered ? (signed ? "What the company shared, before the NDA" : "Read the company's own material first") : "How this company opens up"}</h2>
           {registered && <p>{decks.length ? "The company's pitch deck, information memorandum or teaser, as the company presents itself. The desk's own findings, the financials and the data bank open under this company's NDA." : "The company's pitch deck or information memorandum will appear here once the desk has it. The desk's own findings, the financials and the data bank open under this company's NDA."}</p>}
         </div></div>
+        {registered && !!d.room.founders?.length && (<div className="rv inview fd-wrap"><span className="eyebrow">Founders and management</span><Founders list={d.room.founders} /></div>)}
         {registered && decks.length > 0 && (
           <ul className="docs rv inview deck-list">{decks.map((doc) => {
             const live = doc.status === "available" && !!doc.url;

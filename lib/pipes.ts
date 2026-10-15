@@ -15,6 +15,7 @@ export const toText = {
   checks: (a: RoomContent["checks"]) => a.map((c) => join([c.status, c.title, c.note, c.date])).join("\n"),
   pe: (a: NonNullable<RoomContent["pe"]>) => a.map((p) => join([p.label, p.sub, p.value])).join("\n"),
   list: (a: string[]) => a.join("\n"),
+  founders: (a?: RoomContent["founders"]) => (a || []).map((f) => join([f.name, f.role, f.url])).join("\n"),
   fin: (f?: RoomContent["fin"]) => f ? [join(["Year", ...f.cols]), ...f.rows.map((r) => join([r.label, ...r.vals]))].join("\n") : "",
 };
 
@@ -27,6 +28,9 @@ export const fromText = {
   checks: (t: string) => lines(t).map((l) => { const [s, title, note, date] = split(l); return { status: st(s), title: title ?? "", ...(note ? { note } : {}), ...(date ? { date } : {}) }; }),
   pe: (t: string) => lines(t).map((l) => { const [label, sub, v] = split(l); return { label, sub: sub ?? "", value: parseFloat(v) || 0 }; }).filter((p) => p.value > 0),
   list: (t: string) => lines(t),
+  /** "Name | Role | https://linkedin.com/in/..." — the link is kept only if it is a LinkedIn https URL. */
+  founders: (t: string) => lines(t).map((l) => { const [name, role, url] = split(l); const u = (url || "").trim();
+    return { name, role: role ?? "", ...(/^https:\/\/([a-z]{2,3}\.)?(www\.)?linkedin\.com\//i.test(u) ? { url: u } : {}) }; }).filter((f) => f.name),
   fin: (t: string, unit: string, note: string): RoomContent["fin"] => {
     const ls = lines(t); if (ls.length < 2) return undefined;
     const [, ...cols] = split(ls[0]);

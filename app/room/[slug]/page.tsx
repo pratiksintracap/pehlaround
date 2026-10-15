@@ -13,6 +13,7 @@ import { Analyst } from "@/components/Analyst";
 import { aiReady, starters } from "@/lib/ai";
 import { getSettings } from "@/lib/settings";
 import { isDesk } from "@/lib/perm";
+import { Founders } from "@/components/Founders";
 
 type P = { params: Promise<{ slug: string }> };
 export const metadata: Metadata = { title: "Deal room", robots: { index: false } };
@@ -117,6 +118,7 @@ export default async function Room({ params }: P) {
           </div>
 
           <section className="panel" data-panel="Overview">
+            {!!r.founders?.length && <div className="fd-wrap"><span className="eyebrow">Founders and management</span><Founders list={r.founders} /></div>}
             <div className="snap">{r.snapshot.map((s, i) => <div key={i} className="snapcell"><span className="k">{s.k}</span><b>{s.v}</b>{s.s && <small>{s.s}</small>}</div>)}</div>
             <div className="charts">
               {r.highlight ? (
