@@ -96,6 +96,7 @@ export const deals = pgTable("deals", {
   roundCr: doublePrecision("round_cr"),                       // round size in ₹ crore, for the allocation book
   ipo: jsonb("ipo").$type<IpoProgress>().notNull().default({}), // the road to listing, shown to holders
   promoterDemand: boolean("promoter_demand").notNull().default(false), // the founder portal shows the total indicated
+  dataRoomUrl: text("data_room_url"),           // the data bank (a Google Drive folder); reached only from the NDA room, every open logged
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("deals_slug_uq").on(t.slug)]);
 
@@ -134,8 +135,9 @@ export const documents = pgTable("documents", {
   kind: text("kind"),                           // PDF · 48 pp
   status: text("status").notNull().default("available"), // available | requested | on_request
   url: text("url"),                             // link to the file (Drive, Blob ...)
-  // who sees it: nda = every office that signed this company's NDA; allocation = only offices that requested an
-  // allocation in this deal; offices = only the offices listed in officeIds
+  // who sees it: approved = every approved investor, before any NDA (pitch deck, IM, teaser: shown on the deal's overview);
+  // nda = every office that signed this company's NDA; allocation = only offices that requested an allocation in this deal;
+  // offices = only the offices listed in officeIds
   audience: text("audience").notNull().default("nda"),
   officeIds: jsonb("office_ids").$type<number[]>().notNull().default([]),
   sort: integer("sort").notNull().default(100),

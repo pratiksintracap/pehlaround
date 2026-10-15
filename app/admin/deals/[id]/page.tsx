@@ -9,6 +9,7 @@ import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { Msg } from "@/components/AdminBits";
 import ART from "@/lib/deal-art.json";
+import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
 
 const TA = ({ name, label, value, rows = 5, hint }: { name: string; label: string; value: string; rows?: number; hint?: string }) => (
   <label>{label}<textarea name={name} rows={rows} defaultValue={value} />{hint && <span className="hint">{hint}</span>}</label>
@@ -38,12 +39,20 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   ]);
   const r = d.room;
   const pub = can(me, "deals.publish"), del = can(me, "delete");
+  const interest = await dealInterest(d.id);
+  const fmt = (x: Date | null) => x ? x.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }) : "";
   const artKey = Object.entries(ART as Record<string, string>).find(([, v]) => v === d.art)?.[0] || "";
   return (
     <>
       <Msg msg={msg} />
       <p className="crumb"><a href="/admin/deals">← All deals</a> · <a href={`/deals/${d.slug}`}>Public overview</a> · <a href={`/room/${d.slug}`}>Room</a> · <a href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a> · <a href="#promoters">Promoter access</a></p>
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>{d.company}</h1>
+      <h2 id="interest" style={{ marginTop: 14 }}>Who is how interested</h2>
+      <p className="fine">The three layers, read back: who looked, who opened the pitch deck, who signed the NDA, who went into the data bank and who asked for an allocation. An office counts in every layer it has passed.{interest.anon ? ` The overview was also opened ${interest.anon} ${interest.anon === 1 ? "time" : "times"} by visitors not signed in.` : ""}</p>
+      <div className="funnel-row">{(["viewed", "deck", "nda", "databank", "asked"] as Stage[]).map((k) => <div key={k}><b>{interest.counts[k]}</b><span>{STAGE_LABEL[k]}</span></div>)}</div>
+      {interest.rows.length > 0 && <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Office</th><th>Furthest</th><th>Looked</th><th>Deck</th><th>Data bank</th><th>Last</th></tr></thead><tbody>
+        {interest.rows.map((x) => <tr key={x.officeId}><td><b>{x.name}</b></td><td><span className={`pill ${x.stage === "asked" || x.stage === "databank" ? "ok" : x.stage === "nda" ? "mid" : ""}`}>{STAGE_LABEL[x.stage]}</span></td><td>{x.views || "—"}</td><td>{x.decks ? `${x.decks}×` : "—"}</td><td>{x.banks ? `${x.banks}×` : "—"}</td><td className="mono">{fmt(x.last)}</td></tr>)}
+      </tbody></table></div>}
       <p className="fine" style={{ marginBottom: 16 }}>Lists take one item per line, with fields separated by a vertical bar ( | ). Statuses are done, in progress or pending. Never put the floor valuation, fees or confidential process detail anywhere here.</p>
 
       <form action={saveDeal} className="form adm-form">
@@ -60,6 +69,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><IN name="roundLabel" label="Round (registered offices)" value={d.roundLabel} /><IN name="preMoney" label="Pre-money" value={d.preMoney} /></div>
         <div className="row"><IN name="roundCr" label="Round size, ₹ crore (allocation book)" value={d.roundCr ?? ""} ph="50" hint="Used for coverage in the Pipeline; read from the round label when empty" /><span /></div>
         <div className="row"><IN name="peLabel" label="P/E trailing · forward" value={d.peLabel} /><IN name="minTicket" label="Minimum ticket" value={d.minTicket} /></div>
+        <IN name="dataRoomUrl" label="Data bank: Google Drive folder link (layer 3, opens only from the NDA room)" value={d.dataRoomUrl} ph="https://drive.google.com/drive/folders/…" hint="Share the folder as 'Anyone with the link · Viewer' with downloading, printing and copying switched off (Drive: Share → Settings). Offices reach it only through the room, and every open is logged by name and office. Leave empty to show 'coming'." />
         <div className="row"><label>Card illustration<select name="artKey" defaultValue={artKey}>{Object.keys(ART).map((k) => <option key={k} value={k}>{k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
         {pub ? <>
@@ -142,8 +152,8 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
       </form>
 
       <h2 id="docs">Documents</h2>
-      <p className="fine">Paste a link to the file (for example a Google Drive file shared with “anyone with the link”, or any secure URL). Offices only reach it through the room, and every view is logged. Status “on request” shows the file exists but is shared only with offices that indicate interest.
-        Choose who sees each file: every office that signed this NDA, only offices that requested an allocation (for a draft term sheet, say: others see it listed as opening after their request), or only the offices you pick (hold Ctrl or Cmd to pick several).</p>
+      <p className="fine">Paste a link to the file (for example a Google Drive file shared with “anyone with the link”, or any secure URL). Investors only reach it through the site, and every open is logged. Status “on request” shows the file exists but is shared only with offices that indicate interest.
+        Choose who sees each file: <b>every approved investor, before the NDA</b> (the pitch deck, IM or teaser: shown on the deal&apos;s public overview to approved investors, layer 2), every office that signed this NDA (layer 3), only offices that requested an allocation (for a draft term sheet, say: others see it listed as opening after their request), or only the offices you pick (hold Ctrl or Cmd to pick several).</p>
       {[...docs, null].map((doc, i) => (
         <form key={doc?.id ?? "new"} action={saveDocument} className="form adm-row">
           <input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="id" value={doc?.id ?? 0} />
@@ -153,7 +163,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
           <select name="status" defaultValue={doc?.status ?? "available"}><option value="available">Available</option><option value="on_request">On request</option><option value="requested">Requested from company</option>{doc?.status === "proposed" && <option value="proposed">Proposed by the promoter (hidden)</option>}</select>
           <input name="url" defaultValue={doc?.url ?? ""} placeholder="https://… link to the file" />
           <select name="audience" defaultValue={doc?.audience ?? "nda"} title="Who sees it">
-            <option value="nda">All offices with the NDA</option><option value="allocation">Only offices that requested an allocation</option><option value="offices">Only the offices selected</option></select>
+            <option value="approved">Every approved investor, before the NDA (pitch deck, IM)</option><option value="nda">All offices with the NDA</option><option value="allocation">Only offices that requested an allocation</option><option value="offices">Only the offices selected</option></select>
           <select name="officeIds" multiple defaultValue={(doc?.officeIds ?? []).map(String)} title="Selected offices (hold Ctrl/Cmd to pick several)" className="adm-multi">
             {signedOffices.length ? signedOffices.map((o) => <option key={o.id} value={o.id}>{o.name}</option>) : <option disabled value="">No office has signed this NDA yet</option>}</select>
           <input name="sort" defaultValue={doc?.sort ?? 100 + i} style={{ maxWidth: 60 }} />

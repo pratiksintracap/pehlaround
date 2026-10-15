@@ -1077,3 +1077,27 @@ body.disc-bar-on .an-fab{bottom:96px}
 .reg-form:has(select[name=itype] option[value=individual]:checked) .only-ind{display:block}
 .reg-form .only-ind legend{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:0 6px}
 .pill.bad{color:var(--bad);background:#c0392b1f}
+/* v49: the three-layer journey (register · see the company · NDA and data bank) */
+.journey{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.journey{grid-template-columns:1fr}}
+.journey li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--bg2)}
+.journey li.now{border-color:var(--live);box-shadow:0 0 0 3px var(--live-soft)}
+.journey li.done{opacity:.75}
+.journey .jn{font:600 12px var(--mono);width:26px;height:26px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--line2);color:var(--ink3)}
+.journey li.now .jn{background:var(--live);border-color:var(--live);color:#fff}
+.journey li.done .jn{background:var(--ink3);border-color:var(--ink3);color:#fff}
+.journey b{display:block;font-size:15px;margin:3px 0 4px}
+.journey p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--ink2)}
+.deck-list{max-width:760px;margin-bottom:6px}
+.databank{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;border:1px solid var(--line2);border-radius:12px;padding:16px 18px;margin:0 0 18px;background:var(--bg)}
+@media (max-width:640px){.databank{grid-template-columns:1fr}}
+.databank b{display:block;font-size:15px;margin-bottom:4px}
+.databank p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.5}
+.gate.open{border-style:solid}
+.gate.open li span.v{filter:none;user-select:auto;-webkit-user-select:auto;color:var(--ink);font-family:inherit;font-weight:500;text-align:right}
+.gate.open li span.v a{color:var(--accent)}
+.funnel-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:10px 0 14px}
+@media (max-width:700px){.funnel-row{grid-template-columns:repeat(3,1fr)}}
+.funnel-row>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:2px}
+.funnel-row b{font-size:22px;font-weight:600;line-height:1}
+.funnel-row span{font-size:12px;color:var(--ink3)}

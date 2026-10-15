@@ -207,6 +207,7 @@ export async function saveDeal(f: FormData) {
     publicRisks: fromText.list(s(f, "publicRisks", 6000)),
     roundCr: (() => { const v = parseFloat(s(f, "roundCr", 20).replace(/,/g, "")); return isFinite(v) && v > 0 ? v : null; })(),
     ipo, promoterDemand: f.get("promoterDemand") === "on",
+    dataRoomUrl: (() => { const v = s(f, "dataRoomUrl", 2000); return /^https:\/\//.test(v) ? v : null; })(),
     art: artKey && (ART as Record<string, string>)[artKey] ? (ART as Record<string, string>)[artKey] : cur.art,
     room, updatedAt: new Date(),
   }).where(eq(deals.id, id));
@@ -263,7 +264,7 @@ export async function saveDocument(f: FormData) {
   const admin = await requirePerm("deals.edit");
   const dealId = n(f, "dealId"), id = n(f, "id");
   const db = await getDb();
-  const audience = ["nda", "allocation", "offices"].includes(s(f, "audience", 20)) ? s(f, "audience", 20) : "nda";
+  const audience = ["approved", "nda", "allocation", "offices"].includes(s(f, "audience", 20)) ? s(f, "audience", 20) : "nda";
   const officeIds = f.getAll("officeIds").map(Number).filter((x) => x > 0);
   const vals = { title: s(f, "title", 300), kind: s(f, "kind", 80) || null, status: s(f, "status", 20) || "available", url: s(f, "url", 2000) || null, sort: n(f, "sort") || 100, audience, officeIds };
   const [prev] = id ? await db.select().from(documents).where(eq(documents.id, id)) : [];
@@ -280,7 +281,12 @@ export async function saveDocument(f: FormData) {
       const asked = new Set((await db.select({ o: interests.officeId }).from(interests).where(eq(interests.dealId, dealId))).map((r) => r.o));
       to = to.filter((o) => asked.has(o));
     }
-    await notifyOffices(to, { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` }, true, { dealId, topic: "document" });
+    if (audience === "approved") {
+      // Layer 2: the pitch deck goes to every approved investor, not only the offices with this NDA, and only if the deal is published.
+      const [pub] = await db.select({ published: deals.published }).from(deals).where(eq(deals.id, dealId));
+      to = pub?.published ? (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id) : [];
+      await notifyOffices(to, { title: `${d?.company}: ${vals.title} is on the desk`, body: "Read the company's own material, then sign its NDA for the data bank.", link: `/deals/${d?.slug}#deck` }, true, { dealId, topic: "document" });
+    } else await notifyOffices(to, { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` }, true, { dealId, topic: "document" });
   }
   await log(admin, `Desk updated documents`, dealId);
   back(`/admin/deals/${dealId}#docs`, "Documents saved.");

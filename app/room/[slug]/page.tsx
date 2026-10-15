@@ -185,13 +185,19 @@ export default async function Room({ params }: P) {
           </section>
 
           <section className="panel" data-panel="Documents" hidden>
+            {d.dataRoomUrl ? (
+              <div className="databank"><div><b>The data bank</b><p>The company&apos;s proprietary material in one folder: financials, contracts, orders, registrations and what the desk collected on its visits. It opens under this NDA; every open is logged against your name and office.</p></div>
+                <a className="btn primary" href={`/api/room/${d.slug}/databank`} target="_blank" rel="noopener">Open the data bank</a></div>
+            ) : (
+              <div className="databank"><div><b>The data bank</b><p>The company&apos;s proprietary folder is being assembled by the desk and will open here, under this NDA.</p></div><span className="pill mid">Coming</span></div>
+            )}
             <ul className="docs">{docs.map((doc) => {
               const acc = docAccess(doc, user?.officeId, !!inter && inter.status !== "Withdrawn", !!access.admin);
               if (acc === "no") return null;
               const live = doc.status === "available" && !!doc.url;
               return (
                 <li key={doc.id}><div><b>{doc.title}</b>{doc.kind && <small>{doc.kind}</small>}
-                  {access.admin && doc.audience !== "nda" && <small className="mono">{doc.audience === "allocation" ? "Only offices that requested an allocation" : `Only ${(doc.officeIds || []).length} selected office(s)`}</small>}</div>
+                  {access.admin && doc.audience !== "nda" && <small className="mono">{doc.audience === "approved" ? "Shown before the NDA, on the overview" : doc.audience === "allocation" ? "Only offices that requested an allocation" : `Only ${(doc.officeIds || []).length} selected office(s)`}</small>}</div>
                   {live && acc === "after-allocation" ? <><span className="pill mid">After allocation request</span><span className="fine">Opens once your office requests an allocation</span></>
                   : live ? <><span className="pill ok">Available</span><a className="btn sm" href={`/api/docs/${doc.id}`} target="_blank" rel="noopener">View</a></>
                     : doc.status === "on_request" ? <><span className="pill mid">On request</span><span className="fine">Shared once you indicate interest</span></>

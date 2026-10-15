@@ -4,7 +4,8 @@ import { getDb } from "@/lib/db";
 import { and, ne } from "drizzle-orm";
 import { deals, documents, docViews, interests } from "@/db/schema";
 import { getUser, log, clientIp } from "@/lib/auth";
-import { roomAccess, docAccess } from "@/lib/deals";
+import { roomAccess, docAccess, canSeeNames, isPreNda } from "@/lib/deals";
+import { track } from "@/lib/track";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = Number((await params).id);
@@ -15,11 +16,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!doc) return new NextResponse("Not found", { status: 404 });
   const [d] = await db.select().from(deals).where(eq(deals.id, doc.dealId));
   const access = await roomAccess(user, d);
-  if (access.state !== "open") return NextResponse.redirect(new URL(`/room/${d.slug}`, req.url));
-  if (!doc.url || doc.status !== "available") return NextResponse.redirect(new URL(`/room/${d.slug}#Documents`, req.url));
+  const admin = access.state === "open" && !!access.admin;
+  // Layer 2: the pitch deck, IM or teaser opens to every approved investor from the deal's overview, before any NDA.
+  const preNda = isPreNda(doc) && (d.published || admin) && (await canSeeNames(user));
+  if (!preNda && access.state !== "open") return NextResponse.redirect(new URL(isPreNda(doc) ? `/deals/${d.slug}` : `/room/${d.slug}`, req.url));
+  const backTo = preNda && access.state !== "open" ? `/deals/${d.slug}#deck` : `/room/${d.slug}#Documents`;
+  if (!doc.url || doc.status !== "available") return NextResponse.redirect(new URL(backTo, req.url));
   const [inter] = user.officeId ? await db.select({ id: interests.id }).from(interests).where(and(eq(interests.dealId, d.id), eq(interests.officeId, user.officeId), ne(interests.status, "Withdrawn"))) : [];
-  if (docAccess(doc, user.officeId, !!inter, !!access.admin) !== "yes") return NextResponse.redirect(new URL(`/room/${d.slug}#Documents`, req.url));
+  if (docAccess(doc, user.officeId, !!inter, admin) !== "yes") return NextResponse.redirect(new URL(backTo, req.url));
   await db.insert(docViews).values({ documentId: doc.id, userId: user.id, officeId: user.officeId, ip: await clientIp() });
-  await log(user, `Viewed ${doc.title}: ${d.company}`, d.id);
+  if (isPreNda(doc) && !admin) await track("deck_opened", { officeId: user.officeId, userId: user.id, dealId: d.id, meta: { document: doc.id, title: doc.title } });
+  await log(user, `${isPreNda(doc) ? "Opened" : "Viewed"} ${doc.title}: ${d.company}`, d.id);
   return NextResponse.redirect(doc.url, 302);
 }

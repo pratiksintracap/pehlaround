@@ -1,0 +1,1 @@
+ALTER TABLE "deals" ADD COLUMN "data_room_url" text;

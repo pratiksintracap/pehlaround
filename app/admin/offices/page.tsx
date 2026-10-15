@@ -7,6 +7,7 @@ import { getDb } from "@/lib/db";
 import { deals, invites, ndas, offices, users } from "@/db/schema";
 import { setApproval, setOfficeStatus, saveOfficeNotes, resetPassword, toggleUser, revokeNda } from "@/lib/admin-actions";
 import { completeness } from "@/lib/profile";
+import { officeEngagement } from "@/lib/interest";
 import { Msg } from "@/components/AdminBits";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
@@ -25,6 +26,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
     db.select().from(invites).where(isNull(invites.acceptedAt)),
   ]);
   const dealName = new Map(ds.map((d) => [d.id, d.company]));
+  const eng = await officeEngagement();
   const order = (o: typeof os[number]) => o.approval === "pending" ? -1 : o.approval === "rejected" ? 9 : ({ pan_submitted: 0, registered: 1, verified: 2, rejected: 3 }[o.status] ?? 4);
   const pendingN = os.filter((o) => o.approval === "pending").length;
   const list = [...os].filter((o) => !show || (show === "pending" ? o.approval === "pending" : show === "approved" ? o.approval === "approved" : o.approval === "rejected")).sort((a, b) => order(a) - order(b));
@@ -42,7 +44,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
         return (
           <details key={o.id} className="adm-card" open={o.approval === "pending"}>
             <summary><b>{o.name}</b> <span className="pill">{TYPE_LABEL[o.investorType as InvestorType] || "Family office"}</span> <span className={`pill ${AP[o.approval]?.[1] || ""}`}>{AP[o.approval]?.[0] || o.approval}</span> {o.status === "rejected" && <span className="pill off">On hold</span>}
-              <span className="fine"> · {people.length} {people.length === 1 ? "person" : "people"} · {nn.length} NDAs · registered {fmtD(o.createdAt)} · profile {completeness(o).pct}%{o.aum ? ` · AUM ${o.aum}` : ""}</span></summary>
+              <span className="fine"> · {people.length} {people.length === 1 ? "person" : "people"} · {eng.get(o.id)?.decks ?? 0} decks · {nn.length} NDAs · {eng.get(o.id)?.banks ?? 0} data banks · registered {fmtD(o.createdAt)} · profile {completeness(o).pct}%{o.aum ? ` · AUM ${o.aum}` : ""}</span></summary>
             {o.approval !== "approved" && (
               <div className="adm-approve">
                 <form action={setApproval}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="approval" value="approved" /><input type="hidden" name="back" value={show ? `/admin/offices?show=${show}` : "/admin/offices"} />
