@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { getUser } from "@/lib/auth";
 import { listDeals, signedDealIds, canSeeNames, listUpcoming } from "@/lib/deals";
 import { shelfHtml, upcomingHtml } from "@/lib/render";
 
-const D = "Pre-IPO and growth rounds on the desk, with a new one about every fortnight, shown without company names. Registered offices see the company and valuation once the desk approves them.";
-export const metadata: Metadata = { title: "Deals", description: D, openGraph: { title: "Deals · Before the Bell", description: D } };
+const D = "Pre-IPO rounds in profitable, IPO-bound Indian companies, a new one about every fortnight. Approved investors see each company by name.";
+export const metadata: Metadata = pageMeta({ path: "/deals", title: "Pre-IPO deals on the desk", description: D });
 
 export default async function DealsPage() {
   const [user, deals, upcoming] = await Promise.all([getUser(), listDeals(), listUpcoming()]);

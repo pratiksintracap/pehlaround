@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta, crumbsLd, ld } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { getDeal, listDeals, signedDealIds, canSeeNames } from "@/lib/deals";
@@ -20,7 +21,7 @@ type P = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const d = await getDeal((await params).slug);
   if (!d || !d.published) return {};
-  return { title: `${d.title} · ${d.category}`, description: d.headline, openGraph: { title: `${d.title} · Before the Bell`, description: d.headline } };
+  return pageMeta({ path: `/deals/${d.slug}`, title: `${d.title} · ${d.category}`, description: d.headline, image: { url: `/deals/${d.slug}/opengraph-image`, width: 1200, height: 630, alt: d.title } });
 }
 
 export default async function Overview({ params }: P) {
@@ -44,6 +45,7 @@ export default async function Overview({ params }: P) {
   return (
     <main><div className="wrap">
       <p className="crumb rv inview"><a href="/deals">← All deals</a></p>
+      <script type="application/ld+json" dangerouslySetInnerHTML={ld(crumbsLd([["Home", "/"], ["Deals", "/deals"], [d.title, `/deals/${d.slug}`]]))} />
       <article className="detail">
         <div className="rv inview">
           <div style={{ position: "relative" }}>

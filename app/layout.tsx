@@ -11,10 +11,11 @@ import { SITE_URL } from "@/lib/site";
 import { getSettings } from "@/lib/settings";
 import { unreadCount } from "@/lib/notify";
 import { isDesk } from "@/lib/perm";
+import { orgLd, ld } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-const DESC = "Undiscovered, profitable, IPO-bound private companies for family offices, funds and qualified investors. Vetted before you see them, each in the same structured deal room.";
+const DESC = "Pre-IPO rounds in profitable, IPO-bound Indian companies for family offices, funds and qualified investors. Vetted before you see them.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -22,8 +23,10 @@ export const metadata: Metadata = {
   description: DESC,
   icons: { icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/favicon-32.png", type: "image/png", sizes: "32x32" }], apple: "/apple-touch-icon.png" },
   manifest: "/site.webmanifest",
+  alternates: { types: { "application/rss+xml": [{ url: "/articles/feed.xml", title: "Before the Bell · Articles" }] } },
+  formatDetection: { telephone: false },
   appleWebApp: { capable: true, title: "Before the Bell", statusBarStyle: "black-translucent" },
-  openGraph: { type: "website", siteName: "Before the Bell", title: "Before the Bell · A front-row seat to India’s next listings", description: DESC,
+  openGraph: { type: "website", siteName: "Before the Bell", locale: "en_IN", title: "Before the Bell · A front-row seat to India’s next listings", description: DESC,
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Before the Bell: a front-row seat to India’s next listings." }] },
   twitter: { card: "summary_large_image", images: ["/og.jpg"] },
 };
@@ -37,8 +40,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const unread = await unreadCount(user);
   const data = JSON.stringify(publicData(deals)).replace(/</g, "\\u003c");
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: THEME }} /></head>
+    <html lang="en-IN" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: THEME }} /><script type="application/ld+json" dangerouslySetInnerHTML={ld(orgLd())} /></head>
       <body data-user={user ? (isDesk(user) ? "admin" : "member") : ""}>
         {st.announcement && (
           <div className="annc"><div className="wrap">{st.announcementLink ? <a href={st.announcementLink}>{st.announcement} <span aria-hidden="true">→</span></a> : st.announcement}</div></div>)}

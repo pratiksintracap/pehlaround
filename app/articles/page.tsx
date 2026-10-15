@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { listArticles, artDate, artHref } from "@/lib/articles";
 import { Cover } from "@/components/Cover";
 
-const D = "Notes from the desk on IPOs, private rounds and the market, for family offices.";
-export const metadata: Metadata = { title: "Articles", description: D, openGraph: { title: "Articles · Before the Bell", description: D } };
+const D = "Notes from the desk on Indian IPOs, pre-IPO rounds, SME listings and the market, for family offices, funds and serious investors.";
+export const metadata: Metadata = pageMeta({ path: "/articles", title: "Articles on IPOs and pre-IPO rounds", description: D });
 
 export default async function Articles({ searchParams }: { searchParams: Promise<{ subscribed?: string; error?: string }> }) {
   const { subscribed, error } = await searchParams;

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { Mark } from "@/components/Mark";
 
 const D = "Install Before the Bell on your phone: the shelf, deal rooms, NDAs, questions and allocations for your family office, one tap away.";
-export const metadata: Metadata = { title: "Get the app", description: D, openGraph: { title: "The Before the Bell app", description: D } };
+export const metadata: Metadata = pageMeta({ path: "/app", title: "Get the app", description: D });
 
 const FEATURES: [string, string][] = [
   ["Your shelf, live", "Every company on the desk with round size, valuation and P/E, updated the moment the desk changes them."],

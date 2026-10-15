@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import { getUser, pendingIdentity } from "@/lib/auth";
 import { providers } from "@/lib/oauth";
@@ -11,7 +12,7 @@ import { dealLinks, deals, deskInvites, offices } from "@/db/schema";
 import { readRefCode, referrerByCode } from "@/lib/track";
 import { getSettings } from "@/lib/settings";
 
-export const metadata: Metadata = { title: "Register", description: "Register your family office, fund or yourself as an investor. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." };
+export const metadata: Metadata = pageMeta({ path: "/register", title: "Register as an investor", description: "Register your family office, fund or yourself as an investor. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." });
 type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string; link?: string; ref?: string }> };
 
 export default async function Register({ searchParams }: P) {

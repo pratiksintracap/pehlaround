@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { listDeals } from "@/lib/deals";
@@ -9,7 +10,7 @@ import { providers } from "@/lib/oauth";
 import { emailReady } from "@/lib/email";
 import { OAuthButtons } from "@/components/OAuthButtons";
 
-export const metadata: Metadata = { title: "Sign in", description: "Your family office's shelf, deal rooms, calls, documents and log, in one place." };
+export const metadata: Metadata = pageMeta({ path: "/login", title: "Sign in", description: "Your family office's shelf, deal rooms, calls, documents and log, in one place.", noindex: true });
 type P = { searchParams: Promise<{ next?: string; error?: string }> };
 
 const ICON: Record<string, string> = {

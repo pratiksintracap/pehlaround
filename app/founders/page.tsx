@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { content } from "@/lib/content";
 import { Html } from "@/components/Chrome";
 import { Readiness } from "@/components/Readiness";
 
 const D = "Put your pre-IPO round, secondary or SME-IPO anchor in front of registered family offices and funds. Tell the desk in a minute, or take the free IPO readiness check.";
-export const metadata: Metadata = { title: "List your company", description: D, openGraph: { title: "List your company · Before the Bell", description: D } };
+export const metadata: Metadata = pageMeta({ path: "/founders", title: "List your company", description: D });
 
 export default function Page() {
   return (
