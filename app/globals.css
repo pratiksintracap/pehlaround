@@ -1103,3 +1103,5 @@ body.disc-bar-on .an-fab{bottom:96px}
 .funnel-row span{font-size:12px;color:var(--ink3)}
 .adm-vis{border:1px solid var(--line2);border-radius:12px;padding:12px 16px;margin:0 0 18px;background:var(--bg);display:grid;gap:6px}
 .adm-vis .k{margin-bottom:4px}
+.hero .ctas{align-items:center}
+.hero-note{font-size:13.5px;color:var(--ink3);line-height:1.4;max-width:30ch}
