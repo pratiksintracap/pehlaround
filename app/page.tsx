@@ -8,7 +8,7 @@ import { esc } from "@/lib/render";
 import { isDesk } from "@/lib/perm";
 import { COVERAGE, PRESS_PUBLIC } from "@/lib/press";
 
-const FILM = `<section class="sec film" id="film"><div class="wrap film-in"><div class="film-copy rv inview"><span class="eyebrow">The desk in under a minute</span><h2 class="tt">See how it works.<span class="tt2">Then see the companies.</span></h2><p>What Before the Bell is, how a company reaches the desk, and what an approved investor sees, in 48 seconds. Sound on.</p><div class="ctas"><a class="btn primary" href="/register">Register</a><a class="btn" href="/how-it-works">How it works</a></div></div><figure class="film-frame rv inview"><video controls playsinline preload="none" poster="/film/poster.jpg" aria-label="Before the Bell, a 48-second film"><source src="/film/before-the-bell.mp4" type="video/mp4"></video></figure></div></section>`;
+const FILM = `<section class="sec film" id="film"><div class="wrap film-in"><div class="film-copy rv inview"><span class="eyebrow">The desk in under a minute</span><p>What Before the Bell is, how a company reaches the desk, and what an approved investor sees.</p><div class="ctas"><a class="btn primary" href="/register">Register</a><a class="btn" href="/how-it-works">How it works</a></div></div><figure class="film-frame rv inview"><video controls playsinline preload="none" poster="/film/poster.jpg" aria-label="Before the Bell, a 48-second film"><source src="/film/before-the-bell.mp4" type="video/mp4"></video></figure></div></section>`;
 
 export default async function Home() {
   const [user, deals] = await Promise.all([getUser(), listDeals()]);
