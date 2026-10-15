@@ -49,6 +49,7 @@ export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?
               {isDesk(user) && <a href="/admin">Admin</a>}
               {user && <a href="/notifications">Notifications{unread ? ` (${unread})` : ""}</a>}
               {user ? <a href="/logout">Sign out</a> : <><a href="/login">Sign in</a><a href="/register">Register</a></>}
+              <button type="button" className="mnav-theme" data-theme-toggle=""><span className="to-dark">Dark mode</span><span className="to-light">Light mode</span><svg viewBox="0 0 20 20" aria-hidden="true"><path className="sun" d="M10 4.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM10 1v2M10 17v2M1 10h2M17 10h2M3.6 3.6l1.4 1.4M15 15l1.4 1.4M3.6 16.4L5 15M15 5l1.4-1.4" /><path className="moon" d="M16.5 12.5A7 7 0 0 1 7.5 3.5a7 7 0 1 0 9 9z" /></svg></button>
             </div>
           </div>
         </div>

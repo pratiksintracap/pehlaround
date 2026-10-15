@@ -15,6 +15,11 @@ export async function listDeals(includeUnpublished = false) {
   return includeUnpublished ? rows : rows.filter((d) => d.published);
 }
 
+/** In preparation and ticked "show as coming": shown publicly by sector, structure and listing year only. */
+export async function listUpcoming() {
+  return (await allDeals()).filter((d) => !d.published && d.preview);
+}
+
 export async function getDeal(slug: string) {
   return (await allDeals()).find((d) => d.slug === slug) ?? null;
 }

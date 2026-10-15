@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { getUser } from "@/lib/auth";
-import { listDeals, signedDealIds, canSeeNames } from "@/lib/deals";
-import { shelfHtml } from "@/lib/render";
+import { listDeals, signedDealIds, canSeeNames, listUpcoming } from "@/lib/deals";
+import { shelfHtml, upcomingHtml } from "@/lib/render";
 
 const D = "Pre-IPO and growth rounds on the desk, with a new one about every fortnight, shown without company names. Registered offices see the company and valuation once the desk approves them.";
 export const metadata: Metadata = { title: "Deals", description: D, openGraph: { title: "Deals · Before the Bell", description: D } };
 
 export default async function DealsPage() {
-  const [user, deals] = await Promise.all([getUser(), listDeals()]);
+  const [user, deals, upcoming] = await Promise.all([getUser(), listDeals(), listUpcoming()]);
   const signed = await signedDealIds(user?.officeId);
   return (
     <main>
@@ -19,6 +19,7 @@ export default async function DealsPage() {
       <section className="sec tight"><div className="wrap">
         <div className="shelf" dangerouslySetInnerHTML={{ __html: shelfHtml(deals, signed, await canSeeNames(user)) }} />
       </div></section>
+      <div dangerouslySetInnerHTML={{ __html: upcomingHtml(upcoming, !!user) }} />
     </main>
   );
 }

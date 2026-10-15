@@ -133,7 +133,7 @@ export default async function Login({ searchParams }: P) {
           <div className="lp-bhead"><span className="eyebrow">Three steps</span><h2>From sign-up to a deal room</h2></div>
           <ol className="lp-steps">
             <li><b>Register the office</b><p>One form: name, office, email, mobile and role.</p></li>
-            <li><b>Approved by the desk</b><p>Usually within two hours on working days. Every company then opens to you by name.</p></li>
+            <li><b>Approved by the desk</b><p>Usually within a few minutes. Every company then opens to you by name.</p></li>
             <li><b>Sign that company&apos;s NDA</b><p>On screen. Its data room opens at once, and only that one.</p></li>
           </ol>
         </section>

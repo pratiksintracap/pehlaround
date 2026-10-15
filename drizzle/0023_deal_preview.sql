@@ -1,0 +1,1 @@
+ALTER TABLE "deals" ADD COLUMN "preview" boolean DEFAULT false NOT NULL;

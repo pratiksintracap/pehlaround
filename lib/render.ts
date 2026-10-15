@@ -53,6 +53,15 @@ export function cardHtml(d: Deal, i: number, signed: boolean, registered = false
   return `<article class="card rv" style="--d:${(i * 0.06).toFixed(2)}s" data-cat="${esc(d.category)}" data-ticket="${esc(d.minTicket || "")}" data-ipo="${monthsTo(d.listingMonth) ?? 999}"><div style="position:relative"><figure class="deal-art" aria-hidden="true">${d.art || ""}</figure><span class="tag">${esc(d.category)}</span><span class="tag stage${signed ? " liveroom" : ""}">${signed ? "NDA signed" : esc(d.stage)}</span><button type="button" class="save" data-save="${d.slug}" aria-pressed="false" aria-label="Save to shortlist" title="Save to shortlist">${SAVE}</button></div><div class="body"><h3><a href="/deals/${d.slug}">${esc(registered ? d.company : d.title)}</a></h3>${registered ? `<p class="fine" style="margin:-4px 0 6px">${esc(d.title)}</p>` : ""}<p class="hl">${esc(d.headline)}</p><dl class="facts"><div><dt>Target listing</dt><dd class="big">${esc(d.listingLabel)}</dd></div><div><dt>Structure</dt><dd>${esc(d.category)}</dd></div><div><dt>Status</dt><dd>${esc(d.status)}</dd></div><div><dt>Shares</dt><dd>Demat · ISIN active</dd></div></dl>${runwayHtml(d)}${scoreHtml(d)}<div class="acts">${acts}</div></div></article>`;
 }
 
+/** "Coming to the desk": deals still in preparation, by sector, structure and listing year only. */
+export function upcomingHtml(list: Deal[], signedIn: boolean) {
+  if (!list.length) return "";
+  const yr = (d: Deal) => (d.listingLabel.match(/20\d\d/) || [""])[0] || "To be set";
+  const cards = list.map((d) => `<article class="up-card"><figure class="deal-art" aria-hidden="true">${d.art || ""}</figure><div class="up-body"><span class="up-tag">In diligence</span><h3>${esc(d.title)}</h3>${d.headline ? `<p>${esc(d.headline)}</p>` : ""}<dl><div><dt>Structure</dt><dd>${esc(d.category)}</dd></div><div><dt>Target listing</dt><dd>${esc(yr(d))}</dd></div></dl></div></article>`).join("");
+  const cta = signedIn ? `<p class="fine up-note">You will be told the day each one opens.</p>` : `<p class="up-note"><a class="btn sm" href="/register">Register to be told when they open</a></p>`;
+  return `<section class="sec tight upcoming" id="coming"><div class="wrap"><div class="sec-head rv inview"><div><span class="eyebrow">Coming to the desk</span><h2 class="tt">In diligence now.<span class="tt2">Opening over the coming weeks.</span></h2><p>The desk is still on site with these companies. Each opens here once its diligence is done; until then only the sector and structure are shown.</p></div></div><div class="up-row" tabindex="0" aria-label="Companies coming to the desk">${cards}</div>${cta}</div></section>`;
+}
+
 export function shelfHtml(list: Deal[], signed: Set<number>, registered = false) {
   return list.map((d, i) => cardHtml(d, i, signed.has(d.id), registered)).join("");
 }

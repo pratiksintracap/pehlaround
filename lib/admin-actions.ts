@@ -207,6 +207,7 @@ export async function saveDeal(f: FormData) {
     publicRisks: fromText.list(s(f, "publicRisks", 6000)),
     roundCr: (() => { const v = parseFloat(s(f, "roundCr", 20).replace(/,/g, "")); return isFinite(v) && v > 0 ? v : null; })(),
     ipo, promoterDemand: f.get("promoterDemand") === "on",
+    preview: pub ? f.get("preview") === "on" : cur.preview,
     dataRoomUrl: (() => { const v = s(f, "dataRoomUrl", 2000); return /^https:\/\//.test(v) ? v : null; })(),
     art: artKey && (ART as Record<string, string>)[artKey] ? (ART as Record<string, string>)[artKey] : cur.art,
     room, updatedAt: new Date(),
@@ -450,7 +451,7 @@ export async function saveSiteSettings(f: FormData) {
     announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
     promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on", aiBudget: String(Math.max(0, Math.round(Number(s(f, "aiBudget", 10)) || 0))),
     analystContacts: f.get("analystContacts") === "on",
-    referrals: f.get("referrals") === "on", approvalTime: s(f, "approvalTime", 120) || "usually within two hours on working days",
+    referrals: f.get("referrals") === "on", approvalTime: s(f, "approvalTime", 120) || "usually within a few minutes",
   });
   await log(admin, "Desk changed the site settings");
   revalidatePath("/", "layout");

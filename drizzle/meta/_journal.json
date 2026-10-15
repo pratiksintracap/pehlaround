@@ -162,6 +162,13 @@
       "when": 1792047214976,
       "tag": "0022_data_bank",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792063105851,
+      "tag": "0023_deal_preview",
+      "breakpoints": true
     }
   ]
 }

@@ -62,6 +62,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <label className="chk"><input type="checkbox" name="published" defaultChecked={d.published} /> Published (shown on the site). Unticked: in preparation, visible to the desk only. Save the deal for it to take effect.</label>
         {!d.published && <label className="chk"><input type="checkbox" name="announce" defaultChecked /> When I publish it, tell every approved office (in the app, and by email once email is set up)</label>}
         <label className="chk"><input type="checkbox" name="open" defaultChecked={d.open} /> Room open (offices can sign the NDA and enter)</label>
+        <label className="chk"><input type="checkbox" name="preview" defaultChecked={d.preview} /> While in preparation, show it under &ldquo;Coming to the desk&rdquo; (public title, structure and listing year only; no name, round or valuation)</label>
         </> : <p className="notice adm-locked"><b>{d.published ? "Published" : "Hidden draft"}</b> · {d.open ? "room open" : "room closed"}. Publishing and opening the room are done by a super admin; use <a href="#ask-publish">Ask to publish</a> below the form when it is ready.</p>}
         </div>
         <h2>On the shelf and the public overview</h2>

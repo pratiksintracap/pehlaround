@@ -30,12 +30,12 @@
   (function () {
     var root = document.documentElement, saved = store.get("ud_theme", null);
     if (saved) root.setAttribute("data-theme", saved);
-    var btn = $("#theme-btn");
-    if (!btn) return;
-    btn.addEventListener("click", function () {
-      var dark = root.getAttribute("data-theme") === "dark" || (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
-      var next = dark ? "light" : "dark";
-      root.setAttribute("data-theme", next); store.set("ud_theme", next);
+    $$("#theme-btn, [data-theme-toggle]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var dark = root.getAttribute("data-theme") === "dark" || (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+        var next = dark ? "light" : "dark";
+        root.setAttribute("data-theme", next); store.set("ud_theme", next);
+      });
     });
   })();
 

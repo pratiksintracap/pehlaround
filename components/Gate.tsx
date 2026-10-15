@@ -22,7 +22,7 @@ export function GateCard({ deal, state }: { deal: Deal; state: Exclude<Access["s
       </>;
       break;
     case "pending-approval":
-      body = <p>Thank you for registering. The desk is reviewing your office, usually within two hours on working days. Once approved you will see every company by name and can sign this company&apos;s NDA; we will let you know in your dashboard and by email.</p>;
+      body = <p>Thank you for registering. The desk is reviewing your office, usually within a few minutes. Once approved you will see every company by name and can sign this company&apos;s NDA; we will let you know in your dashboard and by email.</p>;
       break;
     case "pending-pan":
       body = <p>Your office has signed this company&apos;s NDA. The desk is completing its checks; the room opens as soon as that is done, usually within a working day.</p>;

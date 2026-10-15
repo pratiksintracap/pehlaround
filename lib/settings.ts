@@ -19,7 +19,7 @@ export type Settings = {
   referrals: boolean;         // approved offices can refer peers, who are approved when they register
   approvalTime: string;       // what new offices are told about the wait for approval
 };
-const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false, referrals: true, approvalTime: "usually within two hours on working days" };
+const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false, referrals: true, approvalTime: "usually within a few minutes" };
 
 const settingRows = cachedPublic(async () => { const db = await getDb(); return db.select().from(settings); }, "settings");
 export async function getSettings(): Promise<Settings> {
@@ -28,6 +28,8 @@ export async function getSettings(): Promise<Settings> {
   for (const r of rows) {
     if (!(r.key in DEFAULTS)) continue;
     s[r.key] = typeof DEFAULTS[r.key as keyof Settings] === "boolean" ? r.value === "1" : r.value;
+    // the earlier default wording, if it was ever saved from Settings, follows the new default
+    if (r.key === "approvalTime" && /two hours/i.test(r.value)) s[r.key] = DEFAULTS.approvalTime;
   }
   return s as Settings;
 }

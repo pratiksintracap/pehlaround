@@ -96,7 +96,8 @@ export const deals = pgTable("deals", {
   roundCr: doublePrecision("round_cr"),                       // round size in ₹ crore, for the allocation book
   ipo: jsonb("ipo").$type<IpoProgress>().notNull().default({}), // the road to listing, shown to holders
   promoterDemand: boolean("promoter_demand").notNull().default(false), // the founder portal shows the total indicated
-  dataRoomUrl: text("data_room_url"),           // the data bank (a Google Drive folder); reached only from the NDA room, every open logged
+  dataRoomUrl: text("data_room_url"),
+  preview: boolean("preview").notNull().default(false), // in preparation, shown publicly as "coming to the desk" (sector and structure only)           // the data bank (a Google Drive folder); reached only from the NDA room, every open logged
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("deals_slug_uq").on(t.slug)]);
 
