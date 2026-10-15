@@ -1,5 +1,6 @@
 import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex, index, numeric, doublePrecision } from "drizzle-orm/pg-core";
 import type { RoomContent, IpoProgress } from "@/lib/types";
+import type { Source } from "@/lib/source";
 
 // A family office (the investing entity). Several users can belong to one office.
 export const offices = pgTable("offices", {
@@ -29,8 +30,12 @@ export const offices = pgTable("offices", {
   coLead: boolean("co_lead").notNull().default(false),
   profileAt: timestamp("profile_at", { withTimezone: true }),
   notes: text("notes"),                         // admin notes
+  // Marketing: where the office first came from (utm tags, referrer, landing page), its own invite code, and who referred it.
+  source: jsonb("source").$type<Source>(),
+  refCode: text("ref_code"),
+  referredBy: integer("referred_by"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [uniqueIndex("offices_ref_code_uq").on(t.refCode)]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -410,3 +415,45 @@ export const ticketMessages = pgTable("ticket_messages", {
   internal: boolean("internal").notNull().default(false),   // desk-only note, never shown to the office
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("ticket_messages_ticket_idx").on(t.ticketId)]);
+
+// ---------------------------------------------------------------- marketing
+// Funnel events: one row per step a visitor or office takes (register_started, register_completed, office_approved,
+// nda_signed, room_opened, question_asked, allocation_requested, call_requested, subscribed, referral_visit).
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  kind: text("kind").notNull(),
+  officeId: integer("office_id"),
+  userId: integer("user_id"),
+  dealId: integer("deal_id"),
+  source: jsonb("source").$type<Source>(),
+  meta: jsonb("meta").$type<Record<string, string | number | boolean>>(),
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("events_kind_at_idx").on(t.kind, t.at)]);
+
+// Every email sent through Resend, with its delivery status (delivered, opened, clicked, bounced) fetched afterwards.
+export const emailLog = pgTable("email_log", {
+  id: serial("id").primaryKey(),
+  resendId: text("resend_id"),
+  kind: text("kind").notNull().default("transactional"),   // onboarding | digest | notify | nda | subscribe | transactional
+  step: text("step"),                                      // onboarding step key, digest week, ...
+  userId: integer("user_id"),
+  officeId: integer("office_id"),
+  to: text("to").notNull(),
+  subject: text("subject").notNull(),
+  sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  lastEvent: text("last_event"),
+  lastEventAt: timestamp("last_event_at", { withTimezone: true }),
+  checkedAt: timestamp("checked_at", { withTimezone: true }),
+}, (t) => [index("email_log_sent_idx").on(t.sentAt), index("email_log_kind_step_idx").on(t.kind, t.step)]);
+
+// People who asked for the articles by email (the weekly digest), without registering an office.
+export const subscribers = pgTable("subscribers", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  name: text("name"),
+  token: text("token").notNull(),
+  source: jsonb("source").$type<Source>(),
+  unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+  lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("subscribers_email_uq").on(t.email), uniqueIndex("subscribers_token_uq").on(t.token)]);

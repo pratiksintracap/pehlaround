@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { track } from "@/lib/track";
 import { notFound } from "next/navigation";
 import { and, asc, desc, eq, gt, like, or, ne } from "drizzle-orm";
 import { getUser, log } from "@/lib/auth";
@@ -59,7 +60,7 @@ export default async function Room({ params }: P) {
   const hrefFor = (x: Deal) => (mine.has(x.id) || access.admin ? `/room/${x.slug}` : `/deals/${x.slug}`);
   // one "opened" entry per user and deal per 15 minutes keeps the office's log readable
   const recent = await db.select({ id: audit.id }).from(audit).where(and(eq(audit.userId, user!.id), eq(audit.dealId, d.id), like(audit.action, "Opened the room%"), gt(audit.at, new Date(Date.now() - 900e3)))).limit(1);
-  if (!recent.length) await log(user, `Opened the room: ${d.company}`, d.id);
+  if (!recent.length) { await log(user, `Opened the room: ${d.company}`, d.id); if (user!.officeId) await track("room_opened", { officeId: user!.officeId, userId: user!.id, dealId: d.id }); }
 
   const r = d.room, c = trackerCounts(d);
   // until an office chooses, every alert is on

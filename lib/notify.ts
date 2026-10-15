@@ -13,7 +13,7 @@ export { emailReady } from "@/lib/email";
 export async function sendEmail(to: string[], m: Msg) {
   const link = m.link || "/dashboard";
   const body = E.h(m.title) + (m.body ? E.p(linkify(esc(m.body)).replace(/\n/g, "<br>")) : "") + E.btn("Open Before the Bell", link);
-  return sendRaw(to, m.title, layout(body, { preheader: m.body?.slice(0, 120) || "" }));
+  return sendRaw(to, m.title, layout(body, { preheader: m.body?.slice(0, 120) || "", campaign: { medium: "notify", campaign: "desk" } }), [], undefined, { kind: "notify" });
 }
 
 /** Room alerts an office can switch on; the desk's events map to them by these patterns. */

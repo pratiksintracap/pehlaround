@@ -1048,3 +1048,16 @@ body:has(.an-fab) .app-wrap{padding-bottom:110px}
 body:has(.appbar) .discbar{bottom:78px}
 body.disc-bar-on .an-fab{bottom:96px}
 @media (max-width:640px){.discbar{flex-direction:column;align-items:stretch;gap:8px}.discbar-acts{justify-content:space-between}}
+
+/* v46: the office's own invite link, under the referral form; the public subscribe form on /articles; the admin funnel */
+.ref-own{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.ref-own .k{display:block;margin-bottom:4px}
+.subscribe{margin:28px 0 8px;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:var(--panel,var(--bg2,#f7f8fb));display:grid;gap:10px}
+.subscribe form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.subscribe input[type=email]{flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;background:var(--bg);color:var(--ink)}
+.subscribe .fine{margin:0}
+.funnel{display:grid;gap:14px}
+.fn-bars{display:grid;grid-template-columns:150px 1fr 70px;gap:8px 12px;align-items:center}
+.fn-bars .bar{height:14px;border-radius:7px;background:var(--line)}
+.fn-bars .bar i{display:block;height:100%;border-radius:7px;background:var(--accent,#1f4fff)}
+.fn-bars b{text-align:right;font-variant-numeric:tabular-nums}

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const code = await issueCode(u.id, LOGIN);
     const body = E.h(`Your sign-in code: ${code}`) + E.p(`Enter it on Before the Bell to sign in as ${email}. It works for ${CODE_MINUTES} minutes.`)
       + E.p("If you did not ask for it, ignore this email; nobody can sign in without the code.");
-    await sendRaw([email], `${code} is your Before the Bell sign-in code`, layout(body, { preheader: `Code ${code}, valid ${CODE_MINUTES} minutes` }));
+    await sendRaw([email], `${code} is your Before the Bell sign-in code`, layout(body, { preheader: `Code ${code}, valid ${CODE_MINUTES} minutes` }), [], undefined, { kind: "code", userId: u.id });
   } else await new Promise((r) => setTimeout(r, 300));
   return NextResponse.json({ ok: true, minutes: CODE_MINUTES });
 }

@@ -124,7 +124,7 @@ async function context(userId: number): Promise<Ctx | null> {
 }
 
 export function render(step: Step, c: Ctx) {
-  return { subject: step.subject(c), html: layout(step.body(c), { preheader: step.preheader(c), unsubscribeFor: c.user.id, signature: step.signature }) };
+  return { subject: step.subject(c), html: layout(step.body(c), { preheader: step.preheader(c), unsubscribeFor: c.user.id, signature: step.signature, campaign: { medium: "onboarding", campaign: step.key } }) };
 }
 
 /** Send what is due. Called by the daily 9 AM run, and straight after registration or approval for day-0 steps. */
@@ -151,7 +151,7 @@ export async function runDue(opts: { userId?: number; immediateOnly?: boolean } 
     const why = step.skip?.(c);
     if (why) { await mark("skipped", why); skipped++; continue; }
     const { subject, html } = render(step, c);
-    const ok = await sendRaw([c.user.email], subject, html);
+    const ok = await sendRaw([c.user.email], subject, html, [], undefined, { kind: "onboarding", step: step.key, userId: c.user.id, officeId: c.office.id });
     if (ok) { await mark("sent", null); sent++; }
   }
   return { sent, skipped };

@@ -30,5 +30,5 @@ export async function emailSignedNda(id: number) {
     + E.p(`The company's deal room is now open to your office: the numbers, the terms, the path to listing, the risks the desk sees, the documents and the promoter's answers.`)
     + E.btn("Open the deal room", `/room/${r.slug}`)
     + E.p(`The agreement covers ${r.company} only. Every signed NDA also stays in your dashboard under Documents.`);
-  return sendRaw([r.signerEmail], `Signed NDA: ${r.company}`, layout(body, { preheader: `Your signed NDA with ${r.company} is attached.` }), [{ filename: ndaFilename(r), content: pdf }]);
+  return sendRaw([r.signerEmail], `Signed NDA: ${r.company}`, layout(body, { preheader: `Your signed NDA with ${r.company} is attached.` }), [{ filename: ndaFilename(r), content: pdf }], undefined, { kind: "nda", officeId: r.officeId ?? null });
 }

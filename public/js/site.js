@@ -639,6 +639,10 @@
       setTimeout(show, 600);
     }
     var p = location.pathname;
+    // Funnel: a visit to the register page (the server counts it once a day per browser), or an arrival through an office's invite link.
+    if (p === "/register" || /[?&]ref=[a-z0-9]{6,12}/i.test(location.search)) {
+      try { fetch("/api/track", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ k: p === "/register" ? "register_started" : "referral_visit" }), keepalive: true, credentials: "same-origin" }).catch(function () {}); } catch (x) {}
+    }
     Array.prototype.forEach.call(document.querySelectorAll(".appbar a"), function (a) { var h = a.getAttribute("href").split("#")[0]; if (p === h || p.indexOf(h + "/") === 0) a.setAttribute("aria-current", "page"); });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();

@@ -8,23 +8,26 @@ import { GRIEVANCE } from "@/lib/site";
 import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { dealLinks, deals, deskInvites, offices } from "@/db/schema";
+import { readRefCode, referrerByCode } from "@/lib/track";
 import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "Register your family office", description: "Register your family office. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." };
-type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string; link?: string }> };
+type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string; link?: string; ref?: string }> };
 
 export default async function Register({ searchParams }: P) {
-  const { next: rawNext = "", error, invite = "", link = "" } = await searchParams;
+  const { next: rawNext = "", error, invite = "", link = "", ref = "" } = await searchParams;
   if (await getUser()) redirect(rawNext.startsWith("/") ? rawNext : "/dashboard");
   const db = await getDb();
   const [pend, provs, mail, st] = [await pendingIdentity(), providers(), emailReady(), await getSettings()];
   const inv = invite ? (await db.select().from(deskInvites).where(and(eq(deskInvites.token, invite), isNull(deskInvites.usedAt))))[0] : undefined;
-  const referrer = inv?.referrerOfficeId ? (await db.select({ name: offices.name }).from(offices).where(eq(offices.id, inv.referrerOfficeId)))[0]?.name : undefined;
+  // An office's shareable link (/register?ref=code), remembered by the middleware for 90 days.
+  const byCode = !inv ? await referrerByCode(await readRefCode(ref)) : null;
+  const referrer = inv?.referrerOfficeId ? (await db.select({ name: offices.name }).from(offices).where(eq(offices.id, inv.referrerOfficeId)))[0]?.name : byCode?.name;
   const lk = link ? (await db.select().from(dealLinks).where(and(eq(dealLinks.token, link), isNull(dealLinks.officeId), isNull(dealLinks.registeredAt))))[0] : undefined;
   const lkDeal = lk ? (await db.select({ slug: deals.slug, title: deals.title, category: deals.category }).from(deals).where(eq(deals.id, lk.dealId)))[0] : undefined;
   const next = lkDeal ? `/deals/${lkDeal.slug}#sign` : rawNext;
   const forDeal = /^\/deals\/[a-z0-9-]+/.test(next);
-  const approvedOnSignUp = !!lk || (!!inv && (!inv.referrerOfficeId || st.referrals));
+  const approvedOnSignUp = !!lk || (!!inv && (!inv.referrerOfficeId || st.referrals)) || (!!byCode && st.referrals && byCode.approval === "approved");
   const pre = { name: lk?.name || inv?.name || pend?.name || "", email: pend?.email || lk?.email || inv?.email || "", office: lk?.officeName || inv?.officeName || "" };
   return (
     <main><div className="wrap split reg" style={{ padding: "clamp(36px,5vw,64px) var(--gutter)" }}>
@@ -51,9 +54,11 @@ export default async function Register({ searchParams }: P) {
           <input type="hidden" name="next" value={next} />
           {inv && <input type="hidden" name="invite" value={inv.token} />}
           {lk && <input type="hidden" name="link" value={lk.token} />}
+          {byCode?.refCode && <input type="hidden" name="ref" value={byCode.refCode} />}
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
           {error && <div className="ok show bad" role="alert">{error}</div>}
           {lk && <div className="ok show" role="status">Sent by the desk. Your office is approved as soon as you register.</div>}
+          {byCode && !inv && !lk && <div className="ok show" role="status">Referred by {byCode.name}. {approvedOnSignUp ? "Your office is approved as soon as you register." : `The desk approves new offices ${st.approvalTime}.`}</div>}
           {inv && !lk && <div className="ok show" role="status">{referrer ? `Referred by ${referrer}. ` : "Invited by the desk. "}{approvedOnSignUp ? "Your office is approved as soon as you register." : `The desk approves new offices ${st.approvalTime}.`}</div>}
           {invite && !inv && <div className="ok show bad" role="alert">This invitation link was already used or is not valid. You can still register; the desk approves new offices {st.approvalTime}.</div>}
           {link && !lk && <div className="ok show bad" role="alert">This link was already used. If you registered with it, sign in instead.</div>}

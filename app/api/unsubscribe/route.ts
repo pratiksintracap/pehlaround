@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { offices, users } from "@/db/schema";
 import { unsubUser } from "@/lib/email";
+import { unsubscribeToken } from "@/lib/digest";
 
 export const dynamic = "force-dynamic";
 const page = (title: string, body: string) => new Response(
@@ -14,6 +15,11 @@ const page = (title: string, body: string) => new Response(
   { headers: { "content-type": "text/html; charset=utf-8" } });
 
 async function run(req: NextRequest) {
+  // Public subscribers (articles by email) carry a token of their own.
+  const s = req.nextUrl.searchParams.get("s");
+  if (s) return (await unsubscribeToken(s))
+    ? page("You're unsubscribed", "The desk's articles will no longer reach you by email. You can read them any time at beforethebell.in/articles.")
+    : page("That link has expired", "If you still receive the articles, write to the desk and we will take you off the list.");
   const id = unsubUser(req.nextUrl.searchParams.get("t") || "");
   if (!id) return page("That link has expired", "Please change your email preferences from your dashboard, or write to the desk.");
   const db = await getDb();

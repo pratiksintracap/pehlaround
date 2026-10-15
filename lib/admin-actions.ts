@@ -1,5 +1,6 @@
 "use server";
 import { DEFAULT_PROMISES } from "@/lib/promises";
+import { track } from "@/lib/track";
 import { startSeries, backfill, preview } from "@/lib/onboarding";
 import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -54,6 +55,7 @@ export async function setApproval(f: FormData) {
   await db.update(offices).set({ approval, approvedAt: approval === "approved" ? new Date() : null }).where(eq(offices.id, id));
   await log(admin, `Desk set ${o.name} to ${approval}`);
   if (approval === "approved" && o.approval !== "approved") {
+    await track("office_approved", { officeId: id, userId: admin.id, source: o.source ?? null });
     // In-app notice only: the "You're in" email of the onboarding series does the emailing.
     // Back to the deal they registered from, if there was one.
     const [withIntent] = await db.select({ intent: users.intent }).from(users).where(and(eq(users.officeId, id), sql`${users.intent} is not null`)).limit(1);
@@ -485,7 +487,7 @@ export async function sendTestOnboarding(f: FormData) {
   if (!p) back("/admin/emails", "No such email.");
   const db = await getDb();
   const [me] = await db.select({ email: users.email }).from(users).where(eq(users.id, admin.id));
-  const ok = await sendRaw([me?.email || process.env.ADMIN_EMAIL || ""], "[Test] " + p!.subject, p!.html);
+  const ok = await sendRaw([me?.email || process.env.ADMIN_EMAIL || ""], "[Test] " + p!.subject, p!.html, [], undefined, { kind: "test", step: p!.step.key });
   back("/admin/emails#" + p!.step.key, ok ? `Test of "${p!.step.name}" sent to ${me?.email}.` : "The test could not be sent. Check the Resend key and sender.");
 }
 

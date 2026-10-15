@@ -1,6 +1,8 @@
 import "server-only";
 import { createHmac } from "node:crypto";
 import { SITE_URL, DESK_EMAIL } from "@/lib/site";
+import { getDb } from "@/lib/db";
+import { emailLog } from "@/db/schema";
 
 export const emailReady = () => !!process.env.RESEND_API_KEY;
 export const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
@@ -38,34 +40,59 @@ export const E = {
     ${score != null ? `<td style="vertical-align:middle;text-align:right;white-space:nowrap"><span style="display:inline-block;background:#e8f7f1;color:#0e9f6e;border-radius:999px;padding:6px 10px;font-weight:bold;font-size:13px">${score.toFixed(1)} / 10</span></td>` : ""}</tr></table></a>`,
 };
 
+/** Adds utm tags to every link into the site, so visits and registrations from an email show their campaign.
+ *  API links (unsubscribe, sign-in) and links that already carry tags are left alone. */
+export function tagLinks(html: string, utm: { source: string; medium: string; campaign: string }) {
+  const base = SITE_URL.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`href="(${base}(?:/[^"#?]*)?)(\\?[^"#]*)?(#[^"]*)?"`, "g");
+  const tags = `utm_source=${encodeURIComponent(utm.source)}&utm_medium=${encodeURIComponent(utm.medium)}&utm_campaign=${encodeURIComponent(utm.campaign)}`;
+  return html.replace(re, (m, path: string, query = "", hash = "") => {
+    if (/\/api\//.test(path) || /utm_/.test(query)) return m;
+    return `href="${path}${query ? query + "&" : "?"}${tags}${hash}"`;
+  });
+}
+
 /** The house email: header, body, signature, footer with unsubscribe for series emails. */
-export function layout(body: string, opts: { preheader?: string; unsubscribeFor?: number; signature?: string } = {}) {
+export function layout(body: string, opts: { preheader?: string; unsubscribeFor?: number; signature?: string; footer?: string; unsubscribeLink?: string; campaign?: { medium: string; campaign: string } } = {}) {
   const sig = opts.signature ?? `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">The Before the Bell team<br><a href="mailto:${DESK_EMAIL}" style="color:#1f4fff">${DESK_EMAIL}</a> · <a href="${SITE_URL}" style="color:#1f4fff">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>`;
-  const unsub = opts.unsubscribeFor ? ` · <a href="${SITE_URL}/api/unsubscribe?t=${unsubToken(opts.unsubscribeFor)}" style="color:#6b7590">Stop these emails</a>` : "";
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#f3f5f9">
+  const unsubHref = opts.unsubscribeLink || (opts.unsubscribeFor ? `${SITE_URL}/api/unsubscribe?t=${unsubToken(opts.unsubscribeFor)}` : "");
+  const unsub = unsubHref ? ` · <a href="${unsubHref}" style="color:#6b7590">Stop these emails</a>` : "";
+  const footer = opts.footer || "You receive this because your family office is registered on Before the Bell, operated by SintraCap Advisors LLP, Lower Parel, Mumbai. Nothing in this email is an offer or advice; investments in unlisted companies can lose their entire value.";
+  const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f3f5f9">
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(opts.preheader || "")}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f5f9"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;background:#ffffff;border-radius:16px;overflow:hidden;font-family:Arial,Helvetica,sans-serif">
 <tr><td style="background:#0b1730;padding:18px 24px"><img src="${SITE_URL}/mark-email.png" width="26" height="26" alt="" style="display:inline-block;width:26px;height:26px;border:0;vertical-align:middle;border-radius:6px">
 <span style="color:#ffffff;font-weight:bold;font-size:16px;margin-left:8px;vertical-align:middle">Before the Bell</span></td></tr>
 <tr><td style="padding:26px 24px 22px">${body}${sig}</td></tr>
-<tr><td style="padding:14px 24px 20px;border-top:1px solid #eef0f5;font-size:11.5px;line-height:1.5;color:#6b7590">You receive this because your family office is registered on Before the Bell, operated by SintraCap Advisors LLP, Lower Parel, Mumbai. Nothing in this email is an offer or advice; investments in unlisted companies can lose their entire value.${unsub}</td></tr>
+<tr><td style="padding:14px 24px 20px;border-top:1px solid #eef0f5;font-size:11.5px;line-height:1.5;color:#6b7590">${footer}${unsub}</td></tr>
 </table></td></tr></table></body></html>`;
+  return opts.campaign ? tagLinks(html, { source: "email", ...opts.campaign }) : html;
 }
 
 export type Attachment = { filename: string; content: Uint8Array | Buffer };
+/** What an email is for, kept with its delivery record (see /admin/emails). */
+export type MailMeta = { kind?: string; step?: string; userId?: number | null; officeId?: number | null };
+export const RESEND_API = () => process.env.RESEND_API_URL || "https://api.resend.com/emails";
 
-/** Sends one email per address through Resend. Returns how many were accepted. */
-export async function sendRaw(to: string[], subject: string, html: string, attachments: Attachment[] = [], replyTo?: string) {
+/** Sends one email per address through Resend and records each one. Returns how many were accepted. */
+export async function sendRaw(to: string[], subject: string, html: string, attachments: Attachment[] = [], replyTo?: string, meta: MailMeta = {}) {
   if (!emailReady() || !to.length) return 0;
   const from = process.env.EMAIL_FROM || "Before the Bell <desk@beforethebell.in>";
   let sent = 0;
   for (const addr of to) {
     try {
-      const r = await fetch(process.env.RESEND_API_URL || "https://api.resend.com/emails", { method: "POST", headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json" },
+      const r = await fetch(RESEND_API(), { method: "POST", headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json" },
         body: JSON.stringify({ from, to: addr, subject, html, reply_to: replyTo || DESK_EMAIL,
           attachments: attachments.map((a) => ({ filename: a.filename, content: Buffer.from(a.content).toString("base64") })) }) });
-      if (r.ok) sent++;
+      if (r.ok) {
+        sent++;
+        const id = await r.json().then((j: { id?: string }) => (typeof j?.id === "string" ? j.id : null)).catch(() => null);
+        try {
+          const db = await getDb();
+          await db.insert(emailLog).values({ resendId: id, kind: meta.kind || "transactional", step: meta.step ?? null, userId: meta.userId ?? null, officeId: meta.officeId ?? null, to: addr, subject });
+        } catch (e) { console.error("email_log", e); }
+      }
     } catch { /* best effort; the in-app record stands */ }
   }
   return sent;

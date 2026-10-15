@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { calls, dealPrefs, interests, passes, questions } from "@/db/schema";
 import { getUser, log } from "@/lib/auth";
 import { getDeal, roomAccess } from "@/lib/deals";
+import { track } from "@/lib/track";
 import { readBody, str, jerr } from "@/lib/http";
 import { notifyDesk } from "@/lib/notify";
 import { allow, TOO_MANY } from "@/lib/rate";
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest, { params }: P) {
       if (!/commit/i.test(user.rights)) return jerr("Your access is view-only. Ask your office's principal to request an allocation.", 403);
       await db.insert(interests).values({ ...base, amountCr: String(amount), colead: !!data.colead });
       await log(user, `Requested an allocation of ₹${amount} Cr${data.colead ? " (co-lead interest)" : ""}: ${d.company}`, d.id);
+      await track("allocation_requested", { ...base, meta: { amountCr: amount } });
       await notifyDesk({ title: `Allocation request: ₹${amount} Cr in ${d.company}`, body: `${user.office?.name} · ${user.name}${data.colead ? " · co-lead interest" : ""}`, link: "/admin/activity" });
       break;
     }
@@ -48,6 +50,7 @@ export async function POST(req: NextRequest, { params }: P) {
       const priv = data.private === true || data.private === "on" || data.private === "true";
       await db.insert(questions).values({ ...base, question: q, private: priv });
       await log(user, `Asked the promoter a ${priv ? "private " : ""}question: ${d.company}`, d.id);
+      await track("question_asked", base);
       await notifyDesk({ title: `New ${priv ? "private " : ""}question on ${d.company}`, body: `${user.office?.name}: ${q}`, link: "/admin/activity#qs" });
       break;
     }
@@ -56,6 +59,7 @@ export async function POST(req: NextRequest, { params }: P) {
       if (!slot || !who) return jerr("Choose a slot and say who will attend.");
       await db.insert(calls).values({ ...base, slot, attendees: who, questions: str(data.qs, 1500) || null });
       await log(user, `Requested a management call: ${d.company}`, d.id);
+      await track("call_requested", base);
       await notifyDesk({ title: `Call request: ${d.company}`, body: `${user.office?.name} · ${slot} · ${who}`, link: "/admin/activity#calls" });
       break;
     }

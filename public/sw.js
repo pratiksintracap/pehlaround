@@ -1,6 +1,6 @@
 /* Before the Bell app: caches the site's static files for speed and shows an offline page.
    Pages with office data are never stored on the device. */
-const V = "btb-v1";
+const V = "btb-v2";
 const STATIC = ["/offline", "/icon-192.png", "/icon-512.png", "/js/site.js?v=45"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(V).then((c) => c.addAll(STATIC)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== V).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });

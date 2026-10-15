@@ -12,6 +12,7 @@ import { readBody, str, safeNext, done, fail } from "@/lib/http";
 import { notifyDesk } from "@/lib/notify";
 import { allowIp, isBot, TOO_MANY } from "@/lib/rate";
 import { startSeries } from "@/lib/onboarding";
+import { track, readSource, readRefCode, referrerByCode } from "@/lib/track";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -51,12 +52,16 @@ export async function POST(req: NextRequest) {
     const st = await getSettings();
     const [dinv] = inviteToken ? await db.select().from(deskInvites).where(and(eq(deskInvites.token, inviteToken), isNull(deskInvites.usedAt))) : [];
     const [lk] = linkToken ? await db.select().from(dealLinks).where(and(eq(dealLinks.token, linkToken), isNull(dealLinks.officeId), isNull(dealLinks.registeredAt))) : [];
-    const referred = dinv?.referrerOfficeId ? (await db.select({ name: offices.name, approval: offices.approval }).from(offices).where(eq(offices.id, dinv.referrerOfficeId)))[0] : undefined;
-    const preApproved = !!lk || (!!dinv && (!dinv.referrerOfficeId || (st.referrals && referred?.approval === "approved")));
+    // An office's shareable invite link (/register?ref=code) counts like a referral by name.
+    const byCode = !dinv ? await referrerByCode(await readRefCode(str(data.ref, 20))) : null;
+    const referred = dinv?.referrerOfficeId ? (await db.select({ name: offices.name, approval: offices.approval }).from(offices).where(eq(offices.id, dinv.referrerOfficeId)))[0] : byCode ?? undefined;
+    const preApproved = !!lk || (!!dinv && (!dinv.referrerOfficeId || (st.referrals && referred?.approval === "approved"))) || (!!byCode && st.referrals && byCode.approval === "approved");
+    const source = await readSource();
     const [o] = await db.insert(offices).values({
       ...(preApproved ? { approval: "approved", approvedAt: new Date() } : {}),
       name: entity, category: str(data.category, 60) || null, residency: str(data.residency, 80) || null, ticket: str(data.ticket, 60) || null,
       consents: { email: true, wa: data.contact === "on" || data.contact === true || data.contact === "yes", calls: data.contact === "on" || data.contact === true || data.contact === "yes" },
+      source, referredBy: dinv?.referrerOfficeId ?? byCode?.id ?? null,
     }).returning({ id: offices.id });
     officeId = o.id;
     if (dinv) await db.update(deskInvites).set({ usedAt: new Date(), officeId }).where(eq(deskInvites.id, dinv.id));
@@ -76,6 +81,7 @@ export async function POST(req: NextRequest) {
     await db.insert(invites).values({ officeId, email: v, rights: "View", invitedBy: u.id });
   }
   await createSession(u.id);
+  await track("register_completed", { officeId, userId: u.id, meta: { joined: !!inv, preApproved: invited, how: how || (inv ? "team invite" : "direct") } });
   if (pend) (await cookies()).delete(OAUTH_PENDING);
   await log({ id: u.id, name: u.name, officeId }, (inv ? "Joined the office by invitation" : "Registered the office") + (viaProvider ? ` (email confirmed by ${pend!.provider})` : password ? "" : " (signs in with email codes)") + "; accepted the site disclaimer and risk statement");
   if (!inv) await notifyDesk(invited

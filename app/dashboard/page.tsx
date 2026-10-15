@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
-import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT, deskInvites } from "@/db/schema";
+import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT, deskInvites, offices } from "@/db/schema";
 import { CATEGORIES, STATUS, catLabel, ticketNo } from "@/lib/tickets";
 import { listDeals, canSeeNames , signedDealIds } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
@@ -17,6 +17,7 @@ import { AUM, CATEGORY, HORIZON, RESIDENCY, SECTORS, STRUCTURES, TICKET, complet
 import { isDesk } from "@/lib/perm";
 import { holding, crore, fmtDay } from "@/lib/portfolio";
 import { SITE_URL } from "@/lib/site";
+import { officeRefCode } from "@/lib/track";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
 type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string }> };
@@ -68,6 +69,9 @@ export default async function Dashboard({ searchParams }: P) {
       .innerJoin(documents, eq(documents.id, docViews.documentId)).where(eq(docViews.officeId, office.id)).orderBy(desc(docViews.at)).limit(100),
   ]);
   const refs = await db.select().from(deskInvites).where(eq(deskInvites.referrerOfficeId, office.id)).orderBy(desc(deskInvites.createdAt)).limit(10);
+  // The office's own invite link, created the first time an approved office opens this page.
+  const refCode = office.approval === "approved" ? await officeRefCode(office.id, office.refCode) : null;
+  const referredCount = refCode ? (await db.select({ n: sql<number>`count(*)::int` }).from(offices).where(eq(offices.referredBy, office.id)))[0]?.n ?? 0 : 0;
   const myTickets = await db.select().from(tickets).where(eq(tickets.officeId, office.id)).orderBy(desc(tickets.updatedAt));
   const ticketsWaiting = myTickets.filter((t) => t.status === "answered").length;
   const signed = new Set(myNdas.map((n) => n.dealId));
@@ -382,6 +386,11 @@ export default async function Dashboard({ searchParams }: P) {
           <p className="fine">Know a family office that should see these companies? {st.referrals ? "Your referral is approved the moment they register." : "The desk approves them after they register."} Up to five every 30 days.</p>
           <form method="post" action="/api/office/refer" className="form"><div className="row3"><label>Name<input name="name" required maxLength={120} /></label><label>Email<input name="email" type="email" required maxLength={200} /></label><label>Family office<input name="officeName" maxLength={160} /></label></div>
             <div><button className="btn" type="submit">Make a referral link</button></div></form>
+          {refCode && (() => { const url = `${SITE_URL}/register?ref=${refCode}`; const text = `I use Before the Bell to see pre-IPO companies before they list. Register here: ${url}`; return (
+            <div className="ref-own"><span className="k">Or share your office&apos;s link</span>
+              <p className="fine">Anyone who registers through it is noted as referred by {office.name}.{referredCount ? ` ${referredCount} office${referredCount === 1 ? " has" : "s have"} so far.` : ""}</p>
+              <div className="dl-acts"><input readOnly value={url} aria-label="Your office's invite link" /><button type="button" className="btn sm" data-copy={url}>Copy</button><a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener">WhatsApp</a></div>
+            </div>); })()}
           {refs.length > 0 && <ul className="feed ref-list">{refs.map((r) => { const url = `${SITE_URL}/invite/${r.token}`; const text = `${(r.name || "").split(" ")[0]}, I use Before the Bell to see pre-IPO companies before they list. Register here: ${url}`; return (
             <li key={r.id}><b>{r.officeName || r.name}</b> · {r.usedAt ? <span className="pill ok">Registered</span> : <span className="pill">Not yet</span>}
               {!r.usedAt && <div className="dl-acts"><input readOnly value={url} aria-label={`Referral link for ${r.name}`} /><button type="button" className="btn sm" data-copy={url}>Copy</button><a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener">WhatsApp</a></div>}</li>); })}</ul>}

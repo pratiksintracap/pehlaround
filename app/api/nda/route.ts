@@ -1,4 +1,5 @@
 import { type NextRequest } from "next/server";
+import { track } from "@/lib/track";
 import { getDb } from "@/lib/db";
 import { ndas, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
     version: d.ndaVersion, ip: await clientIp(), userAgent: str(req.headers.get("user-agent"), 300) }).onConflictDoNothing().returning({ id: ndas.id });
   if (signed) await emailSignedNda(signed.id).catch(() => 0);
   await log(user, `Signed the NDA with ${d.company} (version ${d.ndaVersion})`, d.id);
+  if (signed) await track("nda_signed", { officeId: user.office.id, userId: user.id, dealId: d.id });
   if (user.intent === d.slug) await db.update(users).set({ intent: null }).where(eq(users.id, user.id));
   await notifyDesk({ title: `${user.office.name} signed the NDA with ${d.company}`, body: `Signed by ${sig}${trusted ? ", on a device confirmed by email code in the last 30 days" : verified ? ", email code confirmed" : ""}.`, link: "/admin/offices" });
   return done(req, json, `/room/${slug}`);
