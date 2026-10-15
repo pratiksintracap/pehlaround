@@ -1116,3 +1116,9 @@ body.disc-bar-on .an-fab{bottom:96px}
 .founders .fd-li:hover{border-color:#0a66c2}
 :root[data-theme=dark] .founders .fd-li{color:#70b5f9}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .founders .fd-li{color:#70b5f9}}
+/* analyst launcher: a small round button in the corner; the label slides out only on hover or focus, so it never covers table buttons */
+.an-fab{padding:13px!important;gap:0!important;right:16px!important;bottom:16px}
+.an-fab span{display:inline-block!important;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width .3s var(--ease),opacity .2s,margin .3s}
+.an-fab:hover span,.an-fab:focus-visible span{max-width:160px;opacity:1;margin-left:8px}
+body:has(.an-fab) main{padding-bottom:84px}
+@media (hover:none){.an-fab:hover span{max-width:0;opacity:0;margin-left:0}}
