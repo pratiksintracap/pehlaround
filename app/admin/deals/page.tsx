@@ -2,7 +2,8 @@ import { sql } from "drizzle-orm";
 import { requireDesk } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { listDeals } from "@/lib/deals";
-import { createDeal } from "@/lib/admin-actions";
+import { createDeal, setDealPublished } from "@/lib/admin-actions";
+import { can } from "@/lib/perm";
 import { Msg } from "@/components/AdminBits";
 import { offereeCounts, offereeLevel } from "@/lib/offerees";
 import { OFFEREE_LIMIT } from "@/lib/investor";
@@ -25,12 +26,14 @@ export default async function AdminDeals({ searchParams }: { searchParams: Promi
   return (
     <>
       <Msg msg={msg} />
-      <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 16px" }}><h1 style={{ fontSize: 30, margin: 0 }}>Deals</h1><a className="btn sm primary" href="#add">+ Add a deal</a><span className="fine">A new deal starts in preparation (desk only). To hide a live deal or put it back in preparation, open Edit and untick Published at the top of the form.</span></div>
+      <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 16px" }}><h1 style={{ fontSize: 30, margin: 0 }}>Deals</h1><a className="btn sm primary" href="#add">+ Add a deal</a><span className="fine">A new deal starts in preparation (desk only). Take down hides a live deal from the site (back to in preparation); Publish puts it live again.</span></div>
       <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Desk Score</th><th title="Last 30 days">Overview views</th><th title="Offices, last 30 days">Rooms opened</th><th>NDAs</th><th title={`Offices shown the company this financial year, excluding SEBI-registered AIFs. Companies Act limit: ${OFFEREE_LIMIT} per year.`}>Offerees {off.fy}</th><th>Allocation requests</th><th>Shown</th><th /></tr></thead><tbody>
         {deals.map((d) => { return (
           <tr key={d.id}><th scope="row">{d.company}</th><td>{d.title}</td><td>{d.category}</td><td>{d.listingLabel}</td><td>{d.score != null ? d.score.toFixed(1) : "—"}</td><td>{views.get(d.id) ?? 0}</td><td>{rooms.get(d.id) ?? 0}</td><td>{ndaN.get(d.id) ?? 0}</td><td>{(() => { const n = off.counts.get(d.id) ?? 0, l = offereeLevel(n); return <span className={l === "ok" ? "" : "pill " + (l === "over" ? "bad" : "mid")}>{n} / {OFFEREE_LIMIT}</span>; })()}</td><td>{asks.get(d.id) ?? 0}</td>
             <td>{d.published ? (d.open ? "Live · room open" : "Live · room closed") : <span title="Not on the site; the desk alone sees it">In preparation</span>}</td>
-            <td><div style={{ display: "flex", gap: 6 }}><a className="btn sm primary" href={`/admin/deals/${d.id}`}>Edit</a><a className="btn sm" href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a><a className="btn sm" href={`/room/${d.slug}`}>Room</a></div></td></tr>); })}
+            <td><div style={{ display: "flex", gap: 6 }}><a className="btn sm primary" href={`/admin/deals/${d.id}`}>Edit</a><a className="btn sm" href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a><a className="btn sm" href={`/room/${d.slug}`}>Room</a>
+              {can(me, "deals.publish") && <form action={setDealPublished}><input type="hidden" name="id" value={d.id} /><input type="hidden" name="published" value={d.published ? "0" : "1"} />
+                <button className={`btn sm ${d.published ? "ghost" : ""}`} type="submit" title={d.published ? "Hide from the site; the desk still sees it" : "Show on the site again (no announcement sent)"}>{d.published ? "Take down" : "Publish"}</button></form>}</div></td></tr>); })}
       </tbody></table></div>
       <div className="chart" style={{ marginTop: 22 }} id="add"><span className="k">Add a deal</span>
         <form action={createDeal} className="form"><div className="row">

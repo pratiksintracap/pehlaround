@@ -228,6 +228,19 @@ export async function saveDeal(f: FormData) {
   back(path, "Saved. The site shows the change now.");
 }
 
+/** One-click from the deals list: take a live deal down (back to in preparation) or put it live again. No announcement is sent. */
+export async function setDealPublished(f: FormData) {
+  const admin = await requirePerm("deals.publish");
+  const id = n(f, "id"), on = f.get("published") === "1";
+  const db = await getDb();
+  const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, id));
+  if (!d) return;
+  await db.update(deals).set({ published: on, updatedAt: new Date() }).where(eq(deals.id, id));
+  await log(admin, `Desk ${on ? "published" : "took down (in preparation)"} the deal: ${d.company}`, id);
+  revalidatePath("/", "layout");
+  back("/admin/deals", on ? `${d.company} is live again.` : `${d.company} is taken down: in preparation, the desk alone sees it.`);
+}
+
 export async function createDeal(f: FormData) {
   const admin = await requirePerm("deals.edit");
   const slug = s(f, "slug", 80).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
