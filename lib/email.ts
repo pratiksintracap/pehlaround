@@ -57,7 +57,7 @@ export function layout(body: string, opts: { preheader?: string; unsubscribeFor?
   const sig = opts.signature ?? `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">The Before the Bell team<br><a href="mailto:${DESK_EMAIL}" style="color:#1f4fff">${DESK_EMAIL}</a> · <a href="${SITE_URL}" style="color:#1f4fff">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>`;
   const unsubHref = opts.unsubscribeLink || (opts.unsubscribeFor ? `${SITE_URL}/api/unsubscribe?t=${unsubToken(opts.unsubscribeFor)}` : "");
   const unsub = unsubHref ? ` · <a href="${unsubHref}" style="color:#6b7590">Stop these emails</a>` : "";
-  const footer = opts.footer || "You receive this because your family office is registered on Before the Bell, operated by SintraCap Advisors LLP, Lower Parel, Mumbai. Nothing in this email is an offer or advice; investments in unlisted companies can lose their entire value.";
+  const footer = opts.footer || "You receive this because you are registered on Before the Bell, operated by SintraCap Advisors LLP, Lower Parel, Mumbai. Nothing in this email is an offer or advice; investments in unlisted companies can lose their entire value.";
   const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f3f5f9">
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(opts.preheader || "")}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f5f9"><tr><td align="center" style="padding:24px 12px">

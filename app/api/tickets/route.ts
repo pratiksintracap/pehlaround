@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const back = "/dashboard#Support";
   const user = await getUser();
   if (!user) return fail(req, json, "Please sign in again.", "/login?next=/dashboard%23Support", 401);
-  if (!user.office && !isDesk(user)) return fail(req, json, "Only family offices can raise tickets.", back, 403);
+  if (!user.office && !isDesk(user)) return fail(req, json, "Only investors can raise tickets.", back, 403);
   if (!(await allow(`ticket:${user.id}`, 10, 3600))) return fail(req, json, TOO_MANY, back, 429);
   const category = str(data.category, 40), subject = str(data.subject, 160), body = str(data.body, 5000);
   if (!CATEGORIES.some((c) => c.id === category)) return fail(req, json, "Choose what the ticket is about.", back);

@@ -1072,3 +1072,8 @@ body.disc-bar-on .an-fab{bottom:96px}
 .press-strip .wrap{display:flex;gap:10px 22px;align-items:center;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .press-strip .k{margin:0}
 .press-strip a{font-weight:600;color:var(--ink2);text-decoration:none}
+/* v47: individual-investor declaration, shown only when "An individual investor" is chosen */
+.reg-form .only-ind{display:none;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0}
+.reg-form:has(select[name=itype] option[value=individual]:checked) .only-ind{display:block}
+.reg-form .only-ind legend{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:0 6px}
+.pill.bad{color:var(--bad);background:#c0392b1f}

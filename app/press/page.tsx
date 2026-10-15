@@ -11,7 +11,7 @@ export default function Press() {
     <main>
       <div className="wrap phead"><span className="eyebrow">Press</span>
         <h1 className="tt">For journalists.<span className="tt2">What the desk is, in your words or ours.</span></h1>
-        <p>Before the Bell is a pre-IPO deal desk for family offices, operated by SintraCap Advisors in Mumbai. Everything on this page can be quoted. For anything else, write to {PRESS_CONTACT.name} at <a href={`mailto:${PRESS_CONTACT.email}`}>{PRESS_CONTACT.email}</a>; replies within a working day.</p></div>
+        <p>Before the Bell is a pre-IPO deal desk for family offices, funds and qualified investors, operated by SintraCap Advisors in Mumbai. Everything on this page can be quoted. For anything else, write to {PRESS_CONTACT.name} at <a href={`mailto:${PRESS_CONTACT.email}`}>{PRESS_CONTACT.email}</a>; replies within a working day.</p></div>
       <section className="sec tight"><div className="wrap">
         {COVERAGE.length > 0 && <>
           <h2 className="ab-h" style={{ marginTop: 0 }}>In the press</h2>
@@ -23,7 +23,7 @@ export default function Press() {
         <h2 className="ab-h">Boilerplate</h2>
         <div className="press-boiler"><p><b>Short.</b> {BOILERPLATE.short}</p><p><b>Long.</b> {BOILERPLATE.long}</p></div>
         <h2 className="ab-h">Spokesperson</h2>
-        <p><b>{PRESS_CONTACT.name}</b>, {PRESS_CONTACT.role}. Available for comment on pre-IPO rounds, the IPO calendar, private-market pricing against listed peers, and how family offices approach unlisted companies. <a href={`mailto:${PRESS_CONTACT.email}`}>{PRESS_CONTACT.email}</a>.</p>
+        <p><b>{PRESS_CONTACT.name}</b>, {PRESS_CONTACT.role}. Available for comment on pre-IPO rounds, the IPO calendar, private-market pricing against listed peers, and how family offices and funds approach unlisted companies. <a href={`mailto:${PRESS_CONTACT.email}`}>{PRESS_CONTACT.email}</a>.</p>
         <h2 className="ab-h">Logos and images</h2>
         <ul className="ticks press-assets">
           <li><a href="/icon-512.png" download>Mark, navy tile, 512 px PNG</a></li>
@@ -31,7 +31,7 @@ export default function Press() {
           <li>Name: <b>Before the Bell</b>, three words, capital B on Before and Bell. Colours: navy #0B1730, signal green #2ED39A.</li>
         </ul>
         <h2 className="ab-h">What we ask</h2>
-        <p className="fine" style={{ maxWidth: 720 }}>Companies on the desk are shown to approved family offices under NDA, so we do not name them, their valuations or their round sizes to the press before they list or announce. We are happy to talk about the market, the model and the numbers on the public pages. Nothing on {SITE_URL.replace(/^https?:\/\//, "")} is an offer or investment advice.</p>
+        <p className="fine" style={{ maxWidth: 720 }}>Companies on the desk are shown to approved investors under NDA, so we do not name them, their valuations or their round sizes to the press before they list or announce. We are happy to talk about the market, the model and the numbers on the public pages. Nothing on {SITE_URL.replace(/^https?:\/\//, "")} is an offer or investment advice.</p>
       </div></section>
     </main>
   );

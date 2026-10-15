@@ -37,7 +37,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       and not exists (select 1 from passes p where p.office_id = a.office_id and p.deal_id = a.deal_id)
     group by a.office_id, a.deal_id, o.name, d.company order by n desc, last desc limit 12`)) as unknown as { rows: Lead[] }).rows;
   const tiles: [string, number, string][] = [
-    ["Offices awaiting approval", appr, "/admin/offices?show=pending"], ["Family offices registered", o, "/admin/offices"], ["NDAs signed", nd, "/admin/offices"],
+    ["Offices awaiting approval", appr, "/admin/offices?show=pending"], ["Investors registered", o, "/admin/offices"], ["NDAs signed", nd, "/admin/offices"],
     ["New allocation requests", intr, "/admin/activity"], ["Questions to answer", q, "/admin/activity#qs"], ["Calls requested", c, "/admin/activity#calls"], ["New founder leads", l, "/admin/activity#leads"],
   ];
   return (

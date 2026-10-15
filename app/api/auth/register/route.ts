@@ -15,12 +15,15 @@ import { startSeries } from "@/lib/onboarding";
 import { track, readSource, readRefCode, referrerByCode } from "@/lib/track";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { TYPE_LABEL, DECL_LABEL } from "@/lib/investor";
 
 export async function POST(req: NextRequest) {
   const { data, json } = await readBody(req);
   const next = safeNext(data.next, "/dashboard");
   const inviteToken = str(data.invite, 100), linkToken = str(data.link, 100);
   const back = "/register?" + new URLSearchParams({ ...(data.next ? { next } : {}), ...(inviteToken ? { invite: inviteToken } : {}), ...(linkToken ? { link: linkToken } : {}) }).toString();
+  const itype = (["family_office", "fund", "individual"] as const).find((t) => t === str(data.itype, 20)) ?? "family_office";
+  const decl = (["accredited", "min_ticket_25l"] as const).find((t) => t === str(data.decl, 20)) ?? null;
   const name = str(data.name, 120), entity = str(data.entity, 160), email = str(data.email, 200).toLowerCase(), phone = str(data.phone, 40);
   const password = typeof data.password === "string" ? data.password : "";
   if (isBot(data)) return done(req, json, "/");
@@ -46,7 +49,8 @@ export async function POST(req: NextRequest) {
     officeId = inv.officeId;
     await db.update(invites).set({ acceptedAt: new Date() }).where(eq(invites.id, inv.id));
   } else {
-    if (!entity) return fail(req, json, "Please enter the family office or family name.", back);
+    if (!entity) return fail(req, json, "Please enter the name of the family office, fund or investor.", back);
+    if (itype === "individual" && !decl) return fail(req, json, "Individual investors: please confirm you are an accredited investor or will invest at least ₹25 lakh per company.", back);
     // An invitation from the desk, a personal deal link, or (when switched on) a referral by an approved office
     // registers the office already approved.
     const st = await getSettings();
@@ -61,6 +65,7 @@ export async function POST(req: NextRequest) {
       ...(preApproved ? { approval: "approved", approvedAt: new Date() } : {}),
       name: entity, category: str(data.category, 60) || null, residency: str(data.residency, 80) || null, ticket: str(data.ticket, 60) || null,
       consents: { email: true, wa: data.contact === "on" || data.contact === true || data.contact === "yes", calls: data.contact === "on" || data.contact === true || data.contact === "yes" },
+      investorType: itype, declaration: itype === "individual" ? decl : null,
       source, referredBy: dinv?.referrerOfficeId ?? byCode?.id ?? null,
     }).returning({ id: offices.id });
     officeId = o.id;
@@ -85,8 +90,8 @@ export async function POST(req: NextRequest) {
   if (pend) (await cookies()).delete(OAUTH_PENDING);
   await log({ id: u.id, name: u.name, officeId }, (inv ? "Joined the office by invitation" : "Registered the office") + (viaProvider ? ` (email confirmed by ${pend!.provider})` : password ? "" : " (signs in with email codes)") + "; accepted the site disclaimer and risk statement");
   if (!inv) await notifyDesk(invited
-    ? { title: `Office registered, approved ${how}: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}.`, link: "/admin/offices" }
-    : { title: `New family office registered: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}. Approve or hold it in the admin.`, link: "/admin/offices?show=pending" });
+    ? { title: `${TYPE_LABEL[itype]} registered, approved ${how}: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}${decl ? ` · ${DECL_LABEL[decl]}` : ""}.`, link: "/admin/offices" }
+    : { title: `New ${TYPE_LABEL[itype].toLowerCase()} registered: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}${decl ? ` · ${DECL_LABEL[decl]}` : ""}. Approve or hold it in the admin.`, link: "/admin/offices?show=pending" });
   // The onboarding email series: from approval if the office is already approved, otherwise from registration.
   const [off] = await db.select({ approval: offices.approval }).from(offices).where(eq(offices.id, officeId));
   await startSeries(u.id, off?.approval === "approved" ? "approved" : "register").catch(() => 0);

@@ -11,7 +11,7 @@ import { dealLinks, deals, deskInvites, offices } from "@/db/schema";
 import { readRefCode, referrerByCode } from "@/lib/track";
 import { getSettings } from "@/lib/settings";
 
-export const metadata: Metadata = { title: "Register your family office", description: "Register your family office. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." };
+export const metadata: Metadata = { title: "Register", description: "Register your family office, fund or yourself as an investor. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." };
 type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string; link?: string; ref?: string }> };
 
 export default async function Register({ searchParams }: P) {
@@ -37,8 +37,8 @@ export default async function Register({ searchParams }: P) {
           <li><span className="dot">2</span><span className="t">{approvedOnSignUp ? "Approved" : "Approved by the desk"}</span><span className="s">{approvedOnSignUp ? "at once" : st.approvalTime}</span></li>
           <li><span className="dot">3</span><span className="t">Sign the NDA</span><span className="s">on the deal&apos;s page</span></li>
         </ol>
-        <span className="eyebrow">Family office registration</span>
-        <h1>{lkDeal ? <>The desk sent you<br />{lkDeal.title}</> : "Register the office"}</h1>
+        <span className="eyebrow">Investor registration</span>
+        <h1>{lkDeal ? <>The desk sent you<br />{lkDeal.title}</> : "Register to see the desk"}</h1>
         <p className="lede">{lkDeal
           ? `Register in a minute and your office is approved straight away; ${lkDeal.title} (${lkDeal.category}) opens next, with its NDA signed on screen.`
           : approvedOnSignUp ? "Your office is approved as soon as you register, and every company on the desk opens by name."
@@ -77,14 +77,20 @@ export default async function Register({ searchParams }: P) {
           </div>
 
           <div className="rs rs-2">
-            <span className="rs-h">Step 2 of 2 · The office <button type="button" className="linkbtn" data-step-back="">Back</button></span>
-            <label>Family office or family name<input required autoComplete="organization" placeholder="e.g. Mehta Family Office" name="entity" defaultValue={pre.office} /></label>
-            <div className="row"><label>Your role<select name="role" required defaultValue=""><option value="" disabled>Select</option><option>Principal / family member</option><option>CIO or investment head</option><option>CFO, CA or adviser to the family</option><option>Analyst or associate</option></select></label>
-              <label>The office invests as<select name="category" required defaultValue=""><option value="" disabled>Select</option><option>Individual</option><option>HUF</option><option>Private company</option><option>LLP</option><option>Trust</option><option>Family-office AIF</option><option>Other</option></select></label></div>
+            <span className="rs-h">Step 2 of 2 · How you invest <button type="button" className="linkbtn" data-step-back="">Back</button></span>
+            <label>You are investing as<select name="itype" required defaultValue=""><option value="" disabled>Select</option><option value="family_office">A family office</option><option value="fund">A fund (AIF, PMS or other)</option><option value="individual">An individual investor</option></select></label>
+            <label>Name of the family office, fund or investor<input required autoComplete="organization" placeholder="e.g. Mehta Family Office, Alpha Growth Fund, or your own name" name="entity" defaultValue={pre.office} /></label>
+            <div className="row"><label>Your role<select name="role" required defaultValue=""><option value="" disabled>Select</option><option>Principal / family member</option><option>Investing in my own name</option><option>CIO, fund manager or investment head</option><option>CFO, CA or adviser</option><option>Analyst or associate</option></select></label>
+              <label>Investing entity<select name="category" required defaultValue=""><option value="" disabled>Select</option><option>Individual</option><option>HUF</option><option>Private company</option><option>LLP</option><option>Trust</option><option>AIF Category I</option><option>AIF Category II</option><option>AIF Category III</option><option>PMS</option><option>Other</option></select></label></div>
+            <fieldset className="only-ind"><legend>Individual investors</legend>
+              <p className="fine">The desk shows companies to individuals who are accredited investors or who invest at least ₹25 lakh per company.</p>
+              <label className="chk"><input type="radio" name="decl" value="accredited" />I am an accredited investor under SEBI&apos;s framework, or will be by the time I invest.</label>
+              <label className="chk"><input type="radio" name="decl" value="min_ticket_25l" />I will invest at least ₹25 lakh in any company I request an allocation in.</label>
+            </fieldset>
             <div className="row"><label>Residency<select name="residency" required defaultValue=""><option value="" disabled>Select</option><option>Resident in India</option><option>Non-resident (FEMA route applies)</option></select></label>
               <label>Typical ticket per deal<select name="ticket" required defaultValue=""><option value="" disabled>Select</option><option>₹50 lakh – 1 crore</option><option>₹1–2 crore</option><option>₹2–5 crore</option><option>₹5–25 crore</option><option>Above ₹25 crore</option></select></label></div>
             <label className="chk"><input type="checkbox" required name="privacy" />I consent to the use of my details as set out in the <a href="/legal" target="_blank">privacy notice</a>: to identify the office and prepare documents, kept while the office is registered and as the law requires. Questions or deletion: <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>.</label>
-            <label className="chk"><input type="checkbox" required name="risk" />I have read the <a href="#" data-show-disclaimer="">site disclaimer</a> and understand that unlisted investments are illiquid and can lose their entire value, that Before the Bell does not advise the family, and that the office decides on the documents and its own advice.</label>
+            <label className="chk"><input type="checkbox" required name="risk" />I have read the <a href="#" data-show-disclaimer="">site disclaimer</a> and understand that unlisted investments are illiquid and can lose their entire value, that Before the Bell does not advise the family, and that I decide on the documents and my own advice.</label>
             <label className="chk"><input type="checkbox" name="contact" />Optional: Before the Bell may call, email or WhatsApp me about deals on the desk. I can withdraw this at any time.</label>
             <div><button className="btn primary" type="submit">{approvedOnSignUp ? "Register and continue" : "Register"}</button></div>
           </div>

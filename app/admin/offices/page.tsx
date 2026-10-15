@@ -1,3 +1,4 @@
+import { TYPE_LABEL, DECL_LABEL, isQib, type InvestorType } from "@/lib/investor";
 import { requireDesk } from "@/lib/auth";
 import { can, mask } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
@@ -40,12 +41,12 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
         const people = us.filter((u) => u.officeId === o.id), nn = ns.filter((x) => x.officeId === o.id);
         return (
           <details key={o.id} className="adm-card" open={o.approval === "pending"}>
-            <summary><b>{o.name}</b> <span className={`pill ${AP[o.approval]?.[1] || ""}`}>{AP[o.approval]?.[0] || o.approval}</span> {o.status === "rejected" && <span className="pill off">On hold</span>}
+            <summary><b>{o.name}</b> <span className="pill">{TYPE_LABEL[o.investorType as InvestorType] || "Family office"}</span> <span className={`pill ${AP[o.approval]?.[1] || ""}`}>{AP[o.approval]?.[0] || o.approval}</span> {o.status === "rejected" && <span className="pill off">On hold</span>}
               <span className="fine"> · {people.length} {people.length === 1 ? "person" : "people"} · {nn.length} NDAs · registered {fmtD(o.createdAt)} · profile {completeness(o).pct}%{o.aum ? ` · AUM ${o.aum}` : ""}</span></summary>
             {o.approval !== "approved" && (
               <div className="adm-approve">
                 <form action={setApproval}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="approval" value="approved" /><input type="hidden" name="back" value={show ? `/admin/offices?show=${show}` : "/admin/offices"} />
-                  <button className="btn sm primary" type="submit">Approve this office</button></form>
+                  <button className="btn sm primary" type="submit">Approve</button></form>
                 {o.approval !== "rejected" && (
                   <form action={setApproval} className="adm-decline"><input type="hidden" name="id" value={o.id} /><input type="hidden" name="approval" value="rejected" />
                     <input name="reason" placeholder="Note to the office (optional)" maxLength={1000} />
@@ -56,6 +57,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
             <div className="two">
               <div>
                 <dl className="terms compact">
+                  <div><dt>Investor type</dt><dd>{TYPE_LABEL[o.investorType as InvestorType] || "Family office"}{o.declaration ? ` · ${DECL_LABEL[o.declaration] || o.declaration}` : ""}{isQib(o) ? " · QIB (not counted in the 200)" : ""}</dd></div>
                   <div><dt>Investing entity</dt><dd>{o.entityName || "—"}</dd></div>
                   {o.pan && manage && <div><dt>PAN (given before PAN was dropped)</dt><dd className="mono">{o.pan}</dd></div>}
                   <div><dt>Invests as · residency</dt><dd>{o.category || "—"} · {o.residency || "—"}</dd></div>

@@ -114,7 +114,7 @@ async function runTool(c: Ctx, name: string, input: Record<string, unknown>): Pr
 function system(c: Ctx) {
   const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
   const focus = c.deal ? `The person is inside the ${c.deal.company} deal room (slug "${c.deal.slug}"). Unless they say otherwise, questions are about this company.` : "The person is on their office dashboard. Questions may cover any room the office has opened, the shelf, or markets in general.";
-  return `You are the desk analyst on Before the Bell, a private deal desk run by SintraCap Advisors LLP where registered Indian family offices look at pre-IPO companies. You help ${c.admin ? "the desk's own team" : `${c.user.name} of ${c.user.office?.name ?? "a family office"}`} understand companies, listed peers, sectors, valuations, cap tables and IPO paths, so they can make their own decision. Today is ${today}.
+  return `You are the desk analyst on Before the Bell, a private deal desk run by SintraCap Advisors LLP where registered Indian family offices, funds and qualified investors look at pre-IPO companies. You help ${c.admin ? "the desk's own team" : `${c.user.name} of ${c.user.office?.name ?? "a family office"}`} understand companies, listed peers, sectors, valuations, cap tables and IPO paths, so they can make their own decision. Today is ${today}.
 
 ${focus}
 

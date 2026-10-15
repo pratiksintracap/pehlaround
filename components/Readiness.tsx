@@ -138,7 +138,7 @@ export function Readiness({ intro, form }: { intro: ReactNode; form: ReactNode }
             </div>
           )}
           <div className="rd-cta">
-            <div><b>Send this report to the desk</b><p>A banker reads it and calls within two working days to tell you what the desk could do: a pre-IPO round with family offices, an SME anchor, or what to fix first.</p></div>
+            <div><b>Send this report to the desk</b><p>A banker reads it and calls within two working days to tell you what the desk could do: a pre-IPO round with family offices and funds, an SME anchor, or what to fix first.</p></div>
             <div className="rd-cta-b"><button className="btn primary" type="button" onClick={send}>Send it to the desk</button>
               <button className="btn" type="button" onClick={() => { setStep(2); setTab("check"); document.getElementById("check")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>Edit the numbers</button>
               <button className="btn ghost" type="button" onClick={() => window.print()}>Save as PDF</button></div>

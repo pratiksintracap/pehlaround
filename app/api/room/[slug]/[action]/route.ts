@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: P) {
   if (!d) return jerr("Deal not found.", 404);
   const access = await roomAccess(user, d);
   if (access.state !== "open") return jerr("This room is not open to your office.", 403);
-  if (!user.officeId) return jerr("This action is for family offices; the desk manages it in the admin.", 400);
+  if (!user.officeId) return jerr("This action is for investors; the desk manages it in the admin.", 400);
   if (["interest", "question", "call", "pass"].includes(action) && !(await allow(`room:${user.id}`, 40, 3600))) return jerr(TOO_MANY, 429);
   const { data } = await readBody(req);
   const db = await getDb();

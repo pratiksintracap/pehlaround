@@ -29,10 +29,10 @@ export async function subscribe(emailRaw: string, nameRaw: string) {
   await track("subscribed", { meta: { email } });
   const latest = (await db.select().from(articles).where(eq(articles.published, true)).orderBy(sql`${articles.publishedAt} desc`).limit(3));
   const body = E.h(`You're on the list${name ? `, ${esc(name.split(" ")[0])}` : ""}`)
-    + E.p("The desk's articles will reach you by email, about one a week: short reads on IPOs, private rounds and the market, written for family offices.")
+    + E.p("The desk's articles will reach you by email, about one a week: short reads on IPOs, private rounds and the market, written for family offices and investors.")
     + (latest.length ? E.p("<b>Recent pieces</b>") + latest.map((a) => `<p style="margin:0 0 10px;font-size:15px;line-height:1.5"><a href="${esc(abs(artHref(a)))}" style="color:#1f4fff;font-weight:bold">${esc(a.title)}</a><br><span style="color:#6b7590;font-size:13px">${artDate(a.publishedAt, true)}</span></p>`).join("") : "")
-    + E.p("Family offices can also register on Before the Bell to see the companies on the desk by name. <a href=\"" + SITE_URL + "/register\" style=\"color:#1f4fff\">Register the office</a>.");
-  await sendRaw([email], "Articles from the desk: you're on the list", layout(body, { preheader: "About one a week, written for family offices.", footer: PUBLIC_FOOTER, unsubscribeLink: unsubLink(token!), campaign: { medium: "digest", campaign: "subscribe" } }), [], undefined, { kind: "subscribe" });
+    + E.p("Family offices, funds and qualified investors can also register on Before the Bell to see the companies on the desk by name. <a href=\"" + SITE_URL + "/register\" style=\"color:#1f4fff\">Register</a>.");
+  await sendRaw([email], "Articles from the desk: you're on the list", layout(body, { preheader: "About one a week, written for family offices and investors.", footer: PUBLIC_FOOTER, unsubscribeLink: unsubLink(token!), campaign: { medium: "digest", campaign: "subscribe" } }), [], undefined, { kind: "subscribe" });
   return { ok: true as const };
 }
 
@@ -68,7 +68,7 @@ export async function runDigest(opts: { force?: boolean } = {}) {
   const subs = await db.select().from(subscribers).where(and(isNull(subscribers.unsubscribedAt), or(isNull(subscribers.lastSentAt), lt(subscribers.lastSentAt, cutoff))));
   for (const s of subs) {
     const body = E.h("This week from the desk") + E.p(`${fresh.length === 1 ? "One new piece" : `${fresh.length} new pieces`} since last week.`) + items
-      + E.p(`Family offices see the companies behind these notes by name on Before the Bell. <a href="${SITE_URL}/register" style="color:#1f4fff">Register the office</a>.`);
+      + E.p(`Approved investors see the companies behind these notes by name on Before the Bell. <a href="${SITE_URL}/register" style="color:#1f4fff">Register</a>.`);
     const ok = await sendRaw([s.email], subject, layout(body, { preheader: lead.dek || lead.title, footer: PUBLIC_FOOTER, unsubscribeLink: unsubLink(s.token), campaign: { medium: "digest", campaign: weekKey } }), [], undefined, { kind: "digest", step: weekKey });
     if (ok) { sent++; await db.update(subscribers).set({ lastSentAt: now }).where(eq(subscribers.id, s.id)); }
   }

@@ -64,7 +64,7 @@ export function Footer() {
         <div className="ft-grid">
           <div className="ft-brand">
             <a className="logo" href="/"><Mark />Before the Bell</a>
-            <p><b>A front-row seat to India’s next listings.</b> IPO-bound companies for family offices, checked before you see them.</p>
+            <p><b>A front-row seat to India’s next listings.</b> IPO-bound companies for family offices, funds and qualified investors, checked before you see them.</p>
             <a className="mail" href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a>
           </div>
           <div className="ft-col"><h4>Explore</h4><ul>
@@ -84,7 +84,7 @@ export function Footer() {
             <li className="kv"><b>Grievance officer</b>{GRIEVANCE.name} · <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a></li>
           </ul></div>
         </div>
-        <p className="ft-disc">Before the Bell is a deal desk. It is not a stock exchange, trading platform, broker, merchant banker or investment adviser, and is not registered with SEBI. Nothing on this website is an offer or invitation to subscribe for or buy securities. Any offer is made privately, only to identified family offices, through a private placement offer letter or a share purchase agreement under the Companies Act, 2013. Deal overviews on this site are anonymised. Investments in unlisted companies are illiquid, may not list on the expected timeline or at all, and can lose their entire value. The desk charges family offices nothing.</p>
+        <p className="ft-disc">Before the Bell is a deal desk. It is not a stock exchange, trading platform, broker, merchant banker or investment adviser, and is not registered with SEBI. Nothing on this website is an offer or invitation to subscribe for or buy securities. Any offer is made privately, only to identified investors, through a private placement offer letter or a share purchase agreement under the Companies Act, 2013. Deal overviews on this site are anonymised. Investments in unlisted companies are illiquid, may not list on the expected timeline or at all, and can lose their entire value. The desk charges family offices nothing.</p>
         <div className="ft-bottom"><span>© 2026 Before the Bell · SintraCap Advisors LLP</span><span>Mumbai, India</span></div>
       </div>
     </footer>

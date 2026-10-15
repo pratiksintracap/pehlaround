@@ -148,6 +148,13 @@
       "when": 1792030833198,
       "tag": "0020_marketing",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792043377807,
+      "tag": "0021_investor_types",
+      "breakpoints": true
     }
   ]
 }
