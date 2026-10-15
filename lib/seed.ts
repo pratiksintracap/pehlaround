@@ -382,7 +382,7 @@ export const SEED_DEALS: SeedDeal[] = [
   {
     slug: "ethanol-distillery-pre-ipo", company: "Karthik Agro Industries Pvt Ltd", title: "Grain-based ethanol and ENA distillery",
     category: "Pre-IPO primary", stage: "Room open", status: "Room open to registered offices",
-    headline: "245 KLPD grain distillery making extra neutral alcohol and fuel ethanol, raising ahead of a main-board listing.",
+    headline: "Large grain-based distillery making extra neutral alcohol and fuel ethanol, running at full capacity and raising ahead of a main-board listing.",
     listingLabel: "Jul 2027", listingMonth: "2027-07", listingNote: "main board",
     roundLabel: "₹35 Cr", preMoney: "≈ ₹459 Cr", peLabel: "35x · 10x", minTicket: "₹1 Cr",
     open: true, published: true, sort: 40, art: art["ethanol-distillery-pre-ipo"], asOf: "12 Oct 2026",
@@ -486,7 +486,7 @@ export const SEED_DEALS: SeedDeal[] = [
   {
     slug: "edible-oils-pre-ipo", company: "Royal Oils & Foods Ltd", title: "Edible oils",
     category: "Pre-IPO primary", stage: "Room open", status: "Room open to registered offices",
-    headline: "Groundnut-oil refiner moved from a proprietorship into a public company in 2025, expanding capacity ahead of a listing.",
+    headline: "Edible-oil refiner expanding its refining capacity ahead of a listing.",
     listingLabel: "Sept 2028", listingMonth: "2028-09", listingNote: "company target",
     roundLabel: "₹50 Cr", preMoney: "₹200 Cr", peLabel: "19.3x · 7.4x", minTicket: "₹1 Cr",
     open: true, published: true, sort: 50, art: art["edible-oils-pre-ipo"], asOf: "12 Oct 2026",
