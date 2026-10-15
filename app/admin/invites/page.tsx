@@ -2,7 +2,7 @@ import { desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { deskInvites } from "@/db/schema";
-import { createInvites } from "@/lib/admin-actions";
+import { createInvites, sendSampleInvite } from "@/lib/admin-actions";
 import { emailReady } from "@/lib/notify";
 import { SITE_URL } from "@/lib/site";
 import { Msg } from "@/components/AdminBits";
@@ -27,6 +27,12 @@ export default async function Invites({ searchParams }: { searchParams: Promise<
           <label className="check"><input type="checkbox" name="send" defaultChecked={mail} disabled={!mail} /> Email each link from the desk</label>
           <div><button className="btn primary" type="submit">Create invitations</button></div>
         </form>
+        {mail && <form action={sendSampleInvite} className="form chart" style={{ gridColumn: "1 / -1" }}>
+          <span className="k">See what an investor gets</span>
+          <p className="fine" style={{ margin: "6px 0 10px" }}>Emails you the invitation as it would reach an investor, signed by you. The link in the sample does not open anything.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}><label>Name<input name="name" placeholder="Sanjay Shah" /></label><label>Family office<input name="officeName" placeholder="Shah Family Office" /></label></div>
+          <div><button className="btn" type="submit">Send me a sample</button></div>
+        </form>}
         <div className="chart"><span className="k">Invitations · {rows.length} sent · {used} registered</span>
           <ul className="feed inv">{rows.length ? rows.map((r) => (
             <li key={r.id}><b>{r.officeName || r.name || r.email}</b> <span className={`pill ${r.usedAt ? "ok" : ""}`}>{r.usedAt ? "Registered" : "Not yet"}</span><br />

@@ -11,6 +11,7 @@ import { getDb } from "@/lib/db";
 import { articles, broadcasts, dealLinks, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
 import { notifyOffices, notifyDesk, ndaOffices, sendEmail, emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { sendRaw } from "@/lib/email";
+import { inviteEmail } from "@/lib/invite-mail";
 import { randomBytes } from "node:crypto";
 import { SITE_URL } from "@/lib/site";
 import { saveSettings } from "@/lib/settings";
@@ -483,12 +484,32 @@ export async function createInvites(f: FormData) {
     const token = randomBytes(18).toString("base64url");
     await db.insert(deskInvites).values({ token, email, name: name || null, officeName: officeName || null, createdBy: admin.name });
     made++;
-    if (send) mailed += await sendEmail([email], { title: "Your invitation to Before the Bell",
-      body: `${name ? `Dear ${name.split(" ")[0]},\n\n` : ""}The desk has invited ${officeName || "your family office"} to Before the Bell: undiscovered, profitable, IPO-bound companies, vetted before you see them. Your invitation registers the office already approved, so every company on the desk opens to you by name.`,
-      link: `${SITE_URL}/invite/${token}` });
+    if (send) {
+      const m = inviteEmail({ name, officeName, token, from: await signer(admin.id) });
+      mailed += await sendRaw([email], m.subject, m.html, [], undefined, { kind: "invite" });
+    }
   }
   await log(admin, `Desk created ${made} invitations`);
   back("/admin/invites", made ? `${made} invitation${made === 1 ? "" : "s"} ready${mailed ? `, ${mailed} emailed` : ""}. Copy a link to send it yourself.` : "No new emails found (already registered, or no email on the line).");
+}
+
+/** Who signs an invitation: the admin sending it, with their title at SintraCap. */
+const TITLES: Record<string, string> = { "pratik@sintracap.in": "Managing Partner, SintraCap Advisors LLP", "puneetshah@sintracap.in": "VP, Investment Banking, SintraCap Advisors LLP" };
+async function signer(adminId: number) {
+  const db = await getDb();
+  const [me] = await db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, adminId));
+  return { name: me?.name || "The desk", title: TITLES[me?.email || ""] || "SintraCap Advisors LLP", email: me?.email || "" };
+}
+
+/** Emails the admin a sample of the invitation, exactly as an investor would get it. */
+export async function sendSampleInvite(f: FormData) {
+  const admin = await requireAdmin();
+  if (!emailReady()) back("/admin/invites", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
+  const from = await signer(admin.id);
+  const name = s(f, "name", 120) || "Sample Investor", officeName = s(f, "officeName", 160) || "Sample Family Office";
+  const m = inviteEmail({ name, officeName, token: "sample", from });
+  const ok = await sendRaw([from.email], "[Sample] " + m.subject, m.html, [], undefined, { kind: "test", step: "invite" });
+  back("/admin/invites", ok ? `A sample invitation is on its way to ${from.email}.` : "The sample could not be sent. Check the Resend key and sender.");
 }
 
 // ---------------------------------------------------------------- onboarding email series
