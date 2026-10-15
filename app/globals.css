@@ -1101,3 +1101,5 @@ body.disc-bar-on .an-fab{bottom:96px}
 .funnel-row>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:2px}
 .funnel-row b{font-size:22px;font-weight:600;line-height:1}
 .funnel-row span{font-size:12px;color:var(--ink3)}
+.adm-vis{border:1px solid var(--line2);border-radius:12px;padding:12px 16px;margin:0 0 18px;background:var(--bg);display:grid;gap:6px}
+.adm-vis .k{margin-bottom:4px}

@@ -57,6 +57,13 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
 
       <form action={saveDeal} className="form adm-form">
         <input type="hidden" name="id" value={d.id} />
+        <div className="adm-vis"><span className="k">Visibility · {d.published ? (d.open ? "live, room open" : "live, room closed") : "in preparation (desk only)"}</span>
+        {pub ? <>
+        <label className="chk"><input type="checkbox" name="published" defaultChecked={d.published} /> Published (shown on the site). Unticked: in preparation, visible to the desk only. Save the deal for it to take effect.</label>
+        {!d.published && <label className="chk"><input type="checkbox" name="announce" defaultChecked /> When I publish it, tell every approved office (in the app, and by email once email is set up)</label>}
+        <label className="chk"><input type="checkbox" name="open" defaultChecked={d.open} /> Room open (offices can sign the NDA and enter)</label>
+        </> : <p className="notice adm-locked"><b>{d.published ? "Published" : "Hidden draft"}</b> · {d.open ? "room open" : "room closed"}. Publishing and opening the room are done by a super admin; use <a href="#ask-publish">Ask to publish</a> below the form when it is ready.</p>}
+        </div>
         <h2>On the shelf and the public overview</h2>
         <div className="row"><IN name="company" label="Company (shown only to registered offices)" value={d.company} /><IN name="title" label="Public title (anonymised)" value={d.title} /></div>
         <TA name="headline" label="One-line description (anonymised, public)" value={d.headline} rows={2} />
@@ -72,11 +79,6 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <IN name="dataRoomUrl" label="Data bank: Google Drive folder link (layer 3, opens only from the NDA room)" value={d.dataRoomUrl} ph="https://drive.google.com/drive/folders/…" hint="Share the folder as 'Anyone with the link · Viewer' with downloading, printing and copying switched off (Drive: Share → Settings). Offices reach it only through the room, and every open is logged by name and office. Leave empty to show 'coming'." />
         <div className="row"><label>Card illustration<select name="artKey" defaultValue={artKey}>{Object.keys(ART).map((k) => <option key={k} value={k}>{k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
-        {pub ? <>
-        <label className="chk"><input type="checkbox" name="published" defaultChecked={d.published} /> Published (shown on the site). Unticked: in preparation, visible to the desk only.</label>
-        {!d.published && <label className="chk"><input type="checkbox" name="announce" defaultChecked /> When I publish it, tell every approved office (in the app, and by email once email is set up)</label>}
-        <label className="chk"><input type="checkbox" name="open" defaultChecked={d.open} /> Room open (offices can sign the NDA and enter)</label>
-        </> : <p className="notice adm-locked"><b>{d.published ? "Published" : "Hidden draft"}</b> · {d.open ? "room open" : "room closed"}. Publishing and opening the room are done by a super admin; use <a href="#ask-publish">Ask to publish</a> below the form when it is ready.</p>}
         <TA name="publicRisks" label="Short risk list (kept for the desk; no longer shown publicly, the room's risks are under In the room)" value={toText.list(d.publicRisks)} rows={3} />
 
         <h2>In the room</h2>
