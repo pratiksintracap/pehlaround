@@ -1061,3 +1061,14 @@ body.disc-bar-on .an-fab{bottom:96px}
 .fn-bars .bar{height:14px;border-radius:7px;background:var(--line)}
 .fn-bars .bar i{display:block;height:100%;border-radius:7px;background:var(--accent,#1f4fff)}
 .fn-bars b{text-align:right;font-variant-numeric:tabular-nums}
+/* v46: press kit */
+.press-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:0}
+.press-facts>div{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.press-facts dt{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:0 0 6px}
+.press-facts dd{margin:0;font-size:15px;line-height:1.55;color:var(--ink2)}
+.press-boiler p{max-width:760px;line-height:1.6}
+.press-list li a{text-decoration:none}
+.press-strip{padding:10px var(--gutter) 0}
+.press-strip .wrap{display:flex;gap:10px 22px;align-items:center;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.press-strip .k{margin:0}
+.press-strip a{font-weight:600;color:var(--ink2);text-decoration:none}
