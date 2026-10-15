@@ -28,7 +28,8 @@ export type Perm =
   | "team"                // desk team and roles
   | "log.all";            // everyone's actions in the audit log
 
-const ANALYST: Perm[] = ["offices.approve", "offices.notes", "deals.edit", "leads", "articles.edit"];
+// Analysts run the deal book end to end: create, edit, keep a deal in preparation (hidden, desk only), publish, open or close it.
+const ANALYST: Perm[] = ["offices.approve", "offices.notes", "deals.edit", "deals.publish", "leads", "articles.edit"];
 
 /** opts.analystContacts: the super admin's Settings switch that lets analysts see office contact details. */
 export function can(u: Who, p: Perm, opts?: { analystContacts?: boolean }) {

@@ -26,14 +26,14 @@ export default async function AdminDeals({ searchParams }: { searchParams: Promi
       <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Desk Score</th><th title="Last 30 days">Overview views</th><th title="Offices, last 30 days">Rooms opened</th><th>NDAs</th><th>Allocation requests</th><th>Shown</th><th /></tr></thead><tbody>
         {deals.map((d) => { return (
           <tr key={d.id}><th scope="row">{d.company}</th><td>{d.title}</td><td>{d.category}</td><td>{d.listingLabel}</td><td>{d.score != null ? d.score.toFixed(1) : "—"}</td><td>{views.get(d.id) ?? 0}</td><td>{rooms.get(d.id) ?? 0}</td><td>{ndaN.get(d.id) ?? 0}</td><td>{asks.get(d.id) ?? 0}</td>
-            <td>{d.published ? (d.open ? "Live · room open" : "Live · room closed") : "Hidden"}</td>
+            <td>{d.published ? (d.open ? "Live · room open" : "Live · room closed") : <span title="Not on the site; the desk alone sees it">In preparation</span>}</td>
             <td><div style={{ display: "flex", gap: 6 }}><a className="btn sm primary" href={`/admin/deals/${d.id}`}>Edit</a><a className="btn sm" href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a><a className="btn sm" href={`/room/${d.slug}`}>Room</a></div></td></tr>); })}
       </tbody></table></div>
       <div className="chart" style={{ marginTop: 22 }}><span className="k">Add a deal</span>
         <form action={createDeal} className="form"><div className="row">
           <label>Company (legal name)<input name="company" required /></label><label>Public title (anonymised sector)<input name="title" required placeholder="e.g. Specialty chemicals" /></label></div>
           <label>Web address slug<input name="slug" required placeholder="e.g. specialty-chemicals-pre-ipo" /><span className="hint">Shown in the link; keep it anonymised.</span></label>
-          <div><button className="btn" type="submit">Create as hidden draft</button></div></form></div>
+          <div><button className="btn" type="submit">Create, in preparation</button><span className="hint" style={{ marginLeft: 10 }}>Not on the site until Published is ticked on the deal.</span></div></form></div>
     </>
   );
 }

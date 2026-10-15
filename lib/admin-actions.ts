@@ -159,7 +159,7 @@ export async function removeDeskMember(f: FormData) {
 // ---------------------------------------------------------------- deals
 export async function saveDeal(f: FormData) {
   const admin = await requirePerm("deals.edit");
-  const pub = can(admin, "deals.publish"); // analysts edit content; publishing and opening stay with a super admin
+  const pub = can(admin, "deals.publish"); // the whole desk may publish; the permission stays so a role can be narrowed later
   const id = n(f, "id");
   const db = await getDb();
   const [cur] = await db.select().from(deals).where(eq(deals.id, id));
@@ -241,7 +241,7 @@ export async function createDeal(f: FormData) {
   const [row] = await db.insert(deals).values({ slug, company, title, category: "Pre-IPO primary", stage: "Draft", status: "In diligence · not open", headline: "",
     listingLabel: "To be set", open: false, published: false, sort: 200, art: Object.values(ART as Record<string, string>)[0], room }).returning({ id: deals.id });
   await log(admin, `Desk created the deal: ${company}`, row.id);
-  redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent(can(admin, "deals.publish") ? "Created as a hidden draft. Fill it in, then tick Published." : "Created as a hidden draft. Fill it in, then ask a super admin to publish it.")}`);
+  redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent(can(admin, "deals.publish") ? "Created, in preparation: the desk alone sees it. Fill it in, then tick Published." : "Created, in preparation. Fill it in, then ask a super admin to publish it.")}`);
 }
 
 /** An analyst asks a super admin to publish (or open) a deal. */

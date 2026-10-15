@@ -11,11 +11,12 @@ const fmtD = (d: Date | null) => (d ? d.toLocaleDateString("en-IN", { day: "nume
 const CAN: [string, boolean, boolean][] = [
   ["Approve or decline family offices", true, true],
   ["Create and edit deals, documents, Q&A and calls", true, true],
+  ["Keep a deal in preparation (desk only), publish it, open or close its room", true, true],
   ["Work founder leads and support tickets", true, true],
   ["Read the AI analyst's conversations", true, true],
   ["Draft articles and messages to offices", true, true],
   ["See office people's email and phone", true, false],
-  ["Publish or open a deal; publish an article", true, false],
+  ["Publish an article", true, false],
   ["Send messages to all offices", true, false],
   ["Confirm allocations", true, false],
   ["Delete documents and articles", true, false],
