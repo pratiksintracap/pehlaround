@@ -42,11 +42,11 @@ export default async function Register({ searchParams }: P) {
         <p className="lede">{lkDeal
           ? `Register in a minute and your office is approved straight away; ${lkDeal.title} (${lkDeal.category}) opens next, with its NDA signed on screen.`
           : approvedOnSignUp ? "Your office is approved as soon as you register, and every company on the desk opens by name."
-          : `The desk approves new offices ${st.approvalTime}. Then every company on the desk opens by name, with its round and valuation.${forDeal ? " We take you straight back to the deal you were looking at." : ""}`}</p>
+          : `The desk approves new investors ${st.approvalTime}. Then every company on the desk opens by name, with its round and valuation.${forDeal ? " We take you straight back to the deal you were looking at." : ""}`}</p>
         <ul className="ticks">
-          <li>No PAN or ID to look at deals or sign an NDA. KYC comes only if your office invests.</li>
-          <li>Add your CIO, CFO or CA from your dashboard; they join your office.</li>
-          <li>The family&apos;s money moves directly to the company or seller, never through the desk.</li>
+          <li>No PAN or ID to look at deals or sign an NDA. KYC comes only when you invest.</li>
+          <li>Add your CIO, CFO or CA from your dashboard; they join your account.</li>
+          <li>Your money moves directly to the company or seller, never through the desk.</li>
         </ul>
       </div>
       <div className="rv inview" style={{ ["--d" as string]: ".1s" }}>
@@ -57,9 +57,9 @@ export default async function Register({ searchParams }: P) {
           {byCode?.refCode && <input type="hidden" name="ref" value={byCode.refCode} />}
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
           {error && <div className="ok show bad" role="alert">{error}</div>}
-          {lk && <div className="ok show" role="status">Sent by the desk. Your office is approved as soon as you register.</div>}
-          {byCode && !inv && !lk && <div className="ok show" role="status">Referred by {byCode.name}. {approvedOnSignUp ? "Your office is approved as soon as you register." : `The desk approves new offices ${st.approvalTime}.`}</div>}
-          {inv && !lk && <div className="ok show" role="status">{referrer ? `Referred by ${referrer}. ` : "Invited by the desk. "}{approvedOnSignUp ? "Your office is approved as soon as you register." : `The desk approves new offices ${st.approvalTime}.`}</div>}
+          {lk && <div className="ok show" role="status">Sent by the desk. You are approved as soon as you register.</div>}
+          {byCode && !inv && !lk && <div className="ok show" role="status">Referred by {byCode.name}. {approvedOnSignUp ? "You are approved as soon as you register." : `The desk approves new investors ${st.approvalTime}.`}</div>}
+          {inv && !lk && <div className="ok show" role="status">{referrer ? `Referred by ${referrer}. ` : "Invited by the desk. "}{approvedOnSignUp ? "You are approved as soon as you register." : `The desk approves new investors ${st.approvalTime}.`}</div>}
           {invite && !inv && <div className="ok show bad" role="alert">This invitation link was already used or is not valid. You can still register; the desk approves new offices {st.approvalTime}.</div>}
           {link && !lk && <div className="ok show bad" role="alert">This link was already used. If you registered with it, sign in instead.</div>}
 
