@@ -14,7 +14,7 @@ import { isDesk } from "@/lib/perm";
 
 export const dynamic = "force-dynamic";
 
-const DESC = "Undiscovered, profitable, IPO-bound private companies for family offices, funds and qualified investors. Checked before you see them, each in the same structured deal room.";
+const DESC = "Undiscovered, profitable, IPO-bound private companies for family offices, funds and qualified investors. Vetted before you see them, each in the same structured deal room.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

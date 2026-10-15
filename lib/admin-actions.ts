@@ -470,7 +470,7 @@ export async function createInvites(f: FormData) {
     await db.insert(deskInvites).values({ token, email, name: name || null, officeName: officeName || null, createdBy: admin.name });
     made++;
     if (send) mailed += await sendEmail([email], { title: "Your invitation to Before the Bell",
-      body: `${name ? `Dear ${name.split(" ")[0]},\n\n` : ""}The desk has invited ${officeName || "your family office"} to Before the Bell: undiscovered, profitable, IPO-bound companies, checked before you see them. Your invitation registers the office already approved, so every company on the desk opens to you by name.`,
+      body: `${name ? `Dear ${name.split(" ")[0]},\n\n` : ""}The desk has invited ${officeName || "your family office"} to Before the Bell: undiscovered, profitable, IPO-bound companies, vetted before you see them. Your invitation registers the office already approved, so every company on the desk opens to you by name.`,
       link: `${SITE_URL}/invite/${token}` });
   }
   await log(admin, `Desk created ${made} invitations`);

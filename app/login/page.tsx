@@ -29,7 +29,7 @@ const Icon = ({ k }: { k: string }) => (
 const PERKS: [string, string, string][] = [
   ["fresh", "A new deal about every fortnight", "The desk brings a fresh company to the shelf roughly every two weeks on average, each one found directly with the promoter, not passed around by bankers."],
   ["names", "Every company, by name", "Once the desk approves your office: round size, pre-money and trailing and forward P/E for every deal on the desk."],
-  ["checked", "Checked before it reaches you", "Site, factory and plant visits, customer orders verified, customer feedback taken and the numbers reconciled, before a company gets a room. Each one carries a Desk Score."],
+  ["checked", "Vetted before it reaches you", "Site, factory and plant visits, customer orders verified, customer feedback taken and the numbers reconciled, before a company gets a room. Each one carries a Desk Score."],
   ["rooms", "Rooms that open on screen", "Sign that company's NDA on screen and its data room opens at once: financials, terms, IPO path, diligence, risks and documents."],
   ["ask", "Ask the promoter, in writing", "Questions go to the company and the answers are posted for every office. Promoter sessions are set up by the desk."],
   ["commit", "Commit, or pass in one line", "Request an allocation with a slider, or pass with a reason. Nobody calls to change your mind."],

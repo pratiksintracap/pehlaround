@@ -29,7 +29,7 @@ export function GateCard({ deal, state }: { deal: Deal; state: Exclude<Access["s
       break;
     case "closed":
       body = <>
-        <p>This room is not open yet. The overview shows what the desk has checked so far.</p>
+        <p>This room is not open yet. The overview shows what the desk has vetted so far.</p>
         <div><a className="btn" href={`/deals/${deal.slug}`}>Read the overview</a></div>
       </>;
       break;

@@ -64,7 +64,7 @@ export function Footer() {
         <div className="ft-grid">
           <div className="ft-brand">
             <a className="logo" href="/"><Mark />Before the Bell</a>
-            <p><b>A front-row seat to India’s next listings.</b> IPO-bound companies for family offices, funds and qualified investors, checked before you see them.</p>
+            <p><b>A front-row seat to India’s next listings.</b> IPO-bound companies for family offices, funds and qualified investors, vetted before you see them.</p>
             <a className="mail" href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a>
           </div>
           <div className="ft-col"><h4>Explore</h4><ul>

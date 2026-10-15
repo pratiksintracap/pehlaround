@@ -31,7 +31,7 @@ export const SERIES: Step[] = [
       + E.p(`Thank you for registering <b>${c.office.name}</b> on Before the Bell. The desk reviews every new office, usually within two hours on working days, and you will hear from us the moment yours is approved.`)
       + E.p("Once approved, your office sees:")
       + E.list(["Every company on the desk by name, with round size, valuation and trailing and forward P/E", "A deal room for each company, opened with that company's NDA, signed on screen",
-        "Questions to the promoter, promoter sessions and allocation requests, all from your dashboard", "A new company about every fortnight, checked by the desk before you see it"])
+        "Questions to the promoter, promoter sessions and allocation requests, all from your dashboard", "A new company about every fortnight, vetted by the desk before you see it"])
       + E.p("What is on the desk right now, without names:") + dealList(c.deals.slice(0, 3))
       + E.btn("Open your dashboard", "/dashboard") },
   { key: "approved", anchor: "approved", days: 0, name: "You're in", purpose: "Approval: every company now opens by name",
@@ -54,8 +54,8 @@ export const SERIES: Step[] = [
         + E.btn("Open a deal room", d ? `/deals/${d.slug}` : "/deals"); } },
   { key: "how_we_pick", anchor: "approved", days: 5, name: "How a company gets on the desk", purpose: "Builds trust in the curation and the Desk Score",
     subject: () => "How a company gets on the desk",
-    preheader: () => "Site and plant visits, customer orders checked, and a Desk Score for every company.",
-    body: (c) => E.h("Checked before you see it")
+    preheader: () => "Site and plant visits, customer orders vetted, and a Desk Score for every company.",
+    body: (c) => E.h("Vetted before you see it")
       + E.p(`${first(c)}, most companies the desk meets never reach you. Before one gets a room, the desk does its own diligence on it:`)
       + E.list(["Promoter and management meetings", "Site, factory and plant visits", "Customer orders verified, and customer and supplier feedback taken", "Audited numbers reconciled across sources, and the valuation set against listed peers"])
       + E.p("Every company then carries a <b>Desk Score</b> out of 10: the desk's own view of how strongly it fits a first institutional round ahead of its listing. It is not a rating or a recommendation; the findings behind it are in the room.")
