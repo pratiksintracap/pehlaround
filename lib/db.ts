@@ -87,8 +87,8 @@ export async function getDb(): Promise<DB> {
 }
 
 // Starting Desk Scores (out of 10); the desk changes them in Admin → Deals.
-const SCORES: Record<string, number> = { "naval-defence-secondary": 8.6, "jewellery-pre-ipo": 8.3, "ai-collections-software": 8.1,
-  "waste-management-growth-round": 7.9, "edible-oils-pre-ipo": 7.7, "ethanol-distillery-pre-ipo": 7.5 };
+const SCORES: Record<string, number> = { "naval-defence-secondary": 8.8, "jewellery-pre-ipo": 8.6, "ai-collections-software": 8.5,
+  "waste-management-growth-round": 8.3, "edible-oils-pre-ipo": 8.2, "ethanol-distillery-pre-ipo": 8.0 };
 
 async function bootstrap(db: DB) {
   // Seed the deals once.

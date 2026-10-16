@@ -197,6 +197,13 @@
       "when": 1792140000000,
       "tag": "0027_invite_followup",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792145000000,
+      "tag": "0028_desk_scores",
+      "breakpoints": true
     }
   ]
 }

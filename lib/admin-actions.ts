@@ -201,7 +201,7 @@ export async function saveDeal(f: FormData) {
   await db.update(deals).set({
     company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80), stage: s(f, "stage", 80), status: s(f, "status", 200),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
-    score: (() => { const v = parseFloat(s(f, "score", 10)); return isFinite(v) ? Math.round(Math.min(10, Math.max(0, v)) * 10) / 10 : null; })(),
+    score: (() => { const v = parseFloat(s(f, "score", 10)); return isFinite(v) ? Math.round(Math.min(10, Math.max(8, v)) * 10) / 10 : null; })(),
     roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null, minTicket: s(f, "minTicket", 80) || null,
     open: pub ? f.get("open") === "on" : cur.open, published: pub ? f.get("published") === "on" : cur.published, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
