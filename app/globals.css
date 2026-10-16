@@ -1189,3 +1189,4 @@ body:has(.an-fab) main{padding-bottom:84px}
 .score-rubric .tbl.rubric th,.score-rubric .tbl.rubric td{text-align:left;vertical-align:top;padding:8px 6px;border-top:1px solid var(--line)}
 .score-rubric .tbl.rubric td input{width:100%}
 .score-rubric details summary{cursor:pointer}
+.gatecard h1.gate-h{font-size:clamp(22px,2.6vw,30px);line-height:1.2;margin:6px 0 12px}

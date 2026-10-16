@@ -37,13 +37,13 @@ export function GateCard({ deal, state }: { deal: Deal; state: Exclude<Access["s
       body = <p>Your office&apos;s access is on hold. Please write to <a href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a>.</p>;
       break;
     default:
-      body = <p>Rooms open to family offices. Please register your office to continue. <a href="/register">Register</a></p>;
+      body = <p>Rooms open to registered investors. Please register to continue. <a href="/register">Register</a></p>;
   }
   return (
     <div className="gatewall" style={{ position: "static", minHeight: 360 }}>
       <div className="gatecard" style={{ margin: "40px auto" }}>
         <span className="eyebrow lock">Deal room</span>
-        <h2>{deal.title}</h2>
+        <h1 className="gate-h">{deal.title}</h1>
         {body}
       </div>
     </div>
