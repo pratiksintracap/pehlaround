@@ -12,7 +12,7 @@ const MINE = ["Numbers reconcile with the audit", "Valuation acceptable on forwa
 const LOCKIN = "Pre-IPO shares are locked in for six months from listing under SEBI ICDR; confirm in the documents";
 const DEMAT = "Equity shares in demat with an active ISIN, credited to your demat on allotment";
 
-type Doc = { title: string; kind?: string; status: "available" | "requested" | "on_request"; url?: string };
+type Doc = { title: string; kind?: string; status: "available" | "requested" | "on_request"; url?: string; audience?: "approved" | "nda" };
 type Q = { q: string; a?: string; by?: string; asked: string; answered?: string };
 type Session = { title: string; status: string; when: string; summary?: string };
 export type SeedDeal = {
@@ -130,7 +130,7 @@ export const SEED_DEALS: SeedDeal[] = [
       passReasons: ["Valuation too rich for us", "Want the audit signed first", "Sector outside our mandate", "Ticket size does not fit", "Listing timeline too far out", "Secondary only; we prefer primary", "Other"],
     },
     documents: [
-      { title: "Investor presentation", kind: "PDF", status: "available", url: "https://drive.google.com/file/d/13PvYukLhfSuFCvpvUgj8wrLEOwCkK3uN/view?usp=sharing" },
+      { audience: "approved", title: "Investor presentation", kind: "PDF", status: "available", url: "https://drive.google.com/file/d/13PvYukLhfSuFCvpvUgj8wrLEOwCkK3uN/view?usp=sharing" },
       { title: "Information memorandum", kind: "PDF · 48 pp", status: "on_request" },
       { title: "Mandate holder's note: terms, share count, audit status", kind: "Note", status: "on_request" },
       { title: "FY26 provisional financials", kind: "PDF", status: "on_request" },
@@ -249,8 +249,8 @@ export const SEED_DEALS: SeedDeal[] = [
     },
     documents: [
       { title: "Data room: all folders", kind: "Google Drive folder", status: "available", url: "https://drive.google.com/drive/folders/1yczWnE-mlOA2aCE8pnOzDiTCIGxkn0yh?usp=sharing" },
-      { title: "Investor teaser", kind: "PDF · 3 pp", status: "available", url: "https://drive.google.com/file/d/1DU8jJ5Gje_VkFAFsRkI3lqJxcNN2_F1v/view?usp=sharing" },
-      { title: "Pitch deck", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/1S0RjpgJ7xCNqJG9NlS6E6t_-85zvNnPe?usp=sharing" },
+      { audience: "approved", title: "Investor teaser", kind: "PDF · 3 pp", status: "available", url: "https://drive.google.com/file/d/1DU8jJ5Gje_VkFAFsRkI3lqJxcNN2_F1v/view?usp=sharing" },
+      { audience: "approved", title: "Pitch deck", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/1S0RjpgJ7xCNqJG9NlS6E6t_-85zvNnPe?usp=sharing" },
       { title: "Financials and MIS", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/1c8HuU_anJdvx01oKkKAP02W6tnm-HHK3?usp=sharing" },
       { title: "Growth plan", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/185k8X0H03K6DvLQaKwjhCFXAYD3lKMqh?usp=sharing" },
       { title: "Use of funds", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/1xWuIGbybuANJN0bFlEFPd7-zoxOsXJNp?usp=sharing" },
@@ -364,7 +364,7 @@ export const SEED_DEALS: SeedDeal[] = [
     documents: [
       { title: "Data room: all folders", kind: "Google Drive folder", status: "available", url: "https://drive.google.com/drive/folders/1IUWTpcxC6V5SF1zs3Ne7inDPecFBg5Gq?usp=sharing" },
       { title: "Data room index", kind: "Document", status: "available", url: "https://docs.google.com/document/d/10gurZkXDH4wCG8VTVYUGpBJKzIhfz59bafm6I7-evgc/view" },
-      { title: "Investor teaser", kind: "PDF · 2 pp", status: "available", url: "https://drive.google.com/file/d/1oVyJghPIng8vAbc07AEoLBxcV0lxnQBu/view?usp=sharing" },
+      { audience: "approved", title: "Investor teaser", kind: "PDF · 2 pp", status: "available", url: "https://drive.google.com/file/d/1oVyJghPIng8vAbc07AEoLBxcV0lxnQBu/view?usp=sharing" },
       { title: "Company overview", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/1vY0RNLniP6qf861LxZVjUUBmv7DV97UD?usp=sharing" },
       { title: "Products and demos", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/1A9T1BDdK4brJ5EdSTlHQ9zfWyjXk4LF-?usp=sharing" },
       { title: "Financial statements", kind: "Folder", status: "available", url: "https://drive.google.com/drive/folders/1q-Ja2VbkOEv9JVFzbA8EPN9hVCDu4L__?usp=sharing" },
@@ -473,7 +473,7 @@ export const SEED_DEALS: SeedDeal[] = [
     },
     documents: [
       { title: "Information memorandum", kind: "PDF", status: "available" },
-      { title: "Teaser", kind: "PDF", status: "available" },
+      { audience: "approved", title: "Teaser", kind: "PDF", status: "available" },
       { title: "FY25 and FY26 audited financials", kind: "PDF", status: "available" },
       { title: "Projections model", kind: "XLSX", status: "available" },
       { title: "Draft offer letter and shareholders' agreement", kind: "DOCX", status: "requested" },
@@ -674,7 +674,7 @@ export const SEED_DEALS: SeedDeal[] = [
       alerts: ALERTS, passReasons: PASS,
     },
     documents: [
-      { title: "Company presentation", kind: "PDF", status: "available" },
+      { audience: "approved", title: "Company presentation", kind: "PDF", status: "available" },
       { title: "FY24 and FY25 audited financials", kind: "PDF", status: "available" },
       { title: "Projected financials", kind: "PDF", status: "available" },
       { title: "FY26 audited financials", kind: "PDF", status: "requested" },

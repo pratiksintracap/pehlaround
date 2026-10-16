@@ -97,17 +97,17 @@ export default async function Login({ searchParams }: P) {
           </form>
           <div className="lp-reg">
             <b>New to the desk?</b>
-            <p>Registration takes a minute and costs your office nothing: not to register, not to open a room, not to commit. A new deal reaches the desk about every fortnight.</p>
+            <p>Registration takes a minute and commits your office to nothing: not to register, not to open a room, not to ask for an allocation. A new deal reaches the desk about every fortnight.</p>
             <a className="btn" href={reg}>Register your family office</a>
           </div>
           <AppPromo text="Already registered? Put the desk on your home screen: it opens straight to your dashboard." />
         </div>
 
         <section className="lp-stats" aria-label="The desk today">
-          <div><Icon k="rooms" /><b>{all.length}</b><span>companies on the desk now</span></div>
+          <div><Icon k="rooms" /><b>8.0+</b><span>Desk Score on every company</span></div>
           <div><Icon k="fresh" /><b>~2 weeks</b><span>between new deals, on average</span></div>
           <div><Icon k="told" /><b>{listingSpan}</b><span>target listings on the shelf</span></div>
-          <div><Icon k="names" /><b>₹0</b><span>fee for family offices</span></div>
+          <div><Icon k="names" /><b>Deck first</b><span>pitch deck before any NDA</span></div>
         </section>
 
         <section className="lp-block lp-perkwrap" aria-label="What registered offices get">

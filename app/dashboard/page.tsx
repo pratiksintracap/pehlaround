@@ -109,8 +109,10 @@ export default async function Dashboard({ searchParams }: P) {
   const canCommit = /commit/i.test(user.rights);
   const prof = completeness(office);
   const fits = new Map(deals.map((d) => [d.id, fit(office, d)]));
+  // Deals whose pitch deck, IM or teaser is open before the NDA: the shelf leads with it.
+  const deckDeals = names ? new Set((await db.select({ d: documents.dealId }).from(documents).where(eq(documents.audience, "approved"))).map((r) => r.d)) : new Set<number>();
   const NAV: [string, string, string, number | null][] = [
-    ["Shelf", "Deals", "M3 7h18M3 12h18M3 17h12", deals.filter((d) => d.open).length],
+    ["Shelf", "Deals", "M3 7h18M3 12h18M3 17h12", null],
     ["Rooms", "My rooms", "M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16M9 21v-6h6v6", signed.size || null],
     ["Calls", "Calls", "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2", null],
     ["Documents", "Documents", "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6", null],
@@ -179,8 +181,9 @@ export default async function Dashboard({ searchParams }: P) {
                   : <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>}{!passedBy.has(d.id) && fits.get(d.id) && <span className="fitpill" title={fits.get(d.id)!}>Fits your thesis</span>}</th>
               <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td><td>{d.score != null ? <b>{d.score.toFixed(1)}</b> : "—"}</td>
               <td><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
-                <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div></td>
+                {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : deckDeals.has(d.id) ? <a className="btn sm primary" href={`/deals/${d.slug}#deck`}>Pitch deck</a> : null}
+                {!signed.has(d.id) && d.open && names ? <a className="btn sm" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
+                {!deckDeals.has(d.id) && <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a>}</div></td>
             </tr>
           ))}</tbody></table></div>
         <ul className="dash-cards">{deals.map((d) => (
@@ -190,8 +193,9 @@ export default async function Dashboard({ searchParams }: P) {
             <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
               <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
             <div className="dc-acts">
-              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : d.open && names ? <a className="btn sm primary" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
-              <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a></div>
+              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : deckDeals.has(d.id) ? <a className="btn sm primary" href={`/deals/${d.slug}#deck`}>Pitch deck</a> : null}
+              {!signed.has(d.id) && d.open && names ? <a className="btn sm" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
+              {!deckDeals.has(d.id) && <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a>}</div>
           </li>))}</ul>
         <p className="fine">Same fields for every deal so offices can compare quickly.</p>
         {promises.length > 0 && (
@@ -410,7 +414,7 @@ export default async function Dashboard({ searchParams }: P) {
           <form method="dialog" className="wl-x"><button className="btn sm ghost" aria-label="Close">✕</button></form>
           <span className="eyebrow live">You&apos;re in</span>
           <h2>Your office is approved</h2>
-          <p>Every company on the desk is now open to you by name. Open a company&apos;s room by signing its NDA on screen with your name and a code we email you.</p>
+          <p>Every company on the desk is now open to you by name, with its pitch deck. When one interests you, sign its NDA on screen and its room opens with the numbers, the documents and the Q&amp;A.</p>
           {promises.length > 0 && <ul className="ticks wl-prom" aria-label="What the desk commits to">{promises.slice(0, 3).map((p) => <li key={p.title}>{p.title}</li>)}</ul>}
           {profileGaps.length > 0 && (
             <form className="form wl-profile" method="post" action="/api/office/profile">
@@ -425,7 +429,7 @@ export default async function Dashboard({ searchParams }: P) {
           )}
           <span className="k">Highest Desk Scores on the shelf</span>
           <ul className="roomlist">{[...deals].filter((d) => d.open).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3).map((d) => (
-            <li key={d.id}><div><b>{d.company}</b><small>{d.category}{d.score != null ? ` · Desk Score ${d.score.toFixed(1)}` : ""}</small></div><a className="btn sm primary" href={`/deals/${d.slug}#sign`}>Sign NDA</a></li>))}</ul>
+            <li key={d.id}><div><b>{d.company}</b><small>{d.category}{d.score != null ? ` · Desk Score ${d.score.toFixed(1)}` : ""}</small></div>{deckDeals.has(d.id) ? <a className="btn sm primary" href={`/deals/${d.slug}#deck`}>Pitch deck</a> : <a className="btn sm primary" href={`/deals/${d.slug}#sign`}>Sign NDA</a>}</li>))}</ul>
           <p className="fine" style={{ marginTop: 12 }}>Tell the desk what you look for in <a href="#Profile" data-close-welcome="">your investment profile</a> and the shelf will mark the deals that fit.</p>
           <form method="dialog"><button className="btn ghost sm">I&apos;ll look around first</button></form>
         </dialog>
