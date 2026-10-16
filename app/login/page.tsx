@@ -107,7 +107,7 @@ export default async function Login({ searchParams }: P) {
           <div><Icon k="rooms" /><b>8.0+</b><span>Desk Score on every company</span></div>
           <div><Icon k="fresh" /><b>~2 weeks</b><span>between new deals, on average</span></div>
           <div><Icon k="told" /><b>{listingSpan}</b><span>target listings on the shelf</span></div>
-          <div><Icon k="names" /><b>Deck first</b><span>pitch deck before any NDA</span></div>
+          <div><Icon k="names" /><b>Profitable</b><span>companies, before they list</span></div>
         </section>
 
         <section className="lp-block lp-perkwrap" aria-label="What registered offices get">
