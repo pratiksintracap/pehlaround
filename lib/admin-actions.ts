@@ -11,6 +11,7 @@ import { getDb } from "@/lib/db";
 import { articles, broadcasts, dealLinks, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
 import { notifyOffices, notifyDesk, ndaOffices, sendEmail, emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { sendRaw } from "@/lib/email";
+import { RUBRIC, partsFromForm, rubricTotal, DESK_BAR } from "@/lib/score";
 import { inviteEmail } from "@/lib/invite-mail";
 import { randomBytes } from "node:crypto";
 import { SITE_URL } from "@/lib/site";
@@ -193,6 +194,12 @@ export async function saveDeal(f: FormData) {
     back(path, (e as Error).message);
     return;
   }
+  // Desk Score: once every rubric area is marked, the weighted total is the score. Below the desk's bar the
+  // company does not belong on the desk, so the save is refused rather than the number being rounded up.
+  const parts = partsFromForm(f);
+  const total = rubricTotal(parts);
+  if (total != null && total < DESK_BAR) { back(path, `The rubric totals ${total.toFixed(1)}, below the desk's bar of ${DESK_BAR.toFixed(1)}. Recheck the marks; a company below the bar is not listed on the desk.`); return; }
+  const manual = (() => { const v = parseFloat(s(f, "score", 10)); return isFinite(v) ? Math.round(Math.min(10, Math.max(DESK_BAR, v)) * 10) / 10 : null; })();
   const artKey = s(f, "artKey");
   const day = (k: string) => { const v = s(f, k, 10); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined; };
   const rs = (k: string) => { const v = parseFloat(s(f, k, 20).replace(/[₹,\s]/g, "")); return isFinite(v) && v > 0 ? v : undefined; };
@@ -201,7 +208,7 @@ export async function saveDeal(f: FormData) {
   await db.update(deals).set({
     company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80), stage: s(f, "stage", 80), status: s(f, "status", 200),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
-    score: (() => { const v = parseFloat(s(f, "score", 10)); return isFinite(v) ? Math.round(Math.min(10, Math.max(8, v)) * 10) / 10 : null; })(),
+    score: total ?? manual, scoreParts: Object.keys(parts).length ? parts : null,
     roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null, minTicket: s(f, "minTicket", 80) || null,
     open: pub ? f.get("open") === "on" : cur.open, published: pub ? f.get("published") === "on" : cur.published, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
@@ -227,7 +234,7 @@ export async function saveDeal(f: FormData) {
     await notifyOffices(ids, { title: `New on the desk: ${s(f, "company", 200)}`, body: `${s(f, "title", 200)} · ${s(f, "category", 80)}. ${s(f, "headline", 600)}`, link: `/deals/${cur.slug}` });
   }
   revalidatePath("/", "layout");
-  back(path, "Saved. The site shows the change now.");
+  back(path, total != null ? `Saved. Desk Score ${total.toFixed(1)} from the rubric; the site shows it now.` : Object.keys(parts).length ? `Saved. The rubric has ${Object.keys(parts).length} of ${RUBRIC.length} areas marked; the score stays as entered until all are marked.` : "Saved. The site shows the change now.");
 }
 
 /** One-click from the deals list: take a live deal down (back to in preparation) or put it live again. No announcement is sent. */

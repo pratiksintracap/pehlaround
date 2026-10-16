@@ -89,6 +89,7 @@ export const deals = pgTable("deals", {
   sort: integer("sort").notNull().default(100),
   art: text("art"),                             // inline SVG for the card
   score: doublePrecision("score"),               // Desk Score out of 10, set by the desk (proprietary)
+  scoreParts: jsonb("score_parts").$type<import("@/lib/score").ScoreParts>(), // the rubric marks behind the score (desk only)
   publicRisks: jsonb("public_risks").$type<string[]>().notNull().default([]),
   asOf: text("as_of"),                          // "11 Oct 2026"
   ndaVersion: text("nda_version").notNull().default("2026-10-12"),

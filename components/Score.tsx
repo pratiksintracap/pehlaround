@@ -6,7 +6,7 @@ export function ScoreBadge({ score, size = "lg", note = true }: { score: number;
     <div className={`pscore ${size}`}>
       <span dangerouslySetInnerHTML={{ __html: scoreSvg(score, size === "lg" ? 88 : 44) }} />
       <div><span className="pk">Desk Score</span><span className="ps"><b>{score.toFixed(1)}</b> / 10</span>
-        {note && <p className="fine">{SCORE_NOTE}</p>}</div>
+        {note && <p className="fine">{SCORE_NOTE} <a href="/how-it-works#desk-score">How the Desk Score works</a></p>}</div>
     </div>
   );
 }

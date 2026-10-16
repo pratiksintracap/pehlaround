@@ -14,6 +14,8 @@ import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
 const TA = ({ name, label, value, rows = 5, hint }: { name: string; label: string; value: string; rows?: number; hint?: string }) => (
   <label>{label}<textarea name={name} rows={rows} defaultValue={value} />{hint && <span className="hint">{hint}</span>}</label>
 );
+import { RUBRIC, rubricTotal, DESK_BAR } from "@/lib/score";
+
 const IN = ({ name, label, value, hint, ph }: { name: string; label: string; value?: string | number | null; hint?: string; ph?: string }) => (
   <label>{label}<input name={name} defaultValue={value ?? ""} placeholder={ph} />{hint && <span className="hint">{hint}</span>}</label>
 );
@@ -71,7 +73,17 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><label>Structure<select name="category" defaultValue={d.category}><option>Pre-IPO primary</option><option>Pre-IPO secondary</option><option>Growth round</option><option>SME IPO anchor</option></select></label>
           <IN name="stage" label="Tag on the card" value={d.stage} ph="Room open" /></div>
         <div className="row"><IN name="status" label="Status line" value={d.status} /><IN name="asOf" label="Score and tracker as of" value={d.asOf} ph="12 Oct 2026" /></div>
-        <div className="row"><IN name="score" label="Desk Score (out of 10)" value={d.score ?? ""} ph="8.4" hint="8.0 to 10, shown on the card and overview (anything lower is saved as 8.0). Keep it believable: the desk's range today is 8.0–8.8. Leave empty to show 'assessment in progress'." /><span /></div>
+        <div className="score-rubric" id="score">
+          <span className="k">Desk Score · {rubricTotal(d.scoreParts) != null ? <>{rubricTotal(d.scoreParts)!.toFixed(1)} from the rubric</> : d.score != null ? <>{d.score.toFixed(1)}, entered by hand (not yet scored on the rubric)</> : "not set"}</span>
+          <p className="fine">Mark each area 0–10 against the checklist and give a one-line reason. When every area is marked, the weighted total becomes the Desk Score. The bar for the desk is {DESK_BAR.toFixed(1)}: a total below it is not saved, because such a company is not listed. The marks and reasons stay with the desk; the site shows only the total and what the score weighs.</p>
+          <table className="tbl rubric"><thead><tr><th>Area</th><th>Weight</th><th>Mark</th><th>Reason (desk only)</th></tr></thead><tbody>
+            {RUBRIC.map((r) => { const p = d.scoreParts?.[r.key]; return (
+              <tr key={r.key}><td><b>{r.label}</b><details><summary className="fine">Checklist</summary><p className="fine">{r.guide}</p></details></td><td className="mono">{Math.round(r.weight * 100)}%</td>
+                <td><input name={`sp_${r.key}`} inputMode="decimal" defaultValue={p?.v ?? ""} placeholder="0–10" style={{ width: 70 }} /></td>
+                <td><input name={`sn_${r.key}`} defaultValue={p?.note ?? ""} placeholder="e.g. FY24–26 audited, cash conversion 82%" /></td></tr>); })}
+          </tbody></table>
+          <div className="row"><IN name="score" label="Score entered by hand (only until the rubric is complete)" value={d.score ?? ""} ph="8.4" hint={`${DESK_BAR.toFixed(1)} to 10. Leave empty to show 'assessment in progress'.`} /><span /></div>
+        </div>
         <div className="row"><IN name="listingLabel" label="Target listing (label)" value={d.listingLabel} ph="Sept 2028" /><IN name="listingMonth" label="Target listing month" value={d.listingMonth} ph="2028-09" hint="YYYY-MM; leave empty if not set" /></div>
         <div className="row"><IN name="listingNote" label="Listing note" value={d.listingNote} ph="main board" /><IN name="sort" label="Order on the shelf" value={d.sort} /></div>
         <div className="row"><IN name="roundLabel" label="Round (registered offices)" value={d.roundLabel} /><IN name="preMoney" label="Pre-money" value={d.preMoney} /></div>

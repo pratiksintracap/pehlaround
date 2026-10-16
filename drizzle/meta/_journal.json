@@ -204,6 +204,13 @@
       "when": 1792145000000,
       "tag": "0028_desk_scores",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792146000000,
+      "tag": "0029_score_parts",
+      "breakpoints": true
     }
   ]
 }

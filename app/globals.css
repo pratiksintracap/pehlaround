@@ -1184,3 +1184,8 @@ body:has(.an-fab) main{padding-bottom:84px}
 .nda-prof{border:1px solid var(--line);border-radius:12px;padding:10px 14px 14px;margin:6px 0;display:grid;gap:12px}
 .nda-prof legend{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:0 6px}
 .nda-prof .fine{margin:0}
+.score-rubric{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:8px 0 14px;display:grid;gap:10px}
+.score-rubric .tbl.rubric{width:100%;border-collapse:collapse}
+.score-rubric .tbl.rubric th,.score-rubric .tbl.rubric td{text-align:left;vertical-align:top;padding:8px 6px;border-top:1px solid var(--line)}
+.score-rubric .tbl.rubric td input{width:100%}
+.score-rubric details summary{cursor:pointer}

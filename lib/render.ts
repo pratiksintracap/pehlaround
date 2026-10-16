@@ -28,7 +28,7 @@ export function runwayHtml(d: Deal) {
   return `<div class="runway" aria-label="Target listing ${esc(d.listingLabel)}">${runwaySvg(d)}<div class="k"><span>Today</span><span>Target listing · <b>${esc(d.listingLabel)}</b></span></div></div>`;
 }
 
-export const SCORE_NOTE = "Before the Bell's proprietary score for how strongly a company fits a first institutional round ahead of its listing. The method is the desk's own. It is not a rating of the shares or a recommendation.";
+export const SCORE_NOTE = "Before the Bell's own score for how well a company suits a pre-IPO investment. It weighs the quality of earnings, the entry price against listed peers, the path to listing, governance, the business and the deal terms. Only companies that clear the desk's bar of 8.0 are listed. It is not a rating of the shares or a recommendation.";
 
 /** Ring showing the Desk Score out of 10. */
 export function scoreSvg(score: number, px = 44) {
