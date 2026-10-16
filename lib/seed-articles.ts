@@ -1,6 +1,46 @@
 // The desk's opening articles. Edit or add more in /admin/articles.
 export const SEED_ARTICLES = [
   {
+    slug: "oversubscribed-132-times-ipo-allocation",
+    title: "Oversubscribed 132 times: why the IPO book is the hardest place to build a position",
+    dek: "This week a ₹712 Cr offer drew bids 132 times its size, and 99 funds took 45% of the week's largest issue before the public could bid. What reaches an ordinary applicant is a sliver.",
+    publishedAt: "2026-10-16T12:00:00+05:30",
+    body: `Two numbers from this week's IPO books say more about where returns are made than any listing-day headline.
+
+The first is HD Fire Protect. Its ₹712 Cr offer, entirely a sale by the promoters, closed on Thursday subscribed 132.21 times. Qualified institutions bid for 256.65 times the shares set aside for them, non-institutional investors 203.21 times and retail 30.49 times. The grey market quotes the shares about 30% above the ₹271 top of the band ahead of the listing on 21 October.
+
+The second is Zetwerk. A day before its ₹5,012 Cr issue opened, the company placed ₹2,251 Cr with 99 anchor investors at ₹151, the top of the band: BlackRock, Goldman Sachs, Nomura, Capital Group, Norway's sovereign fund, ADIA, and the large domestic mutual funds and insurers among them. That is about 45% of the issue sold before a single public bid. By Friday morning, the second day of bidding, the rest of the book was a quarter covered; it closes on 19 October.
+
+## What 132 times actually means
+
+An oversubscribed book is good news for the sellers. For a buyer, it is a rationing system.
+
+- A fund that bid for ₹100 Cr of HD Fire in the institutional book will be allotted about ₹39 lakh.
+- A retail applicant has roughly a one-in-thirty chance of receiving a single lot of 55 shares, worth about ₹15,000.
+- A family office bidding ₹5 Cr as a large non-institutional investor enters a draw. If it wins, it receives only the minimum application of just over ₹10 lakh, whatever it asked for.
+
+Even if the listing gain the grey market expects arrives, it arrives on an allocation too small to matter to a portfolio. The popular issues are the ones that cannot be bought in size, and the ones that can be bought in size are usually the ones the market is less keen on.
+
+## The queue starts before the IPO opens
+
+Zetwerk's anchor book shows the order of access. Anchors are allotted before the public, at the top of the band, in size, with half their shares locked in for 30 days and half for 90. Ahead of them, Zetwerk's early backers are selling part of their stake in the same issue at many times what they paid.
+
+Each step back in that queue gives a larger allocation at a lower price, in exchange for illiquidity and more work on the company. The last step, a private round in a profitable company before any banker has put it on the calendar, is the only one where a family office decides its own ticket size.
+
+## What to take from the week
+
+- Treat a hot IPO as a lottery ticket, not a position. Apply if you like the company; do not plan around the allotment.
+- Look at who is selling and at what price they entered. In this week's offers, most of the money goes to existing shareholders.
+- If you want a meaningful stake in a company before it lists, you have to be in before the book opens. That means private rounds, priced against today's listed peers, in businesses that already earn a profit.
+
+The listing-day pop belongs to whoever gets an allotment. The multiple belongs to whoever was in years earlier.`,
+    sources: [
+      { title: "HD Fire Protect IPO subscription: 132.21x on the final day (IPO Guru, 15 October 2026)", url: "https://www.ipoguru.in/news/hd-fire-protect-ipo-subscription-status-final-day" },
+      { title: "Zetwerk raises ₹2,251 crore from anchor investors ahead of ₹5,012-cr IPO (Business Standard, 14 October 2026)", url: "https://www.business-standard.com/markets/ipo/zetwerk-raises-2-251-crore-from-anchor-investors-ahead-of-5-012-cr-ipo-126101401332_1.html" },
+      { title: "Zetwerk Manufacturing Businesses IPO subscription status (IPOGyani, 16 October 2026)", url: "https://ipogyani.com/ipo/zetwerk-manufacturing-businesses-ipo/subscription" },
+    ],
+  },
+  {
     slug: "nine-ipos-two-thirds-to-sellers",
     title: "Nine IPOs this week, and two-thirds of the money goes to sellers",
     dek: "₹10,288 Cr of main-board offers open between Monday and Wednesday. Only ₹3,330 Cr of it is new money for the companies. The rest is early investors and promoters cashing out.",
