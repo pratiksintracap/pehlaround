@@ -79,18 +79,23 @@ export function layout(body: string, opts: { preheader?: string; unsubscribeFor?
 export type Attachment = { filename: string; content: Uint8Array | Buffer };
 /** What an email is for, kept with its delivery record (see /admin/emails). */
 export type MailMeta = { kind?: string; step?: string; userId?: number | null; officeId?: number | null };
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export const RESEND_API = () => process.env.RESEND_API_URL || "https://api.resend.com/emails";
 
 /** Sends one email per address through Resend and records each one. Returns how many were accepted. */
 export async function sendRaw(to: string[], subject: string, html: string, attachments: Attachment[] = [], replyTo?: string, meta: MailMeta = {}) {
   if (!emailReady() || !to.length) return 0;
   const from = process.env.EMAIL_FROM || "Before the Bell <desk@beforethebell.in>";
+  const post = (addr: string) => fetch(RESEND_API(), { method: "POST", headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json" },
+    body: JSON.stringify({ from, to: addr, subject, html, reply_to: replyTo || DESK_EMAIL,
+      attachments: attachments.map((a) => ({ filename: a.filename, content: Buffer.from(a.content).toString("base64") })) }) });
   let sent = 0;
-  for (const addr of to) {
+  for (const [i, addr] of to.entries()) {
+    if (i > 0) await pause(600); // Resend accepts about two requests a second; stay under it
     try {
-      const r = await fetch(RESEND_API(), { method: "POST", headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json" },
-        body: JSON.stringify({ from, to: addr, subject, html, reply_to: replyTo || DESK_EMAIL,
-          attachments: attachments.map((a) => ({ filename: a.filename, content: Buffer.from(a.content).toString("base64") })) }) });
+      let r = await post(addr);
+      // Rate-limited: wait as long as Resend asks (or a second) and try twice more.
+      for (let k = 0; r.status === 429 && k < 2; k++) { await pause(Math.min(5000, 1000 * (Number(r.headers.get("retry-after")) || 1))); r = await post(addr); }
       if (r.ok) {
         sent++;
         const id = await r.json().then((j: { id?: string }) => (typeof j?.id === "string" ? j.id : null)).catch(() => null);
@@ -98,8 +103,8 @@ export async function sendRaw(to: string[], subject: string, html: string, attac
           const db = await getDb();
           await db.insert(emailLog).values({ resendId: id, kind: meta.kind || "transactional", step: meta.step ?? null, userId: meta.userId ?? null, officeId: meta.officeId ?? null, to: addr, subject });
         } catch (e) { console.error("email_log", e); }
-      }
-    } catch { /* best effort; the in-app record stands */ }
+      } else console.error("resend", r.status, addr);
+    } catch (e) { console.error("resend", e); }
   }
   return sent;
 }

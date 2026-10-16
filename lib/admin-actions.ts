@@ -5,7 +5,7 @@ import { startSeries, backfill, preview } from "@/lib/onboarding";
 import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { PUBLIC_TAG } from "@/lib/cache";
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
 import { articles, broadcasts, dealLinks, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
@@ -482,16 +482,38 @@ export async function createInvites(f: FormData) {
     const known = /^(known|yes|engaged)$/i.test(flag);
     const [used] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
     if (used) continue;
+    const [dup] = await db.select({ id: deskInvites.id }).from(deskInvites).where(and(eq(deskInvites.email, email), isNull(deskInvites.usedAt)));
+    if (dup) continue; // already invited: use "Email the ones not yet emailed" instead of a second link
     const token = randomBytes(18).toString("base64url");
-    await db.insert(deskInvites).values({ token, email, name: name || null, officeName: officeName || null, createdBy: admin.name });
+    const [inv] = await db.insert(deskInvites).values({ token, email, name: name || null, officeName: officeName || null, createdBy: admin.name, known }).returning({ id: deskInvites.id });
     made++;
     if (send) {
       const m = inviteEmail({ name, officeName: /\.[a-z]{2,}$/i.test(officeName) ? "" : officeName, token, known });
-      mailed += await sendRaw([email], m.subject, m.html, [], undefined, { kind: "invite" });
+      const ok = await sendRaw([email], m.subject, m.html, [], undefined, { kind: "invite" });
+      if (ok) { mailed++; await db.update(deskInvites).set({ emailedAt: new Date() }).where(eq(deskInvites.id, inv.id)); }
+      await new Promise((r) => setTimeout(r, 600));
     }
   }
   await log(admin, `Desk created ${made} invitations`);
-  back("/admin/invites", made ? `${made} invitation${made === 1 ? "" : "s"} ready${mailed ? `, ${mailed} emailed` : ""}. Copy a link to send it yourself.` : "No new emails found (already registered, or no email on the line).");
+  back("/admin/invites", made ? `${made} invitation${made === 1 ? "" : "s"} ready${mailed ? `, ${mailed} emailed` : ""}. Copy a link to send it yourself.` : "No new emails found (already registered, already invited, or no email on the line).");
+}
+
+/** Emails every invitation that was created but whose email never went out (and that nobody has used yet). */
+export async function emailPendingInvites() {
+  const admin = await requireAdmin();
+  if (!emailReady()) back("/admin/invites", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
+  const db = await getDb();
+  const rows = await db.select().from(deskInvites).where(and(isNull(deskInvites.emailedAt), isNull(deskInvites.usedAt)));
+  let mailed = 0;
+  for (const r of rows.slice(0, 40)) {
+    const office = r.officeName || "";
+    const m = inviteEmail({ name: r.name, officeName: /\.[a-z]{2,}$/i.test(office) ? "" : office, token: r.token, known: r.known });
+    const ok = await sendRaw([r.email], m.subject, m.html, [], undefined, { kind: "invite" });
+    if (ok) { mailed++; await db.update(deskInvites).set({ emailedAt: new Date() }).where(eq(deskInvites.id, r.id)); }
+    await new Promise((res) => setTimeout(res, 600));
+  }
+  await log(admin, `Desk emailed ${mailed} pending invitations`);
+  back("/admin/invites", `${mailed} of ${Math.min(rows.length, 40)} pending invitations emailed.`);
 }
 
 /** Who signs an invitation: the admin sending it, with their title at SintraCap. */

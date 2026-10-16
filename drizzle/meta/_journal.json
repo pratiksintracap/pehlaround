@@ -183,6 +183,13 @@
       "when": 1792125917855,
       "tag": "0025_waste_listing_target",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792129043996,
+      "tag": "0026_invite_delivery",
+      "breakpoints": true
     }
   ]
 }

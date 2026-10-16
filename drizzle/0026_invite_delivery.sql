@@ -1,0 +1,5 @@
+ALTER TABLE "desk_invites" ADD COLUMN "known" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "desk_invites" ADD COLUMN "emailed_at" timestamp with time zone;--> statement-breakpoint
+-- Invitations already emailed before this column existed: take the time from the email log.
+UPDATE "desk_invites" d SET "emailed_at" = l."sent_at" FROM (SELECT "to", max("sent_at") AS "sent_at" FROM "email_log" WHERE "kind" = 'invite' GROUP BY "to") l WHERE l."to" = d."email" AND d."emailed_at" IS NULL;--> statement-breakpoint
+UPDATE "desk_invites" SET "known" = true WHERE "email" IN ('dhairya.dhruv@360.one', 'service@abakkusinvest.com', 'pooja.parmar@equanimity.vc', 'tt@lokcapital.com', 'proposals@mistryventures.com', 'chandrakant.soni@motilaloswal.com', 'anjan.ray@navamcapital.com', 'avani@nksqr.com', 'tarun.verma@sigorg.com', 'akshay.dawra@steptrade.capital', 'saloni@sunicon.vc', 'kaustubhr@ashikagroup.com', 'neil991@gmail.com', 'info@picocap.in', 'pallavi.barua@incredamc.com', 'funding@ipventures.in');

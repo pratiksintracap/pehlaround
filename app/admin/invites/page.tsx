@@ -2,7 +2,9 @@ import { desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { deskInvites } from "@/db/schema";
-import { createInvites, sendSampleInvite } from "@/lib/admin-actions";
+import { createInvites, sendSampleInvite, emailPendingInvites } from "@/lib/admin-actions";
+
+export const maxDuration = 60;
 import { emailReady } from "@/lib/notify";
 import { SITE_URL } from "@/lib/site";
 import { Msg } from "@/components/AdminBits";
@@ -16,6 +18,7 @@ export default async function Invites({ searchParams }: { searchParams: Promise<
   const rows = await db.select().from(deskInvites).orderBy(desc(deskInvites.createdAt)).limit(300);
   const mail = emailReady();
   const used = rows.filter((r) => r.usedAt).length;
+  const pending = rows.filter((r) => !r.emailedAt && !r.usedAt).length;
   return (
     <>
       <Msg msg={msg} />
@@ -33,9 +36,10 @@ export default async function Invites({ searchParams }: { searchParams: Promise<
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}><label>Name<input name="name" placeholder="Sanjay Shah" /></label><label>Family office<input name="officeName" placeholder="Shah Family Office" /></label></div>
           <div><button className="btn" type="submit">Send me a sample</button></div>
         </form>}
-        <div className="chart"><span className="k">Invitations · {rows.length} sent · {used} registered</span>
+        <div className="chart"><span className="k">Invitations · {rows.length} created · {rows.length - pending - used} emailed · {used} registered</span>
+          {mail && pending > 0 && <form action={emailPendingInvites} style={{ margin: "8px 0 4px" }}><button className="btn sm primary" type="submit">Email the {pending} not yet emailed</button></form>}
           <ul className="feed inv">{rows.length ? rows.map((r) => (
-            <li key={r.id}><b>{r.officeName || r.name || r.email}</b> <span className={`pill ${r.usedAt ? "ok" : ""}`}>{r.usedAt ? "Registered" : "Not yet"}</span><br />
+            <li key={r.id}><b>{r.officeName || r.name || r.email}</b> <span className={`pill ${r.usedAt ? "ok" : ""}`}>{r.usedAt ? "Registered" : r.emailedAt ? "Emailed" : "Not emailed"}</span><br />
               <small className="fine">{r.name ? `${r.name} · ` : ""}{r.email} · {fmtD(r.createdAt)}</small>
               {!r.usedAt && <input className="mono copy" readOnly value={`${SITE_URL}/invite/${r.token}`} />}</li>))
             : null}</ul>{!rows.length && <p className="fine">No invitations yet.</p>}</div>
