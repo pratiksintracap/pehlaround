@@ -590,7 +590,7 @@ export const SEED_DEALS: SeedDeal[] = [
     slug: "waste-management-growth-round", company: "LAHS Green India Pvt Ltd", title: "Waste management and composting equipment",
     category: "Pre-IPO primary", stage: "Room open", status: "Room open to registered offices",
     headline: "Composting and waste-processing machines for municipalities and companies, with patented products. Raising ahead of an SME IPO.",
-    listingLabel: "Sept 2027", listingMonth: "2027-09", listingNote: "SME IPO",
+    listingLabel: "September 2027", listingMonth: "2027-09", listingNote: "SME IPO",
     roundLabel: "₹33 Cr", preMoney: "₹100 Cr", peLabel: "22x · 6.4x", minTicket: "₹50 L",
     open: true, published: true, sort: 60, art: art["waste-management-growth-round"], asOf: "12 Oct 2026",
     publicRisks: [

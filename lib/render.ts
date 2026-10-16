@@ -56,7 +56,8 @@ export function cardHtml(d: Deal, i: number, signed: boolean, registered = false
 /** "Coming to the desk": deals still in preparation, by sector, structure and listing year only. */
 export function upcomingHtml(list: Deal[], signedIn: boolean) {
   if (!list.length) return "";
-  const yr = (d: Deal) => (d.listingLabel.match(/20\d\d/) || [""])[0] || "To be set";
+  // The target the desk has set (e.g. "September 2027"); "To be set" until it carries a year.
+  const yr = (d: Deal) => (/20\d\d/.test(d.listingLabel) ? d.listingLabel : "To be set");
   const cards = list.map((d) => `<article class="up-card"><figure class="deal-art" aria-hidden="true">${d.art || ""}</figure><div class="up-body"><span class="up-tag">In diligence</span><h3>${esc(d.title)}</h3>${d.headline ? `<p>${esc(d.headline)}</p>` : ""}<dl><div><dt>Structure</dt><dd>${esc(d.category)}</dd></div><div><dt>Target listing</dt><dd>${esc(yr(d))}</dd></div></dl></div></article>`).join("");
   const cta = signedIn ? `<p class="fine up-note">You will be told the day each one opens.</p>` : `<p class="up-note"><a class="btn sm" href="/register">Register to be told when they open</a></p>`;
   return `<section class="sec tight upcoming" id="coming"><div class="wrap"><div class="sec-head rv inview"><div><span class="eyebrow">Coming to the desk</span><h2 class="tt">In diligence now.<span class="tt2">Opening over the coming weeks.</span></h2><p>The desk is still on site with these companies. Each opens here once its diligence is done; until then only the sector and structure are shown.</p></div></div><div class="up-row" tabindex="0" aria-label="Companies coming to the desk">${cards}</div>${cta}</div></section>`;
