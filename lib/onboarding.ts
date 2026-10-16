@@ -20,7 +20,6 @@ type Step = { key: string; anchor: "register" | "approved"; days: number; name: 
 
 const first = (c: Ctx) => c.user.name.split(" ")[0];
 const dealList = (list: Ctx["deals"]) => list.map((d) => E.deal(d.title, `${d.category} · target listing ${d.listingLabel}`, d.score, `/deals/${d.slug}`)).join("");
-const PRATIK = `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">Pratik Saraogi<br>CEO, Before the Bell</p>`;
 
 export const SERIES: Step[] = [
   { key: "welcome", anchor: "register", days: 0, name: "Welcome", purpose: "Confirms the registration and says what happens next",
@@ -77,15 +76,14 @@ export const SERIES: Step[] = [
         : E.p(`${first(c)}, a new company reaches the desk about every fortnight. The companies on the desk today:`) + dealList(c.deals.slice(0, 3)))
       + (c.arts.length ? E.p("From the desk's articles:") + E.list(c.arts.map((a) => E.a(a.title, artHref(a)))) : "")
       + E.btn("Open your dashboard", "/dashboard") },
-  { key: "personal", anchor: "approved", days: 21, name: "A note from Pratik", purpose: "Personal check-in if no allocation requested yet",
-    subject: () => "Anything I can help with?",
+  { key: "personal", anchor: "approved", days: 21, name: "A note from the Investment Team", purpose: "Personal check-in if no allocation requested yet",
+    subject: () => "Anything we can help with?",
     preheader: () => "If a deal is close to your mandate, happy to set up a call with the promoter.",
     skip: (c) => (c.interestCount > 0 ? "already requested an allocation" : null),
-    signature: PRATIK,
     body: (c) => E.p(`Dear ${first(c)},`)
-      + E.p(`It has been three weeks since ${c.office.name} joined the desk, and I wanted to check in personally.`)
-      + E.p("If any company on the desk is close to your mandate, I am happy to set up a call with the promoter, or walk you through what the desk found. If none is, tell me what you are looking for: sector, ticket size, time to listing. It shapes what we bring next.")
-      + E.p("Just reply to this email; it comes straight to me.") },
+      + E.p(`It has been three weeks since ${c.office.name} joined the desk, and we wanted to check in.`)
+      + E.p("If any company on the desk is close to your mandate, we are happy to set up a call with the promoter, or walk you through what the desk found. If none is, tell us what you are looking for: sector, ticket size, time to listing. It shapes what we bring next.")
+      + E.p("Just reply to this email; it comes straight to the investment team.") },
 ];
 
 // ---------------------------------------------------------------- scheduling

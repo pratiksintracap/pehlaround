@@ -52,9 +52,15 @@ export function tagLinks(html: string, utm: { source: string; medium: string; ca
   });
 }
 
+/** The desk's signature on every email: the Investment Team, never a person's name. */
+export const SIGNATURE = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0 0;border-top:1px solid #eef0f5;padding-top:16px"><tr>
+<td style="vertical-align:top;padding:16px 12px 0 0"><img src="${SITE_URL}/icon-512.png" width="40" height="40" alt="Before the Bell" style="display:block;width:40px;height:40px;border-radius:9px;border:0"></td>
+<td style="vertical-align:top;padding-top:16px;font-size:14px;line-height:1.5;color:#3b4663"><b style="color:#0b1730">Investment Team</b><br>Before the Bell<br>
+<a href="mailto:${DESK_EMAIL}" style="color:#1f4fff;text-decoration:none">${DESK_EMAIL}</a> · <a href="${SITE_URL}" style="color:#1f4fff;text-decoration:none">${SITE_URL.replace(/^https?:\/\//, "")}</a></td></tr></table>`;
+
 /** The house email: header, body, signature, footer with unsubscribe for series emails. */
 export function layout(body: string, opts: { preheader?: string; unsubscribeFor?: number; signature?: string; footer?: string; unsubscribeLink?: string; campaign?: { medium: string; campaign: string } } = {}) {
-  const sig = opts.signature ?? `<p style="margin:18px 0 0;font-size:14px;color:#3b4663">The Before the Bell team<br><a href="mailto:${DESK_EMAIL}" style="color:#1f4fff">${DESK_EMAIL}</a> · <a href="${SITE_URL}" style="color:#1f4fff">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>`;
+  const sig = opts.signature ?? SIGNATURE;
   const unsubHref = opts.unsubscribeLink || (opts.unsubscribeFor ? `${SITE_URL}/api/unsubscribe?t=${unsubToken(opts.unsubscribeFor)}` : "");
   const unsub = unsubHref ? ` · <a href="${unsubHref}" style="color:#6b7590">Stop these emails</a>` : "";
   const footer = opts.footer || "You receive this because you are registered on Before the Bell, operated by SintraCap Advisors LLP, Lower Parel, Mumbai. Nothing in this email is an offer or advice; investments in unlisted companies can lose their entire value.";
