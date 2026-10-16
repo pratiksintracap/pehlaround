@@ -42,12 +42,12 @@ export async function monthSpend() {
 }
 
 // ---------------------------------------------------------------- the data bank, as tools
-const SECTIONS = ["overview", "financials", "valuation_and_peers", "round_and_terms", "risks", "ipo_path", "diligence", "updates"] as const;
+const SECTIONS = ["overview", "financials", "valuation_and_peers", "round_and_terms", "risks", "ipo_path", "diligence"] as const;
 type Section = (typeof SECTIONS)[number];
 
 export const TOOLS: Anthropic.Messages.ToolUnion[] = [
   { name: "list_deals", description: "Every company on the desk's shelf, with what this office may see: the anonymised sector, structure, target listing and Desk Score for all; company name, round size, pre-money and P/E once the office is approved; and whether this office has signed that company's NDA (only then can its room be read).", input_schema: { type: "object", properties: {} } },
-  { name: "get_room", description: "Read a deal room this office has opened (signed NDA). Sections: overview (company, why it is on the desk, snapshot, stake on offer), financials (P&L table, P/E, scenario inputs), valuation_and_peers (multiples, listed peer set), round_and_terms (terms, price, shares, post-money, ticket range, commitments), risks, ipo_path (listing milestones), diligence (the desk's checks and status), updates (dated feed). Ask for only the sections you need.", input_schema: { type: "object", properties: { slug: { type: "string", description: "The deal's slug from list_deals" }, sections: { type: "array", items: { type: "string", enum: [...SECTIONS] } } }, required: ["slug"] } },
+  { name: "get_room", description: "Read a deal room this office has opened (signed NDA). Sections: overview (company, why it is on the desk, snapshot, stake on offer), financials (P&L table, P/E, scenario inputs), valuation_and_peers (multiples, listed peer set), round_and_terms (terms, price, shares, post-money, ticket range, commitments), risks, ipo_path (listing milestones), diligence (the desk's checks and status). Ask for only the sections you need.", input_schema: { type: "object", properties: { slug: { type: "string", description: "The deal's slug from list_deals" }, sections: { type: "array", items: { type: "string", enum: [...SECTIONS] } } }, required: ["slug"] } },
   { name: "get_questions", description: "Questions offices asked in a room this office has opened, with the promoter's or desk's answers.", input_schema: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "get_documents", description: "Documents listed in a room this office has opened (titles and types; the analyst cannot read their contents).", input_schema: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "get_office_profile", description: "This family office's investment profile: how it invests, ticket size, AUM band, sectors, structures, horizon, thesis, and the allocations it has requested on the desk.", input_schema: { type: "object", properties: {} } },
@@ -65,7 +65,6 @@ function room(d: Deal, sections: Section[]) {
   if (want("risks")) out.risks = r.risks;
   if (want("ipo_path")) out.ipoPath = r.path;
   if (want("diligence")) out.diligence = r.checks;
-  if (want("updates")) out.updates = r.feed;
   return out;
 }
 

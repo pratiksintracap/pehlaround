@@ -141,10 +141,7 @@ export default async function Room({ params }: P) {
                 )}
               </div>
             </div>
-            <div className="two">
-              <div><h3>Key risks the desk flags</h3><ul className="risks">{r.risks.map((x, i) => <li key={i}><b>{x.t}.</b> {x.d}</li>)}</ul></div>
-              <div><h3>What changed</h3><ul className="feed">{r.feed.map((f, i) => <li key={i}><span className="mono">{f.date}</span>{f.text}</li>)}</ul></div>
-            </div>
+            <div><h3>Key risks the desk flags</h3><ul className="risks">{r.risks.map((x, i) => <li key={i}><b>{x.t}.</b> {x.d}</li>)}</ul></div>
           </section>
 
           <section className="panel" data-panel="Financials" hidden>

@@ -90,7 +90,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <IN name="committed" label="Committed so far (optional)" value={r.committed} />
         <TA name="snapshot" label="Snapshot: label | value | note" value={toText.cells(r.snapshot)} rows={6} />
         <TA name="risks" label="Key risks: title | text" value={toText.risks(r.risks)} rows={7} />
-        <TA name="feed" label="What changed: date | text (newest first)" value={toText.feed(r.feed)} rows={5} />
+        <TA name="feed" label="What changed: date | text (newest first) · desk only, not shown to investors" value={toText.feed(r.feed)} rows={5} />
         <TA name="fin" label="Financials table: first line Year | FY25 | FY26 ..., then label | values" value={toText.fin(r.fin)} rows={6} />
         <div className="row"><IN name="finUnit" label="Financials unit" value={r.fin?.unit} ph="₹ Cr" /><IN name="peers" label="Listed peers" value={r.peers} /></div>
         <TA name="finNote" label="Note under the financials (sources, audit status)" value={r.fin?.note || ""} rows={2} />

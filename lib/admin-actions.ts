@@ -478,14 +478,15 @@ export async function createInvites(f: FormData) {
     const email = parts.find((x) => EM.test(x))?.toLowerCase();
     if (!email) continue;
     const rest = parts.filter((x) => x.toLowerCase() !== email);
-    const [name = "", officeName = ""] = rest;
+    const [name = "", officeName = "", flag = ""] = rest;
+    const known = /^(known|yes|engaged)$/i.test(flag);
     const [used] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
     if (used) continue;
     const token = randomBytes(18).toString("base64url");
     await db.insert(deskInvites).values({ token, email, name: name || null, officeName: officeName || null, createdBy: admin.name });
     made++;
     if (send) {
-      const m = inviteEmail({ name, officeName, token, from: await signer(admin.id) });
+      const m = inviteEmail({ name, officeName: /\.[a-z]{2,}$/i.test(officeName) ? "" : officeName, token, known });
       mailed += await sendRaw([email], m.subject, m.html, [], undefined, { kind: "invite" });
     }
   }
