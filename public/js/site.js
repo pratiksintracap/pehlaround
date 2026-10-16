@@ -475,6 +475,8 @@
       Array.prototype.forEach.call(box.querySelectorAll("[data-send-code]"), function (btn) {
         btn.addEventListener("click", function () {
           var sig = f.querySelector("input[name=sig]"), ag = f.querySelector("input[name=agree]");
+          var req = f.querySelectorAll(".nda-prof [required]");
+          for (var i = 0; i < req.length; i++) if (!req[i].checkValidity()) { req[i].reportValidity(); return; }
           if (!sig.value.trim()) { sig.reportValidity(); return; }
           if (!ag.checked) { ag.reportValidity(); return; }
           var label = btn.textContent; btn.disabled = true; btn.textContent = "Sending…";
@@ -641,7 +643,14 @@
     var p = location.pathname;
     // Funnel: a visit to the register page (the server counts it once a day per browser), or an arrival through an office's invite link.
     if (p === "/register" || /[?&]ref=[a-z0-9]{6,12}/i.test(location.search)) {
-      try { fetch("/api/track", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ k: p === "/register" ? "register_started" : "referral_visit" }), keepalive: true, credentials: "same-origin" }).catch(function () {}); } catch (x) {}
+      // Counted only once a person interacts: mail-security scanners open invitation links but never scroll, tap or type.
+      var sent = false, evs = ["pointerdown", "keydown", "scroll", "touchstart", "focusin"];
+      var beacon = function () {
+        if (sent) return; sent = true;
+        evs.forEach(function (e) { window.removeEventListener(e, beacon, true); });
+        try { fetch("/api/track", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ k: p === "/register" ? "register_started" : "referral_visit" }), keepalive: true, credentials: "same-origin" }).catch(function () {}); } catch (x) {}
+      };
+      evs.forEach(function (e) { window.addEventListener(e, beacon, { capture: true, passive: true }); });
     }
     Array.prototype.forEach.call(document.querySelectorAll(".appbar a"), function (a) { var h = a.getAttribute("href").split("#")[0]; if (p === h || p.indexOf(h + "/") === 0) a.setAttribute("aria-current", "page"); });
   }

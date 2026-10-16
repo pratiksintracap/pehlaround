@@ -81,7 +81,7 @@ export default async function Overview({ params }: P) {
                 </ul>
               </div>
               {signed ? <a className="btn primary" href={`/room/${d.slug}`}>Open the data room</a>
-                : canSign ? <NdaSign deal={d} name={user!.name} office={user!.office!.name} email={user!.email} mailOn={emailReady()} trusted={trusted} />
+                : canSign ? <NdaSign deal={d} name={user!.name} office={user!.office!.name} email={user!.email} mailOn={emailReady()} trusted={trusted} need={{ phone: !user!.phone, role: !user!.officeRole, category: !user!.office!.category, residency: !user!.office!.residency, ticket: !user!.office!.ticket }} />
                 : <span className="btn" aria-disabled="true">Room not open yet</span>}
             </>
           ) : (

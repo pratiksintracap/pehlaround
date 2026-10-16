@@ -28,14 +28,18 @@ export async function POST(req: NextRequest) {
   const password = typeof data.password === "string" ? data.password : "";
   if (isBot(data)) return done(req, json, "/");
   if (!(await allowIp("register", 10, 3600))) return fail(req, json, TOO_MANY, back, 429);
-  if (!name || !email || !phone) return fail(req, json, "Please fill in your name, email and mobile.", back);
+  // The short form shown to people the desk invited asks for the mobile later, before their first NDA.
+  const quick = data.quick === "1" && !!(inviteToken || linkToken);
+  if (!name || !email || (!phone && !quick)) return fail(req, json, quick ? "Please fill in your name and email." : "Please fill in your name, email and mobile.", back);
   if (!EMAIL.test(email)) return fail(req, json, "Please enter a valid email address.", back);
   // A password is optional when Google or Microsoft confirmed this email, or when sign-in codes can be emailed.
   const pend = await pendingIdentity();
   const viaProvider = !!pend && pend.email === email;
   if (password ? password.length < 8 : !viaProvider && !emailReady()) return fail(req, json, "Choose a password of at least 8 characters.", back);
-  if (!(data.privacy === true || data.privacy === "on" || data.privacy === "yes")) return fail(req, json, "Please accept the privacy notice.", back);
-  if (!(data.risk === true || data.risk === "on" || data.risk === "yes")) return fail(req, json, "Please confirm the risk statement.", back);
+  const on = (v: unknown) => v === true || v === "on" || v === "yes";
+  const consent = quick && on(data.consent); // one box on the short form covers both
+  if (!consent && !on(data.privacy)) return fail(req, json, quick ? "Please tick the box to accept the privacy notice and disclaimer." : "Please accept the privacy notice.", back);
+  if (!consent && !on(data.risk)) return fail(req, json, "Please confirm the risk statement.", back);
 
   const db = await getDb();
   const [exists] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
@@ -60,6 +64,7 @@ export async function POST(req: NextRequest) {
     const byCode = !dinv ? await referrerByCode(await readRefCode(str(data.ref, 20))) : null;
     const referred = dinv?.referrerOfficeId ? (await db.select({ name: offices.name, approval: offices.approval }).from(offices).where(eq(offices.id, dinv.referrerOfficeId)))[0] : byCode ?? undefined;
     const preApproved = !!lk || (!!dinv && (!dinv.referrerOfficeId || (st.referrals && referred?.approval === "approved"))) || (!!byCode && st.referrals && byCode.approval === "approved");
+    if (quick && !preApproved && !phone) return fail(req, json, "This invitation link was already used. Please register with the full form.", "/register", 400);
     const source = await readSource();
     const [o] = await db.insert(offices).values({
       ...(preApproved ? { approval: "approved", approvedAt: new Date() } : {}),
@@ -78,7 +83,7 @@ export async function POST(req: NextRequest) {
   // The deal they registered from: once approved, they land on it (see the dashboard).
   const intent = /^\/deals\/([a-z0-9-]+)/.exec(next)?.[1] ?? null;
   const [u] = await db.insert(users).values({
-    email, name, phone, officeId, intent, officeRole: str(data.role, 80) || null, rights: inv ? inv.rights : "View, comment, commit",
+    email, name, phone: phone || null, officeId, intent, officeRole: str(data.role, 80) || null, rights: inv ? inv.rights : "View, comment, commit",
     passwordHash: await bcrypt.hash(password || randomBytes(24).toString("hex"), 10), lastLoginAt: new Date(),
   }).returning();
   // viewers named at registration become invites

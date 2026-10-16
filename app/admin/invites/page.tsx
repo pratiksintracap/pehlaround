@@ -39,7 +39,7 @@ export default async function Invites({ searchParams }: { searchParams: Promise<
         <div className="chart"><span className="k">Invitations · {rows.length} created · {rows.length - pending - used} emailed · {used} registered</span>
           {mail && pending > 0 && <form action={emailPendingInvites} style={{ margin: "8px 0 4px" }}><button className="btn sm primary" type="submit">Email the {pending} not yet emailed</button></form>}
           <ul className="feed inv">{rows.length ? rows.map((r) => (
-            <li key={r.id}><b>{r.officeName || r.name || r.email}</b> <span className={`pill ${r.usedAt ? "ok" : ""}`}>{r.usedAt ? "Registered" : r.emailedAt ? "Emailed" : "Not emailed"}</span><br />
+            <li key={r.id}><b>{r.officeName || r.name || r.email}</b> <span className={`pill ${r.usedAt ? "ok" : ""}`}>{r.usedAt ? "Registered" : r.followedUpAt ? "Reminded" : r.emailedAt ? "Emailed" : "Not emailed"}</span><br />
               <small className="fine">{r.name ? `${r.name} · ` : ""}{r.email} · {fmtD(r.createdAt)}</small>
               {!r.usedAt && <input className="mono copy" readOnly value={`${SITE_URL}/invite/${r.token}`} />}</li>))
             : null}</ul>{!rows.length && <p className="fine">No invitations yet.</p>}</div>

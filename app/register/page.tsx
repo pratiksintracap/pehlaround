@@ -5,12 +5,14 @@ import { getUser, pendingIdentity } from "@/lib/auth";
 import { providers } from "@/lib/oauth";
 import { emailReady } from "@/lib/email";
 import { OAuthButtons } from "@/components/OAuthButtons";
-import { GRIEVANCE } from "@/lib/site";
+import { GRIEVANCE, DESK_EMAIL } from "@/lib/site";
 import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { dealLinks, deals, deskInvites, offices } from "@/db/schema";
 import { readRefCode, referrerByCode } from "@/lib/track";
 import { getSettings } from "@/lib/settings";
+import { listDeals, listUpcoming } from "@/lib/deals";
+import { teaserHtml } from "@/lib/render";
 
 export const metadata: Metadata = pageMeta({ path: "/register", title: "Register as an investor", description: "Register your family office, fund or yourself as an investor. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." });
 type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string; link?: string; ref?: string }> };
@@ -30,6 +32,60 @@ export default async function Register({ searchParams }: P) {
   const forDeal = /^\/deals\/[a-z0-9-]+/.test(next);
   const approvedOnSignUp = !!lk || (!!inv && (!inv.referrerOfficeId || st.referrals)) || (!!byCode && st.referrals && byCode.approval === "approved");
   const pre = { name: lk?.name || inv?.name || pend?.name || "", email: pend?.email || lk?.email || inv?.email || "", office: lk?.officeName || inv?.officeName || "" };
+  // Someone the desk invited by name: a personal page and a one-step form. The rest of the profile
+  // (mobile, residency, ticket, entity, role) is asked just before their first NDA.
+  if (approvedOnSignUp && (inv || lk) && !inv?.referrerOfficeId) {
+    const [open, coming] = await Promise.all([listDeals(), listUpcoming()]);
+    const live = open.filter((d) => d.open);
+    const nm = pre.name.trim();
+    const first = /^(mr|ms|mrs|dr)\b/i.test(nm) ? nm : nm.split(/\s+/)[0] || "";
+    const office = /\.[a-z]{2,}$/i.test(pre.office) ? "" : pre.office;
+    return (
+      <main><div className="wrap split reg invited" style={{ padding: "clamp(36px,5vw,64px) var(--gutter)" }}>
+        <div className="rv inview">
+          <span className="eyebrow">{lkDeal ? "Sent to you by the desk" : "Your invitation"}</span>
+          <h1>{first ? <>Welcome, {first}.</> : "Your invitation to Before the Bell"}</h1>
+          <p className="lede">{lkDeal
+            ? <>Register in under a minute and {lkDeal.title} opens by name, with its pitch deck. {office || "Your office"} is approved as soon as you register.</>
+            : <>{office ? <b>{office}</b> : "Your office"} is approved as soon as you register. Every company on the desk then opens by name, with its round, valuation and pitch deck.</>}</p>
+          <div dangerouslySetInnerHTML={{ __html: teaserHtml(live.length ? live : open, coming.length) }} />
+          <ul className="ticks">
+            <li>Registering commits you to nothing. No PAN or ID until you choose to invest.</li>
+            <li>When a company interests you, you sign its NDA on screen and its data room opens.</li>
+            <li>No one calls you unless you ask.</li>
+          </ul>
+        </div>
+        <div className="rv inview" style={{ ["--d" as string]: ".1s" }}>
+          <form className="form reg-form quick" method="post" action="/api/auth/register" data-api="">
+            <input type="hidden" name="next" value={next} />
+            <input type="hidden" name="quick" value="1" />
+            {inv && <input type="hidden" name="invite" value={inv.token} />}
+            {lk && <input type="hidden" name="link" value={lk.token} />}
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
+            {error && <div className="ok show bad" role="alert">{error}</div>}
+            <div className="ok show" role="status">Invited by the desk{office ? ` for ${office}` : ""}. You are approved as soon as you register.</div>
+            {pend ? <div className="ok show" role="status">Confirmed by {pend.provider} as <b>{pend.email}</b>. No password needed.</div>
+              : <OAuthButtons list={provs} next={next} verb="Continue with" />}
+            <label>Your name<input required autoComplete="name" name="name" defaultValue={pre.name} /></label>
+            <label>Email<input type="email" required autoComplete="email" name="email" defaultValue={pre.email} readOnly={!!pend} /></label>
+            <label>Family office, fund or investor<input required autoComplete="organization" name="entity" defaultValue={office} placeholder="e.g. Mehta Family Office" /></label>
+            <label>You are investing as<select name="itype" required defaultValue=""><option value="" disabled>Select</option><option value="family_office">A family office</option><option value="fund">A fund (AIF, PMS or other)</option><option value="individual">An individual investor</option></select></label>
+            <fieldset className="only-ind"><legend>Individual investors</legend>
+              <p className="fine">The desk shows companies to individuals who are accredited investors or who invest at least ₹25 lakh per company.</p>
+              <label className="chk"><input type="radio" name="decl" value="accredited" />I am an accredited investor under SEBI&apos;s framework, or will be by the time I invest.</label>
+              <label className="chk"><input type="radio" name="decl" value="min_ticket_25l" />I will invest at least ₹25 lakh in any company I request an allocation in.</label>
+            </fieldset>
+            {pend ? null : mail
+              ? <label>Password (optional)<input type="password" minLength={8} autoComplete="new-password" name="password" /><span className="hint">Leave it empty to sign in with a code we email you.</span></label>
+              : <label>Password<input type="password" required minLength={8} autoComplete="new-password" name="password" /><span className="hint">At least 8 characters.</span></label>}
+            <label className="chk"><input type="checkbox" required name="consent" /><span>I accept the <a href="/legal" target="_blank">privacy notice</a> and the <a href="#" data-show-disclaimer="">site disclaimer</a>, and understand that unlisted investments are illiquid and can lose their entire value.</span></label>
+            <div><button className="btn primary" type="submit">Register and see the companies</button></div>
+            <p className="fine">Already registered? <a href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}>Sign in</a>. Questions: <a href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a>.</p>
+          </form>
+        </div>
+      </div></main>
+    );
+  }
   return (
     <main><div className="wrap split reg" style={{ padding: "clamp(36px,5vw,64px) var(--gutter)" }}>
       <div className="rv inview">

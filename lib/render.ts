@@ -53,6 +53,14 @@ export function cardHtml(d: Deal, i: number, signed: boolean, registered = false
   return `<article class="card rv" style="--d:${(i * 0.06).toFixed(2)}s" data-cat="${esc(d.category)}" data-ticket="${esc(d.minTicket || "")}" data-ipo="${monthsTo(d.listingMonth) ?? 999}"><div style="position:relative"><figure class="deal-art" aria-hidden="true">${d.art || ""}</figure><span class="tag">${esc(d.category)}</span><span class="tag stage${signed ? " liveroom" : ""}">${signed ? "NDA signed" : esc(d.stage)}</span><button type="button" class="save" data-save="${d.slug}" aria-pressed="false" aria-label="Save to shortlist" title="Save to shortlist">${SAVE}</button></div><div class="body"><h3><a href="/deals/${d.slug}">${esc(registered ? d.company : d.title)}</a></h3>${registered ? `<p class="fine" style="margin:-4px 0 6px">${esc(d.title)}</p>` : ""}<p class="hl">${esc(d.headline)}</p><dl class="facts"><div><dt>Target listing</dt><dd class="big">${esc(d.listingLabel)}</dd></div><div><dt>Structure</dt><dd>${esc(d.category)}</dd></div><div><dt>Status</dt><dd>${esc(d.status)}</dd></div><div><dt>Shares</dt><dd>Demat · ISIN active</dd></div></dl>${runwayHtml(d)}${scoreHtml(d)}<div class="acts">${acts}</div></div></article>`;
 }
 
+/** A compact "on the desk now" list for an invited visitor: anonymised title, structure, target listing and score.
+ *  Everything here is already public on /deals. */
+export function teaserHtml(open: Deal[], coming: number) {
+  if (!open.length) return "";
+  const rows = open.slice(0, 6).map((d) => `<li><a href="/deals/${d.slug}" target="_blank" rel="noopener"><span class="tz-t">${esc(d.title)}</span><span class="tz-m">${esc(d.category)} · listing ${esc(/20\d\d/.test(d.listingLabel) ? d.listingLabel : "to be set")}</span></a>${d.score != null ? `<span class="tz-s" title="${esc(SCORE_NOTE)}">${d.score.toFixed(1)}<small>/10</small></span>` : ""}</li>`).join("");
+  return `<div class="teaser"><span class="tz-h">On the desk now · ${open.length} ${open.length === 1 ? "company" : "companies"}</span><ul>${rows}</ul><p class="fine">Shown here without names. Register and each opens by name, with its round, valuation and pitch deck.${coming ? ` ${coming} more ${coming === 1 ? "is" : "are"} in diligence.` : ""}</p></div>`;
+}
+
 /** "Coming to the desk": deals still in preparation, by sector, structure and listing year only. */
 export function upcomingHtml(list: Deal[], signedIn: boolean) {
   if (!list.length) return "";

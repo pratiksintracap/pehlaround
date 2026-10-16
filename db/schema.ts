@@ -309,6 +309,7 @@ export const deskInvites = pgTable("desk_invites", {
   referrerOfficeId: integer("referrer_office_id"),        // an approved office referred this one
   known: boolean("known").notNull().default(false),       // already in touch with the desk: the email says so
   emailedAt: timestamp("emailed_at", { withTimezone: true }), // when the invitation email was accepted for delivery
+  followedUpAt: timestamp("followed_up_at", { withTimezone: true }), // the one reminder, sent 3+ days later if still unused
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("desk_invites_token_uq").on(t.token)]);
 
