@@ -89,21 +89,21 @@ export default async function Register({ searchParams }: P) {
   return (
     <main><div className="wrap split reg" style={{ padding: "clamp(36px,5vw,64px) var(--gutter)" }}>
       <div className="rv inview">
-        <ol className="stepper" aria-label="How it works">
-          <li className="now"><span className="dot">1</span><span className="t">Register</span><span className="s">about a minute</span></li>
-          <li><span className="dot">2</span><span className="t">{approvedOnSignUp ? "Approved" : "Approved by the desk"}</span><span className="s">{approvedOnSignUp ? "at once" : st.approvalTime}</span></li>
-          <li><span className="dot">3</span><span className="t">Sign the NDA</span><span className="s">on the deal&apos;s page</span></li>
+        <ol className="stepper" aria-label="From first look to allotment">
+          <li className="now"><span className="dot">1</span><span className="t">Register</span><span className="s">a minute</span></li>
+          <li><span className="dot">2</span><span className="t">Go deep on every deal</span><span className="s">numbers, documents, promoters</span></li>
+          <li><span className="dot">3</span><span className="t">Close the round</span><span className="s">directly with the company</span></li>
         </ol>
-        <span className="eyebrow">Investor registration</span>
-        <h1>{lkDeal ? <>The desk sent you<br />{lkDeal.title}</> : "Register to see the desk"}</h1>
+        <span className="eyebrow">Pre-IPO, curated by the desk</span>
+        <h1>{lkDeal ? <>The desk sent you<br />{lkDeal.title}</> : <>India&apos;s next listings,<br />before the bell.</>}</h1>
         <p className="lede">{lkDeal
-          ? `Register in a minute and your office is approved straight away; ${lkDeal.title} (${lkDeal.category}) opens next, with its NDA signed on screen.`
-          : approvedOnSignUp ? "Your office is approved as soon as you register, and every company on the desk opens by name."
-          : `The desk approves new investors ${st.approvalTime}. Then every company on the desk opens by name, with its round and valuation.${forDeal ? " We take you straight back to the deal you were looking at." : ""}`}</p>
+          ? `Register in a minute and ${lkDeal.title} opens by name, with everything the desk knows about it.`
+          : `Profitable companies on their way to an IPO, found and vetted by the desk before anyone else sees them. Every one opens to you by name, with its numbers, its documents and its promoters.${forDeal ? " We take you straight back to the deal you were looking at." : ""}`}</p>
         <ul className="ticks">
-          <li>No PAN or ID to look at deals or sign an NDA. KYC comes only when you invest.</li>
-          <li>Add your CIO, CFO or CA from your dashboard; they join your account.</li>
-          <li>Your money moves directly to the company or seller, never through the desk.</li>
+          <li><span><b>Steady deal flow.</b> A new company reaches the desk about every fortnight, not the names already doing the rounds.</span></li>
+          <li><span><b>Nothing held back.</b> The numbers, the terms, the path to listing and the risks as the desk sees them, all in one room.</span></li>
+          <li><span><b>We invest alongside you.</b> The desk puts its own capital into every company it brings, on the same terms.</span></li>
+          <li><span><b>Straight to the company.</b> Your money goes directly to the company or seller, never through the desk.</span></li>
         </ul>
       </div>
       <div className="rv inview" style={{ ["--d" as string]: ".1s" }}>
