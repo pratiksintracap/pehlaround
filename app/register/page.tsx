@@ -50,9 +50,9 @@ export default async function Register({ searchParams }: P) {
             : <>{office ? <b>{office}</b> : "Your office"} is approved as soon as you register. Every company on the desk then opens by name, with its round, valuation and pitch deck.</>}</p>
           <div dangerouslySetInnerHTML={{ __html: teaserHtml(live.length ? live : open, coming.length) }} />
           <ul className="ticks">
-            <li>Registering commits you to nothing. No PAN or ID until you choose to invest.</li>
-            <li>When a company interests you, you sign its NDA on screen and its data room opens.</li>
-            <li>No one calls you unless you ask.</li>
+            <li><span><b>Steady deal flow.</b> A new company reaches the desk about every fortnight, not the names already doing the rounds.</span></li>
+            <li><span><b>Nothing held back.</b> The numbers, the terms, the path to listing and the risks as the desk sees them, all in one room.</span></li>
+            <li><span><b>We invest alongside you.</b> The desk puts its own capital into every company it brings, on the same terms.</span></li>
           </ul>
         </div>
         <div className="rv inview" style={{ ["--d" as string]: ".1s" }}>
