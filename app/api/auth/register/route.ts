@@ -16,6 +16,7 @@ import { track, readSource, readRefCode, referrerByCode } from "@/lib/track";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 import { TYPE_LABEL, DECL_LABEL } from "@/lib/investor";
+import { approvalToken } from "@/lib/approval";
 
 export async function POST(req: NextRequest) {
   const { data, json } = await readBody(req);
@@ -96,7 +97,8 @@ export async function POST(req: NextRequest) {
   await log({ id: u.id, name: u.name, officeId }, (inv ? "Joined the office by invitation" : "Registered the office") + (viaProvider ? ` (email confirmed by ${pend!.provider})` : password ? "" : " (signs in with email codes)") + "; accepted the site disclaimer and risk statement");
   if (!inv) await notifyDesk(invited
     ? { title: `${TYPE_LABEL[itype]} registered, approved ${how}: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}${decl ? ` · ${DECL_LABEL[decl]}` : ""}.`, link: "/admin/offices" }
-    : { title: `New ${TYPE_LABEL[itype].toLowerCase()} registered: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}${decl ? ` · ${DECL_LABEL[decl]}` : ""}. Approve or hold it in the admin.`, link: "/admin/offices?show=pending" });
+    : { title: `New ${TYPE_LABEL[itype].toLowerCase()} registered: ${entity}`, body: `${name} · ${str(data.role, 80)} · ${str(data.ticket, 60)}${decl ? ` · ${DECL_LABEL[decl]}` : ""}. Approve or hold it here.`, link: "/admin/offices?show=pending",
+        actions: [{ label: "Approve", link: `/approve?t=${approvalToken(officeId)}&a=approved` }, { label: "Hold", link: `/approve?t=${approvalToken(officeId)}&a=rejected` }] });
   // The onboarding email series: from approval if the office is already approved, otherwise from registration.
   const [off] = await db.select({ approval: offices.approval }).from(offices).where(eq(offices.id, officeId));
   await startSeries(u.id, off?.approval === "approved" ? "approved" : "register").catch(() => 0);

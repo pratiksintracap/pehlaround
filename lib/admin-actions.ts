@@ -11,6 +11,7 @@ import { getDb } from "@/lib/db";
 import { articles, broadcasts, dealLinks, deskInvites, calls, deals, documents, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
 import { notifyOffices, notifyDesk, ndaOffices, sendEmail, emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { sendRaw } from "@/lib/email";
+import { applyApproval, type Approval } from "@/lib/approval";
 import { RUBRIC, partsFromForm, rubricTotal, DESK_BAR } from "@/lib/score";
 import { inviteEmail } from "@/lib/invite-mail";
 import { randomBytes } from "node:crypto";
@@ -49,25 +50,10 @@ export async function setOfficeStatus(f: FormData) {
 
 export async function setApproval(f: FormData) {
   const admin = await requirePerm("offices.approve");
-  const id = n(f, "id"), approval = s(f, "approval");
+  const approval = s(f, "approval");
   if (!["approved", "pending", "rejected"].includes(approval)) return;
-  const db = await getDb();
-  const [o] = await db.select().from(offices).where(eq(offices.id, id));
+  const o = await applyApproval(n(f, "id"), approval as Approval, admin, f.get("tell") === "on" ? s(f, "reason", 1000) || "" : null);
   if (!o) return;
-  await db.update(offices).set({ approval, approvedAt: approval === "approved" ? new Date() : null }).where(eq(offices.id, id));
-  await log(admin, `Desk set ${o.name} to ${approval}`);
-  if (approval === "approved" && o.approval !== "approved") {
-    await track("office_approved", { officeId: id, userId: admin.id, source: o.source ?? null });
-    // In-app notice only: the "You're in" email of the onboarding series does the emailing.
-    // Back to the deal they registered from, if there was one.
-    const [withIntent] = await db.select({ intent: users.intent }).from(users).where(and(eq(users.officeId, id), sql`${users.intent} is not null`)).limit(1);
-    const [want] = withIntent?.intent ? await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.slug, withIntent.intent)) : [];
-    await notifyOffices([id], { title: "Your office is approved", body: want ? `${want.company} is open to you now: sign its NDA on screen and its room opens.` : "Every company on Before the Bell is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: want ? `/deals/${want.slug}#sign` : "/deals" }, false);
-    const team = await db.select({ id: users.id }).from(users).where(and(eq(users.officeId, id), eq(users.disabled, false)));
-    for (const t of team) await startSeries(t.id, "approved").catch(() => 0);
-  }
-  if (approval === "rejected" && o.approval !== "rejected" && f.get("tell") === "on")
-    await notifyOffices([id], { title: "Your access is on hold", body: s(f, "reason", 1000) || "Please write to the desk and we will help.", link: "/dashboard" });
   revalidatePath("/admin/offices");
   back(s(f, "back") || "/admin/offices", approval === "approved" ? `${o.name} approved and told.` : "Office updated.");
 }

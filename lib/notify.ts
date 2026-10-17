@@ -6,13 +6,14 @@ import { getSettings } from "@/lib/settings";
 import { emailReady, sendRaw, layout, E, esc, linkify } from "@/lib/email";
 import { isDesk } from "@/lib/perm";
 
-type Msg = { title: string; body?: string | null; link?: string | null; broadcastId?: number };
+type Msg = { title: string; body?: string | null; link?: string | null; broadcastId?: number; actions?: { label: string; link: string }[] };
 
 export { emailReady } from "@/lib/email";
 
 export async function sendEmail(to: string[], m: Msg) {
   const link = m.link || "/dashboard";
-  const body = E.h(m.title) + (m.body ? E.p(linkify(esc(m.body)).replace(/\n/g, "<br>")) : "") + E.btn("Open Before the Bell", link);
+  const body = E.h(m.title) + (m.body ? E.p(linkify(esc(m.body)).replace(/\n/g, "<br>")) : "") 
+    + (m.actions?.length ? E.btns(m.actions) + E.p(E.a("Or open the admin", link)) : E.btn("Open Before the Bell", link));
   return sendRaw(to, m.title, layout(body, { preheader: m.body?.slice(0, 120) || "", campaign: { medium: "notify", campaign: "desk" } }), [], undefined, { kind: "notify" });
 }
 

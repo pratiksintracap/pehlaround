@@ -33,6 +33,8 @@ export const E = {
   p: (html: string) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#3b4663">${html}</p>`,
   h: (t: string) => `<h2 style="margin:0 0 12px;font-size:22px;line-height:1.25;color:#0b1730">${esc(t)}</h2>`,
   btn: (label: string, link: string) => `<p style="margin:20px 0 22px"><a href="${abs(link)}" style="display:inline-block;background:#1f4fff;color:#ffffff;padding:12px 20px;border-radius:9px;text-decoration:none;font-weight:bold;font-size:15px">${esc(label)}</a></p>`,
+  /** A row of buttons; the first is solid, the rest outlined. */
+  btns: (bs: { label: string; link: string }[]) => `<p style="margin:20px 0 14px">${bs.map((b, i) => `<a href="${abs(b.link)}" style="display:inline-block;margin:0 8px 8px 0;${i ? "background:#ffffff;color:#1f4fff;border:1px solid #1f4fff;padding:11px 19px" : "background:#1f4fff;color:#ffffff;padding:12px 20px"};border-radius:9px;text-decoration:none;font-weight:bold;font-size:15px">${esc(b.label)}</a>`).join("")}</p>`,
   a: (label: string, link: string) => `<a href="${abs(link)}" style="color:#1f4fff">${esc(label)}</a>`,
   list: (items: string[]) => `<ul style="margin:0 0 16px;padding-left:20px;color:#3b4663;font-size:15px;line-height:1.6">${items.map((i) => `<li style="margin:0 0 6px">${i}</li>`).join("")}</ul>`,
   deal: (title: string, meta: string, score: number | null, link: string) => `<a href="${abs(link)}" style="display:block;text-decoration:none;border:1px solid #e3e7ef;border-radius:12px;padding:12px 14px;margin:0 0 10px;background:#ffffff">
