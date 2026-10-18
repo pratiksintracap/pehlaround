@@ -396,14 +396,53 @@
     try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) {}
     if (!location.hash) window.scrollTo(0, 0);
 
-    // ---------- shelf filters (deals page) ----------
-    var chips = $$(".filters .chip"), cards = $$(".shelf .card");
-    if (chips.length && cards.length) {
-      var cat = "All";
-      chips.forEach(function (ch) { ch.addEventListener("click", function () {
-        chips.forEach(function (o) { o.setAttribute("aria-pressed", "false"); }); ch.setAttribute("aria-pressed", "true"); cat = ch.getAttribute("data-cat") || ch.textContent.trim();
-        var shown = 0; cards.forEach(function (c) { var ok = cat === "All" || c.getAttribute("data-cat") === cat; c.hidden = !ok; if (ok) shown++; });
-        var e = $(".empty"); if (e) e.hidden = shown > 0; }); });
+    // ---------- motion: score rings count up, the shelf glides when filtered ----------
+    // Motion's small build (/js/motion-lite.js, ~5 KB) loads only on pages with a ring or a shelf, never with reduced motion.
+    // Without it everything still works; it just doesn't animate.
+    var rings = $$("svg.sring"), M = null;
+    var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function withMotion(cb) {
+      if (still) return;
+      if (window.MotionLite) { M = window.MotionLite; return cb(); }
+      var sc = document.createElement("script"); sc.src = "/js/motion-lite.js?v=1"; sc.async = true;
+      sc.onload = function () { M = window.MotionLite; if (M) cb(); };
+      document.head.appendChild(sc);
+    }
+    function countUp(svg) {
+      var arc = $(".arc", svg), txt = $("text", svg); if (!arc || !txt || svg.getAttribute("data-counted")) return;
+      svg.setAttribute("data-counted", "1");
+      var score = parseFloat(txt.textContent) || 0, C = 2 * Math.PI * 20, end = score / 10 * C;
+      // Motion draws the ring (a spring on the dash offset); the digits count up alongside it.
+      arc.style.animation = "none"; // the CSS draw-in gives way to Motion
+      arc.setAttribute("stroke-dasharray", C.toFixed(2) + " " + C.toFixed(2)); arc.style.strokeDashoffset = C.toFixed(2);
+      M.animate(arc, { strokeDashoffset: [C, C - end] }, { type: M.spring, stiffness: 70, damping: 15 })
+        .then(function () { arc.style.strokeDashoffset = (C - end).toFixed(2); });
+      var t0 = performance.now(), dur = 1100;
+      (function tick(now) { var k = Math.min(1, (now - t0) / dur); txt.textContent = (score * (1 - Math.pow(1 - k, 3))).toFixed(1); if (k < 1) requestAnimationFrame(tick); })(t0);
+    }
+    if (rings.length && "IntersectionObserver" in window) withMotion(function () {
+      var rio = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { rio.unobserve(e.target); setTimeout(function () { countUp(e.target); }, 150); } }); }, { threshold: 0.6 });
+      rings.forEach(function (r) { rio.observe(r); });
+    });
+
+    // ---------- shelf sort (deals page): cards glide to their new places ----------
+    var sorts = $$("[data-sort]"), shelf = $(".shelf");
+    if (sorts.length && shelf) {
+      withMotion(function () {});
+      var orig = $$(".card", shelf);
+      var keyOf = { listing: function (c) { return +c.getAttribute("data-ipo"); }, score: function (c) { return -(+c.getAttribute("data-score") || 0); }, desk: function (c) { return orig.indexOf(c); } };
+      sorts.forEach(function (bt) { bt.addEventListener("click", function () {
+        sorts.forEach(function (o) { o.setAttribute("aria-pressed", String(o === bt)); });
+        var cards = $$(".card", shelf), k = keyOf[bt.getAttribute("data-sort")] || keyOf.desk;
+        // FLIP: note where each card is, reorder, then spring each card from its old place to its new one.
+        var before = new Map(); cards.forEach(function (c) { before.set(c, c.getBoundingClientRect()); });
+        cards.slice().sort(function (x, y) { return k(x) - k(y) || orig.indexOf(x) - orig.indexOf(y); }).forEach(function (c) { shelf.appendChild(c); });
+        if (!M) return;
+        cards.forEach(function (c) {
+          var a = before.get(c), b = c.getBoundingClientRect(), dx = a.left - b.left, dy = a.top - b.top;
+          if (dx || dy) M.animate(c, { transform: ["translate(" + dx + "px," + dy + "px)", "none"] }, { type: M.spring, stiffness: 220, damping: 26 });
+        });
+      }); });
     }
 
     // ---------- founders: intake form ----------

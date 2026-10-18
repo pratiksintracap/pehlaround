@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "db:generate": "drizzle-kit generate",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:motion": "esbuild scripts/motion-lite.mjs --bundle --minify --format=iife --outfile=public/js/motion-lite.js"
   },
   "engines": {
     "node": ">=20"
@@ -33,6 +34,8 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.3.0",
     "drizzle-kit": "^0.31.11",
+    "esbuild": "^0.25.12",
+    "motion": "^14.3.0",
     "typescript": "5.9"
   }
 }
