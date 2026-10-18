@@ -339,7 +339,9 @@
     $$("form[data-steps]").forEach(function (f) {
       var one = $(".rs-1", f), two = $(".rs-2", f); if (!one || !two) return;
       f.classList.add("stepped");
-      var go = function (n) { f.classList.toggle("at2", n === 2); var first = $(n === 2 ? ".rs-2 input:not([type=hidden]):not([readonly]), .rs-2 select" : ".rs-1 input:not([type=hidden])", f); if (first) first.focus({ preventScroll: true }); f.scrollIntoView({ block: "nearest" }); };
+      var go = function (n) { f.classList.toggle("at2", n === 2);
+        var shownStep = $(n === 2 ? ".rs-2" : ".rs-1", f), MM = window.MotionLite;
+        if (MM && !matchMedia("(prefers-reduced-motion: reduce)").matches) MM.animate(shownStep, { opacity: [0, 1], transform: [n === 2 ? "translateX(28px)" : "translateX(-28px)", "none"] }, { type: MM.spring, stiffness: 260, damping: 26 }); var first = $(n === 2 ? ".rs-2 input:not([type=hidden]):not([readonly]), .rs-2 select" : ".rs-1 input:not([type=hidden])", f); if (first) first.focus({ preventScroll: true }); f.scrollIntoView({ block: "nearest" }); };
       var nx = $("[data-step-next]", f); if (nx) nx.addEventListener("click", function () {
         var bad = $$(".rs-1 input, .rs-1 select", f).filter(function (el) { return !el.checkValidity(); })[0];
         if (bad) { bad.reportValidity(); return; } go(2); });
@@ -396,12 +398,14 @@
     try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) {}
     if (!location.hash) window.scrollTo(0, 0);
 
-    // ---------- motion: score rings count up, the shelf glides when filtered ----------
-    // Motion's small build (/js/motion-lite.js, ~5 KB) loads only on pages with a ring or a shelf, never with reduced motion.
+    // ---------- motion (Motion's small build, /js/motion-lite.js, ~5 KB) ----------
+    // Loads only on pages that animate something (score rings, the register steps, an NDA to sign, a room just
+    // unlocked), never with reduced motion.
     // Without it everything still works; it just doesn't animate.
     var rings = $$("svg.sring"), M = null;
     var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     function withMotion(cb) {
+      cb = cb || function () {};
       if (still) return;
       if (window.MotionLite) { M = window.MotionLite; return cb(); }
       var sc = document.createElement("script"); sc.src = "/js/motion-lite.js?v=1"; sc.async = true;
@@ -420,30 +424,34 @@
       var t0 = performance.now(), dur = 1100;
       (function tick(now) { var k = Math.min(1, (now - t0) / dur); txt.textContent = (score * (1 - Math.pow(1 - k, 3))).toFixed(1); if (k < 1) requestAnimationFrame(tick); })(t0);
     }
+    window.BTBMotion = withMotion;
     if (rings.length && "IntersectionObserver" in window) withMotion(function () {
       var rio = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { rio.unobserve(e.target); setTimeout(function () { countUp(e.target); }, 150); } }); }, { threshold: 0.6 });
       rings.forEach(function (r) { rio.observe(r); });
     });
 
-    // ---------- shelf sort (deals page): cards glide to their new places ----------
-    var sorts = $$("[data-sort]"), shelf = $(".shelf");
-    if (sorts.length && shelf) {
-      withMotion(function () {});
-      var orig = $$(".card", shelf);
-      var keyOf = { listing: function (c) { return +c.getAttribute("data-ipo"); }, score: function (c) { return -(+c.getAttribute("data-score") || 0); }, desk: function (c) { return orig.indexOf(c); } };
-      sorts.forEach(function (bt) { bt.addEventListener("click", function () {
-        sorts.forEach(function (o) { o.setAttribute("aria-pressed", String(o === bt)); });
-        var cards = $$(".card", shelf), k = keyOf[bt.getAttribute("data-sort")] || keyOf.desk;
-        // FLIP: note where each card is, reorder, then spring each card from its old place to its new one.
-        var before = new Map(); cards.forEach(function (c) { before.set(c, c.getBoundingClientRect()); });
-        cards.slice().sort(function (x, y) { return k(x) - k(y) || orig.indexOf(x) - orig.indexOf(y); }).forEach(function (c) { shelf.appendChild(c); });
-        if (!M) return;
-        cards.forEach(function (c) {
-          var a = before.get(c), b = c.getBoundingClientRect(), dx = a.left - b.left, dy = a.top - b.top;
-          if (dx || dy) M.animate(c, { transform: ["translate(" + dx + "px," + dy + "px)", "none"] }, { type: M.spring, stiffness: 220, damping: 26 });
-        });
-      }); });
-    }
+    // Register: the three steps arrive one after another and the line between them draws across.
+    var stp = $(".stepper");
+    if (stp) withMotion(function () {
+      stp.classList.remove("pre");
+      var line = document.createElement("span"); line.className = "st-line"; line.setAttribute("aria-hidden", "true"); stp.insertBefore(line, stp.firstChild);
+      M.animate(line, { transform: ["scaleX(0)", "scaleX(1)"] }, { duration: 1.1, delay: 0.25, ease: [0.2, 0.7, 0.2, 1] });
+      $$("li", stp).forEach(function (li, i) {
+        var dot = $(".dot", li), txt = $$(".t,.s", li);
+        if (dot) M.animate(dot, { transform: ["scale(.4)", "none"], opacity: [0, 1] }, { type: M.spring, stiffness: 320, damping: 18, delay: 0.15 + i * 0.32 });
+        txt.forEach(function (t) { M.animate(t, { opacity: [0, 1], transform: ["translateY(6px)", "none"] }, { duration: 0.45, delay: 0.25 + i * 0.32 }); });
+      });
+    });
+    // A room the visitor has just unlocked by signing its NDA: its sections rise in, one after another.
+    var justIn = null; try { justIn = sessionStorage.getItem("btb-unlocked"); sessionStorage.removeItem("btb-unlocked"); } catch (x) {}
+    var rm = $(".room[data-room]");
+    if (rm && justIn === rm.getAttribute("data-room")) withMotion(function () {
+      Array.prototype.slice.call(rm.children, 0, 6).forEach(function (el, i) {
+        M.animate(el, { opacity: [0, 1], transform: ["translateY(18px)", "none"] }, { type: M.spring, stiffness: 160, damping: 22, delay: 0.05 + i * 0.08 });
+      });
+    });
+    // Pages with an NDA to sign fetch Motion ahead, so the unlock plays at once.
+    if ($("form.nda-inline")) withMotion();
 
     // ---------- founders: intake form ----------
     var fo = $("#founder");
@@ -580,7 +588,10 @@
         if (b) { b.disabled = true; b.textContent = "Please wait…"; }
         fetch(f.getAttribute("action"), { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(data), credentials: "same-origin" })
           .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || "Something went wrong. Please try again."); return j; }); })
-          .then(function (j) { location.href = j.next || "/dashboard"; })
+          .then(function (j) {
+            var next = j.next || "/dashboard", m = /^\/room\/([^/?#]+)/.exec(next);
+            if (m && f.matches(".nda-inline") && window.BTBUnlock) return window.BTBUnlock(m[1], next, b);
+            location.href = next; })
           .catch(function (err) {
             if (b) { b.disabled = false; b.textContent = label; }
             var ok = f.querySelector(".ok"); if (!ok) { ok = document.createElement("div"); ok.className = "ok"; ok.setAttribute("role", "alert"); f.insertBefore(ok, f.firstChild); }
@@ -721,4 +732,26 @@
   }
   function init() { document.querySelectorAll(".side-nav, .tabs[role=tablist]").forEach(setup); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+
+/* Signing an NDA: the lock opens and the deal room fills the screen, then the room loads. */
+(function () {
+  window.BTBUnlock = function (slug, next, from) {
+    var M = window.MotionLite, go = function () { location.href = next; };
+    try { sessionStorage.setItem("btb-unlocked", slug); } catch (x) {}
+    if (!M || matchMedia("(prefers-reduced-motion: reduce)").matches) return go();
+    var r = from ? from.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 };
+    var x = Math.round(r.left + r.width / 2), y = Math.round(r.top + r.height / 2);
+    var ov = document.createElement("div"); ov.className = "unlock"; ov.setAttribute("role", "status");
+    ov.innerHTML = '<div class="ul-in"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="ul-sh" d="M20 30 V20 a12 12 0 0 1 24 0 V30"></path><rect class="ul-body" x="12" y="30" width="40" height="28" rx="6"></rect></svg><b>Room open</b><span>NDA signed · taking you in</span></div>';
+    ov.style.clipPath = "circle(0px at " + x + "px " + y + "px)";
+    document.body.appendChild(ov);
+    var R = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    var sh = ov.querySelector(".ul-sh"), txt = ov.querySelectorAll("b, span");
+    setTimeout(go, 1500); // the room loads even if an animation stalls
+    M.animate(ov, { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + Math.ceil(R) + "px at " + x + "px " + y + "px)"] }, { duration: 0.55, ease: [0.65, 0, 0.35, 1] });
+    M.animate(sh, { transform: ["none", "translate(10px,-8px) rotate(14deg)"] }, { type: M.spring, stiffness: 300, damping: 12, delay: 0.5 });
+    Array.prototype.forEach.call(txt, function (t, i) { M.animate(t, { opacity: [0, 1], transform: ["translateY(8px)", "none"] }, { duration: 0.35, delay: 0.55 + i * 0.1 }); });
+    setTimeout(go, 1150);
+  };
 })();

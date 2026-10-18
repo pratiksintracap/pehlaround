@@ -18,14 +18,6 @@ export default async function DealsPage() {
         <p>Every deal in one fixed format, without company names, and a new one about every fortnight. Names, round size, valuation and trailing and forward P/E open once the desk approves your office; each data room opens with that company&apos;s NDA.</p>
       </div>
       <section className="sec tight"><div className="wrap">
-        {deals.length > 1 && (
-          <div className="sortbar" role="group" aria-label="Sort the deals">
-            <span>Sort</span>
-            <button type="button" className="chip" data-sort="desk" aria-pressed="true">Desk&apos;s order</button>
-            <button type="button" className="chip" data-sort="listing" aria-pressed="false">Listing soonest</button>
-            <button type="button" className="chip" data-sort="score" aria-pressed="false">Highest Desk Score</button>
-          </div>
-        )}
         <div className="shelf" dangerouslySetInnerHTML={{ __html: shelfHtml(deals, signed, await canSeeNames(user)) }} />
       </div></section>
       <div dangerouslySetInnerHTML={{ __html: upcomingHtml(upcoming, !!user) }} />

@@ -89,7 +89,7 @@ export default async function Register({ searchParams }: P) {
   return (
     <main><div className="wrap split reg" style={{ padding: "clamp(36px,5vw,64px) var(--gutter)" }}>
       <div className="rv inview">
-        <ol className="stepper" aria-label="From first look to allotment">
+        <ol className="stepper pre" aria-label="From first look to allotment">
           <li className="now"><span className="dot">1</span><span className="t">Register</span><span className="s">a minute</span></li>
           <li><span className="dot">2</span><span className="t">Go deep on every deal</span><span className="s">numbers, documents, promoters</span></li>
           <li><span className="dot">3</span><span className="t">Close the round</span><span className="s">directly with the company</span></li>
