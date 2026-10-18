@@ -218,6 +218,13 @@
       "when": 1792147000000,
       "tag": "0030_decks_before_nda",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792148000000,
+      "tag": "0031_app_devices",
+      "breakpoints": true
     }
   ]
 }

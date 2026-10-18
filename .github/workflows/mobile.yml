@@ -1,0 +1,122 @@
+# Builds the Before the Bell app for Android and iPhone whenever mobile/ changes (or on demand).
+# Android: a debug APK anyone can install for testing, plus a release bundle (.aab) for Google Play once the
+# upload key is in the repo secrets. iPhone: a simulator build until the Apple signing secrets are added.
+# Each run writes its result to the `mobile-builds` branch (status.md), and the APK is attached to the
+# `mobile-latest` release.
+#
+# Secrets, all optional until the store accounts exist:
+#   GOOGLE_SERVICES_JSON_B64       Firebase Android config (base64 of google-services.json)  -> push on Android
+#   GOOGLE_SERVICE_INFO_PLIST_B64  Firebase iOS config (base64 of GoogleService-Info.plist)   -> push on iPhone
+#   ANDROID_KEYSTORE_B64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD  -> signed Play bundle
+name: Mobile app
+on:
+  push:
+    branches: [main]
+    paths: ["mobile/**", ".github/workflows/mobile.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: mobile, cancel-in-progress: true }
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    outputs: { result: "${{ steps.build.outcome }}" }
+    defaults: { run: { working-directory: mobile } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: mobile/package-lock.json }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: gradle }
+      - run: npm ci
+      - name: Firebase config
+        env: { G: "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" }
+        run: if [ -n "$G" ]; then echo "$G" | base64 -d > android/app/google-services.json; echo "push: on"; else echo "push: off (no google-services.json)"; fi
+      - run: npx cap sync android
+      - name: Build
+        id: build
+        env:
+          BTB_VERSION_CODE: "${{ github.run_number }}"
+          KS: "${{ secrets.ANDROID_KEYSTORE_B64 }}"
+          BTB_KEYSTORE_PASSWORD: "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+          BTB_KEY_ALIAS: "${{ secrets.ANDROID_KEY_ALIAS }}"
+          BTB_KEY_PASSWORD: "${{ secrets.ANDROID_KEY_PASSWORD }}"
+        run: |
+          set -o pipefail
+          if [ -n "$KS" ]; then echo "$KS" | base64 -d > $RUNNER_TEMP/upload.jks; export BTB_KEYSTORE=$RUNNER_TEMP/upload.jks; fi
+          cd android && chmod +x gradlew && ./gradlew --no-daemon assembleDebug bundleRelease 2>&1 | tee $RUNNER_TEMP/android.log
+      - name: Collect
+        if: always()
+        run: |
+          mkdir -p $RUNNER_TEMP/out
+          cp android/app/build/outputs/apk/debug/app-debug.apk $RUNNER_TEMP/out/before-the-bell-debug.apk 2>/dev/null || true
+          cp android/app/build/outputs/bundle/release/app-release.aab $RUNNER_TEMP/out/before-the-bell-release.aab 2>/dev/null || true
+          tail -n 120 $RUNNER_TEMP/android.log > $RUNNER_TEMP/out/android-tail.log 2>/dev/null || echo "no log" > $RUNNER_TEMP/out/android-tail.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: android, path: "${{ runner.temp }}/out" }
+
+  ios:
+    runs-on: macos-15
+    outputs: { result: "${{ steps.build.outcome }}" }
+    defaults: { run: { working-directory: mobile } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: mobile/package-lock.json }
+      - run: npm ci
+      - name: Firebase config
+        env: { G: "${{ secrets.GOOGLE_SERVICE_INFO_PLIST_B64 }}" }
+        run: if [ -n "$G" ]; then echo "$G" | base64 -d > ios/App/App/GoogleService-Info.plist; echo "push: on"; else echo "push: off (no GoogleService-Info.plist)"; fi
+      - run: npx cap sync ios
+      - name: Build (simulator)
+        id: build
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath $RUNNER_TEMP/dd CODE_SIGNING_ALLOWED=NO build 2>&1 | tee $RUNNER_TEMP/ios.log | grep -E "error|warning: .*deprecated|BUILD" || true
+          grep -q "BUILD SUCCEEDED" $RUNNER_TEMP/ios.log
+      - name: Collect
+        if: always()
+        run: |
+          mkdir -p $RUNNER_TEMP/out
+          APP=$(find $RUNNER_TEMP/dd -name "App.app" -path "*iphonesimulator*" | head -1)
+          if [ -n "$APP" ]; then (cd "$(dirname "$APP")" && zip -qry $RUNNER_TEMP/out/before-the-bell-simulator.zip App.app); fi
+          grep -E "error:" $RUNNER_TEMP/ios.log | head -40 > $RUNNER_TEMP/out/ios-errors.log 2>/dev/null || true
+          tail -n 80 $RUNNER_TEMP/ios.log >> $RUNNER_TEMP/out/ios-errors.log 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: ios, path: "${{ runner.temp }}/out" }
+
+  report:
+    needs: [android, ios]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: out }
+      - name: Publish the APK on the mobile-latest release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          F=""; for f in out/android/before-the-bell-debug.apk out/ios/before-the-bell-simulator.zip; do [ -f "$f" ] && F="$F $f"; done
+          if [ -n "$F" ]; then
+            gh release delete mobile-latest -R ${{ github.repository }} -y --cleanup-tag 2>/dev/null || true
+            gh release create mobile-latest -R ${{ github.repository }} --target ${{ github.sha }} --prerelease \
+              --title "Before the Bell app · build ${{ github.run_number }}" \
+              --notes "Test builds from ${{ github.sha }}. Android: install before-the-bell-debug.apk. iPhone: simulator build only, until Apple signing is set up." $F
+          fi
+      - name: Write status to the mobile-builds branch
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          git config --global user.name "mobile-ci"; git config --global user.email "mobile-ci@users.noreply.github.com"
+          git clone -q --depth 1 -b mobile-builds https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} st 2>/dev/null || { git init -q st; cd st; git checkout -q -b mobile-builds; git remote add origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}; cd ..; }
+          {
+            echo "# Mobile build ${{ github.run_number }}"
+            echo "commit: ${{ github.sha }}  time: $(date -u +%FT%TZ)"
+            echo "android: ${{ needs.android.outputs.result }}"
+            echo "ios: ${{ needs.ios.outputs.result }}"
+            echo; echo "## Android (tail)"; echo '```'; cat out/android/android-tail.log 2>/dev/null; echo '```'
+            echo; echo "## iOS (errors and tail)"; echo '```'; cat out/ios/ios-errors.log 2>/dev/null; echo '```'
+          } > st/status.md
+          cd st && git add status.md && git commit -qm "build ${{ github.run_number }}: android ${{ needs.android.outputs.result }}, ios ${{ needs.ios.outputs.result }}" && git push -q origin mobile-builds

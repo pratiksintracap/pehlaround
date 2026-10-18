@@ -466,3 +466,18 @@ export const subscribers = pgTable("subscribers", {
   lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("subscribers_email_uq").on(t.email), uniqueIndex("subscribers_token_uq").on(t.token)]);
+
+// Phones running the Before the Bell app: a push token for notifications and, once the person turns on
+// Face ID or fingerprint sign-in, a device secret (kept in the phone's keychain; only its hash is stored here).
+export const appDevices = pgTable("app_devices", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  platform: text("platform").notNull(),               // ios | android
+  pushToken: text("push_token"),
+  secretHash: text("secret_hash"),
+  sessionVersion: integer("session_version"),          // signing out everywhere ends biometric sign-in too
+  name: text("name"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+}, (t) => [uniqueIndex("app_devices_push_uq").on(t.pushToken), index("app_devices_user_idx").on(t.userId)]);

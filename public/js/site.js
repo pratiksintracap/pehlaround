@@ -622,7 +622,7 @@
 /* Installable app: service worker, "Get the app" buttons per phone, and app-only touches. */
 (function () {
   if ("serviceWorker" in navigator) window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js").catch(function () {}); });
-  var standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  var standalone = /BeforeTheBellApp/.test(navigator.userAgent) || window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
   var ua = navigator.userAgent || "";
   var iOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   var android = /Android/.test(ua);

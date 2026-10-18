@@ -1,0 +1,30 @@
+{
+  "name": "before-the-bell-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Before the Bell for iPhone and Android: a native shell around beforethebell.in (Capacitor).",
+  "scripts": {
+    "sync": "cap sync",
+    "assets": "capacitor-assets generate --iconBackgroundColor '#0b1730' --iconBackgroundColorDark '#0b1730' --splashBackgroundColor '#0b1730' --splashBackgroundColorDark '#0b1730'"
+  },
+  "dependencies": {
+    "@capacitor-community/file-opener": "8.0.1",
+    "@capacitor-firebase/messaging": "8.5.2",
+    "@capacitor/android": "8.5.3",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/browser": "8.0.5",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/share": "8.0.3",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.4",
+    "@capgo/capacitor-native-biometric": "8.0.3",
+    "firebase": "^12.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "8.5.3",
+    "typescript": "^5.6.0"
+  }
+}

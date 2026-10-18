@@ -5,6 +5,7 @@ import { dealPrefs, ndas, notifications, offices, users } from "@/db/schema";
 import { getSettings } from "@/lib/settings";
 import { emailReady, sendRaw, layout, E, esc, linkify } from "@/lib/email";
 import { isDesk } from "@/lib/perm";
+import { pushToUsers, officeUserIds, pushReady } from "@/lib/push";
 
 type Msg = { title: string; body?: string | null; link?: string | null; broadcastId?: number; actions?: { label: string; link: string }[] };
 
@@ -53,6 +54,11 @@ export async function notifyOffices(officeIds: number[], m: Msg, email = true, a
       emailed = await sendEmail(people.map((p) => p.email), m);
     }
   }
+  // The app: a push to everyone in these offices who has it (room alerts follow the same switches as email).
+  if (pushReady()) {
+    const to = alert ? await wantsAlert(ids, alert) : ids;
+    await pushToUsers(await officeUserIds(to), { title: m.title, body: m.body, link: m.link });
+  }
   return { recipients: ids.length, emailed };
 }
 
@@ -68,6 +74,11 @@ export async function notifyDesk(m: Msg) {
   await db.insert(notifications).values({ toAdmin: true, title: m.title, body: m.body ?? null, link: m.link ?? null });
   const s = await getSettings();
   if (s.notifyDeskEmail) await sendEmail([s.notifyDeskEmail], m);
+  // And a push to the desk's own phones (a new registration to approve, a question, an allocation request).
+  if (pushReady()) {
+    const desk = await db.select({ id: users.id, role: users.role }).from(users).where(eq(users.disabled, false));
+    await pushToUsers(desk.filter((u) => isDesk(u)).map((u) => u.id), { title: m.title, body: m.body, link: m.actions?.[0]?.link || m.link });
+  }
 }
 
 /** Unread count for the bell: an office's messages, or the desk's alerts for an admin. */
