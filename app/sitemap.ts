@@ -8,8 +8,11 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [deals, arts] = await Promise.all([listDeals(), listArticles(500)]);
   const latest = [...deals.map((d) => d.updatedAt), ...arts.map((a) => a.publishedAt)].filter(Boolean).sort((a, b) => +b - +a)[0] || new Date();
-  const PRI: Record<string, number> = { "": 1, "/deals": 0.9, "/pre-ipo-investing": 0.9, "/how-it-works": 0.8, "/articles": 0.8, "/about": 0.6, "/founders": 0.6, "/register": 0.6, "/webinars": 0.4, "/legal": 0.2 };
-  const fixed = Object.keys(PRI).map((p) => ({ url: `${SITE_URL}${p}`, lastModified: p === "" || p === "/deals" || p === "/articles" ? latest : undefined,
+  const PRI: Record<string, number> = { "": 1, "/deals": 0.9, "/pre-ipo-investing": 0.9, "/how-it-works": 0.8, "/articles": 0.8, "/about": 0.6, "/founders": 0.6, "/register": 0.6, "/app": 0.5, "/webinars": 0.4, "/legal": 0.2 };
+  // Pages whose content is edited by hand: the date they last changed (update when the page changes).
+  const EDITED: Record<string, string> = { "/pre-ipo-investing": "2026-10-15" };
+  const fixed = Object.keys(PRI).map((p) => ({ url: `${SITE_URL}${p}`,
+    lastModified: p === "" || p === "/deals" || p === "/articles" ? latest : EDITED[p] ? new Date(EDITED[p]) : undefined,
     changeFrequency: (p === "/legal" ? "yearly" : "weekly") as "yearly" | "weekly", priority: PRI[p] }));
   return [
     ...fixed,
