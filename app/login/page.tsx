@@ -148,7 +148,7 @@ export default async function Login({ searchParams }: P) {
         </section>
 
         <section className="lp-trust" aria-label="Why offices trust the desk">
-          <span>Backed by <a href="https://sintracap.in" target="_blank" rel="noopener">SintraCap</a>, a family office investing its own capital</span>
+          <span>Operated by <a href="https://sintracap.in" target="_blank" rel="noopener">SintraCap</a>, a family office investing its own capital</span>
           <span>Money never passes through the desk</span><span>Install it as an app: <a href="/app">get the app</a></span>
         </section>
       </div>

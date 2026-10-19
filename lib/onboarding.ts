@@ -58,7 +58,7 @@ export const SERIES: Step[] = [
       + E.p(`${first(c)}, most companies the desk meets never reach you. Before one gets a room, the desk does its own diligence on it:`)
       + E.list(["Promoter and management meetings", "Site, factory and plant visits", "Customer orders verified, and customer and supplier feedback taken", "Audited numbers reconciled across sources, and the valuation set against listed peers"])
       + E.p("Every company then carries a <b>Desk Score</b> out of 10: the desk's own view of how strongly it fits a first institutional round ahead of its listing. It is not a rating or a recommendation; the findings behind it are in the room.")
-      + E.p("Before the Bell is backed by SintraCap, a family office that invests its own capital.")
+      + E.p("Before the Bell is operated by SintraCap, a family office that invests its own capital.")
       + E.btn("See the scores on the desk", "/deals") },
   { key: "team_app", anchor: "approved", days: 9, name: "Your team, and the app", purpose: "Add CIO/CFO/CA; install the app",
     subject: () => "Bring your CIO, CFO or CA, and put the desk on your phone",
