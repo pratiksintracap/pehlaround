@@ -93,8 +93,11 @@ export async function clientIp() {
 export async function log(u: { id: number; name: string; officeId: number | null } | null, action: string, dealId?: number | null,
   more?: { entity?: string; entityId?: number | null; officeId?: number | null; detail?: AuditDetail | null }) {
   const db = await getDb();
-  await db.insert(audit).values({ userId: u?.id ?? null, officeId: more?.officeId ?? u?.officeId ?? null, who: u?.name ?? null, action, dealId: dealId ?? null, ip: await clientIp(),
-    entity: more?.entity ?? null, entityId: more?.entityId ?? null, detail: more?.detail && (more.detail.note || Object.keys(more.detail.changes || {}).length) ? more.detail : null });
+  // audit.officeId means "this office did it": the office's own Log tab, its data export, the founder portal and the pipeline
+  // read it. A desk change about an office is kept out of it and recorded in detail.officeId instead.
+  const d: AuditDetail = { ...(more?.detail ?? {}), ...(more?.officeId ? { officeId: more.officeId } : {}) };
+  await db.insert(audit).values({ userId: u?.id ?? null, officeId: u?.officeId ?? null, who: u?.name ?? null, action, dealId: dealId ?? null, ip: await clientIp(),
+    entity: more?.entity ?? null, entityId: more?.entityId ?? null, detail: d.note || d.officeId || Object.keys(d.changes || {}).length ? d : null });
 }
 
 /** The fields that differ between two versions of a record, as { field: [before, after] } (long text is trimmed). */

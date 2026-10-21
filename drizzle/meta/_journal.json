@@ -232,6 +232,13 @@
       "when": 1792149000000,
       "tag": "0032_desk_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1792150000000,
+      "tag": "0033_desk_audit_office",
+      "breakpoints": true
     }
   ]
 }

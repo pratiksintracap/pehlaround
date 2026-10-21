@@ -270,7 +270,7 @@ export const audit = pgTable("audit", {
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("audit_office_idx").on(t.officeId), index("audit_deal_idx").on(t.dealId), index("audit_entity_idx").on(t.entity, t.entityId)]);
 
-export type AuditDetail = { changes?: Record<string, [unknown, unknown]>; note?: string };
+export type AuditDetail = { changes?: Record<string, [unknown, unknown]>; note?: string; officeId?: number };  // officeId: the office a desk change is about (never audit.officeId)
 
 // ---------------------------------------------------------------- desk workflow (desk only; no investor-facing code reads these)
 // Notes the desk keeps on a deal (and optionally about one investor in it).

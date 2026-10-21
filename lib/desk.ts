@@ -54,7 +54,7 @@ export async function workspace(dealId: number) {
     db.select().from(deskNotes).where(eq(deskNotes.dealId, dealId)).orderBy(desc(deskNotes.createdAt)).limit(200),
     db.select().from(deskFiles).where(eq(deskFiles.dealId, dealId)).orderBy(desc(deskFiles.createdAt)),
     db.select().from(tasks).where(eq(tasks.dealId, dealId)).orderBy(desc(tasks.createdAt)).limit(200),
-    db.select().from(audit).where(and(eq(audit.dealId, dealId), sql`(${audit.entity} is not null or ${audit.officeId} is null)`)).orderBy(desc(audit.at)).limit(60),
+    db.select().from(audit).where(and(eq(audit.dealId, dealId), sql`${audit.officeId} is null`)).orderBy(desc(audit.at)).limit(60),
   ]);
   return { notes, files, tasks: sortTasks(ts), trail };
 }

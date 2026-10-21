@@ -34,7 +34,7 @@ export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back
 
       <div className="two ws-grid">
         <div className="chart" id="tasks"><span className="k">Tasks · {open.length} open</span>
-          <ul className="tk-list">{ws.tasks.length ? ws.tasks.map((t) => <TaskRow key={t.id} t={t} back={`${back}#tasks`} del={del} showDeal={false} {...opts} />) : <li className="empty-li">No tasks on this deal.</li>}</ul>
+          <ul className="dt-list">{ws.tasks.length ? ws.tasks.map((t) => <TaskRow key={t.id} t={t} back={`${back}#tasks`} del={del} showDeal={false} {...opts} />) : <li className="empty-li">No tasks on this deal.</li>}</ul>
           {work && <details className="ws-add"><summary className="btn sm">+ Add a task</summary><TaskForm back={`${back}#tasks`} dealId={d.id} me={me.id} {...opts} /></details>}
         </div>
 
@@ -46,7 +46,7 @@ export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back
           <ul className="feed ws-notes">{ws.notes.length ? ws.notes.map((x) => (
             <li key={x.id}><span className="mono">{fmtT(x.createdAt)}</span><b>{x.who || "Desk"}</b>{x.officeId ? <> · {nm.office.get(x.officeId)}</> : null}{x.editedAt ? <span className="fine"> · edited</span> : null}
               <p className="ws-note">{x.body}</p>
-              {work && (x.userId === me.id || del) && <details className="tk-edit"><summary>Edit</summary>
+              {work && (x.userId === me.id || del) && <details className="dt-edit"><summary>Edit</summary>
                 <form action={saveDeskNote} className="form"><input type="hidden" name="id" value={x.id} /><input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="back" value={`${back}#notes`} />
                   <textarea name="body" rows={3} defaultValue={x.body} maxLength={8000} /><div style={{ display: "flex", gap: 6 }}><button className="btn sm" type="submit">Save</button></div></form>
                 {del && <form action={saveDeskNote}><input type="hidden" name="id" value={x.id} /><input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="delete" value="on" /><input type="hidden" name="back" value={`${back}#notes`} />
@@ -60,8 +60,8 @@ export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back
           <p className="fine" style={{ margin: "2px 0 8px" }}>Internal links (term sheets, KYC packs, CA notes). Never shown to investors{d.listed ? "" : "; investor documents are in Documents below"}.</p>
           <ul className="feed">{ws.files.length ? ws.files.map((x) => (
             <li key={x.id}>{x.url ? <a href={x.url} target="_blank" rel="noopener noreferrer"><b>{x.title}</b></a> : <b>{x.title}</b>}{x.kind ? <span className="fine"> · {x.kind}</span> : null}
-              <span className="fine"> · {x.who || "Desk"}, {fmtT(x.createdAt)}</span>{x.note ? <small className="tk-notes">{x.note}</small> : null}
-              {work && <details className="tk-edit"><summary>Edit</summary>
+              <span className="fine"> · {x.who || "Desk"}, {fmtT(x.createdAt)}</span>{x.note ? <small className="dt-notes">{x.note}</small> : null}
+              {work && <details className="dt-edit"><summary>Edit</summary>
                 <form action={saveDeskFile} className="form"><input type="hidden" name="id" value={x.id} /><input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="back" value={`${back}#files`} />
                   <div className="row"><label>Title<input name="title" defaultValue={x.title} required maxLength={300} /></label><label>Kind<input name="kind" defaultValue={x.kind ?? ""} maxLength={80} /></label></div>
                   <label>Link<input name="url" type="url" defaultValue={x.url ?? ""} placeholder="https://" /></label>

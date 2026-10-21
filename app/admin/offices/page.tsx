@@ -93,7 +93,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
                 {o.origin === "desk" && <>
                   <span className="k eyebrow">Contact (added by the desk)</span>
                   <p className="fine" style={{ margin: "2px 0 6px" }}>{o.contactName || "—"} · {em(o.contactEmail) || "—"} · {em(o.contactPhone) || "—"}</p>
-                  <details className="tk-edit"><summary>Edit contact</summary>
+                  <details className="dt-edit"><summary>Edit contact</summary>
                     <form action={saveInvestorContact} className="form"><input type="hidden" name="id" value={o.id} /><input type="hidden" name="back" value={`/admin/offices?show=desk#o${o.id}`} />
                       <div className="row"><label>Name<input name="contactName" defaultValue={o.contactName ?? ""} maxLength={160} /></label><label>Phone<input name="contactPhone" defaultValue={seeContacts ? o.contactPhone ?? "" : ""} maxLength={40} /></label></div>
                       <label>Email<input name="contactEmail" type="email" defaultValue={seeContacts ? o.contactEmail ?? "" : ""} maxLength={200} /></label>

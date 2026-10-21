@@ -29,7 +29,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
         <a key={`w${k}`} href={q("who", k)} className={who === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["open", "Open"], ["done", "Done"], ["all", "All"]].map(([k, l]) => <a key={`s${k}`} href={q("status", k)} className={status === k ? "on" : ""}>{l}</a>)}
         {deal && <a href={q("deal", "")} className="on">Deal: {nm.deal.get(Number(deal))?.company} ✕</a>}{office && <a href={q("office", "")} className="on">Investor: {nm.office.get(Number(office))} ✕</a>}</div>
-      <div className="chart"><ul className="tk-list">{list.length ? list.map((t) => <TaskRow key={t.id} t={t} back={back} del={del} {...opts} />) : <li className="empty-li">Nothing here.</li>}</ul></div>
+      <div className="chart"><ul className="dt-list">{list.length ? list.map((t) => <TaskRow key={t.id} t={t} back={back} del={del} {...opts} />) : <li className="empty-li">Nothing here.</li>}</ul></div>
       {work && <div className="chart" style={{ marginTop: 22 }} id="add"><span className="k">Add a task</span>
         <TaskForm back={back} me={me.id} dealId={Number(deal) || undefined} officeId={Number(office) || undefined} {...opts} /></div>}
     </>

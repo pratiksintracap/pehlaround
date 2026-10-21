@@ -15,7 +15,7 @@ export default async function Log({ searchParams }: { searchParams: Promise<{ of
   const db = await getDb();
   // An analyst sees office activity and their own desk actions; a super admin sees everything.
   const scope = all ? undefined : sql`(${audit.officeId} is not null or ${audit.userId} = ${me.id})`;
-  const conds = [scope, office ? eq(audit.officeId, Number(office)) : undefined, deal ? eq(audit.dealId, Number(deal)) : undefined,
+  const conds = [scope, office ? sql`(${audit.officeId} = ${Number(office)} or (${audit.detail}->>'officeId')::int = ${Number(office)})` : undefined, deal ? eq(audit.dealId, Number(deal)) : undefined,
     kind === "desk" ? sql`${audit.entity} is not null` : kind ? eq(audit.entity, kind) : undefined].filter(Boolean);
   const rows = await db.select().from(audit).where(conds.length ? and(...conds) : undefined).orderBy(desc(audit.at)).limit(500);
   const os = new Map((await db.select({ id: offices.id, name: offices.name }).from(offices)).map((o) => [o.id, o.name]));
@@ -29,7 +29,7 @@ export default async function Log({ searchParams }: { searchParams: Promise<{ of
         {deal && <a href={q("deal", "")} className="on">Deal: {ds.get(Number(deal))?.company} ✕</a>}{office && <a href={q("office", "")} className="on">Office: {os.get(Number(office))} ✕</a>}</div>
       <div className="cmpwrap"><table className="cmp"><thead><tr><th>When</th><th>Office</th><th>Deal</th><th>Who</th><th>What</th>{all && <th>IP</th>}</tr></thead><tbody>
         {rows.map((r) => { const d = r.dealId ? ds.get(r.dealId) : null; return (
-          <tr key={r.id}><td>{fmtT(r.at)}</td><td>{r.officeId ? <a href={q("office", String(r.officeId))}>{os.get(r.officeId)}</a> : "Desk"}</td>
+          <tr key={r.id}><td>{fmtT(r.at)}</td><td>{r.officeId ? <a href={q("office", String(r.officeId))}>{os.get(r.officeId)}</a> : r.detail?.officeId ? <>Desk · re <a href={q("office", String(r.detail.officeId))}>{os.get(r.detail.officeId)}</a></> : "Desk"}</td>
             <td>{d ? <a href={q("deal", String(d.id))}>{d.company}</a> : "—"}</td><td>{r.who || "—"}</td><td>{r.action}<Changes d={r.detail} /></td>{all && <td className="mono">{r.ip || ""}</td>}</tr>); })}
       </tbody></table></div>
     </>

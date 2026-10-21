@@ -30,16 +30,16 @@ export function TaskRow({ t, back, members, deals, offices, del, showDeal = true
   const who = members.find((m) => m.id === t.assigneeId)?.name ?? "—";
   const deal = deals.find((d) => d.id === t.dealId), office = offices.find((o) => o.id === t.officeId);
   return (
-    <li className={`tk ${t.status === "done" ? "done" : ""} ${over ? "over" : ""}`}>
+    <li className={`dt ${t.status === "done" ? "done" : ""} ${over ? "over" : ""}`}>
       <form action={setTaskDone}><input type="hidden" name="id" value={t.id} /><input type="hidden" name="done" value={t.status === "done" ? "0" : "1"} /><input type="hidden" name="back" value={back} />
-        <button className="tk-box" type="submit" aria-label={t.status === "done" ? `Reopen: ${t.title}` : `Mark done: ${t.title}`} title={t.status === "done" ? "Reopen" : "Mark done"}>{t.status === "done" ? "✓" : ""}</button></form>
-      <div className="tk-main">
+        <button className="dt-box" type="submit" aria-label={t.status === "done" ? `Reopen: ${t.title}` : `Mark done: ${t.title}`} title={t.status === "done" ? "Reopen" : "Mark done"}>{t.status === "done" ? "✓" : ""}</button></form>
+      <div className="dt-main">
         <b>{t.title}</b>
         <small className="fine">{who}{t.dueOn ? <> · <span className={over ? "pill bad" : due ? "pill mid" : ""}>{over ? "overdue, " : due ? "due today, " : "due "}{fmtDay(t.dueOn)}</span></> : ""}
           {showDeal && deal ? <> · <a href={`/admin/deals/${deal.id}#desk`}>{deal.name}</a></> : ""}{office ? <> · <a href={`/admin/offices#o${office.id}`}>{office.name}</a></> : ""}
           {t.status === "done" && t.doneBy ? ` · done by ${t.doneBy}` : ""}{t.createdBy && t.createdBy !== who ? ` · from ${t.createdBy}` : ""}</small>
-        {t.notes && <small className="tk-notes">{t.notes}</small>}
-        <details className="tk-edit"><summary>Edit</summary>
+        {t.notes && <small className="dt-notes">{t.notes}</small>}
+        <details className="dt-edit"><summary>Edit</summary>
           <TaskForm t={t} back={back} members={members} deals={deals} offices={offices} />
           {del && <form action={saveTask} style={{ marginTop: 6 }}><input type="hidden" name="id" value={t.id} /><input type="hidden" name="delete" value="on" /><input type="hidden" name="back" value={back} />
             <button className="btn sm ghost" type="submit">Delete task</button></form>}
@@ -52,7 +52,7 @@ export function TaskRow({ t, back, members, deals, offices, del, showDeal = true
 /** New task, or edit one. Fixed deal or investor come in as hidden fields. */
 export function TaskForm({ t, back, members, deals, offices, dealId, officeId, me }: { t?: Task; back: string; members: Opt[]; deals: Opt[]; offices: Opt[]; dealId?: number; officeId?: number; me?: number }) {
   return (
-    <form action={saveTask} className="form tk-form">
+    <form action={saveTask} className="form dt-form">
       {t && <input type="hidden" name="id" value={t.id} />}<input type="hidden" name="back" value={back} />
       <label>Task<input name="title" required maxLength={300} defaultValue={t?.title} placeholder="e.g. Chase the CA certificate" /></label>
       <div className="row">

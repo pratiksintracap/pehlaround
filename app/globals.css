@@ -1214,17 +1214,17 @@ form.inline select{padding:5px 8px;border-radius:8px;border:1px solid var(--line
 .ws-add[open]>summary{margin-bottom:8px}
 .ws-note{margin:4px 0 0;white-space:pre-wrap;font-size:14px;color:var(--ink2)}
 .ws-notes li,.ws-trail li{display:block}
-.tk-list{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
-.tk{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
-.tk.over{border-color:var(--bad)}
-.tk.done .tk-main b{text-decoration:line-through;color:var(--ink3)}
-.tk-box{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line2);background:var(--bg2);color:var(--live);font-weight:700;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
-.tk-box:hover{border-color:var(--live)}
-.tk-main{display:grid;gap:2px;min-width:0}
-.tk-notes{display:block;color:var(--ink2);font-size:13px;white-space:pre-wrap}
-.tk-edit>summary{cursor:pointer;font-size:12px;color:var(--accent);width:max-content}
-.tk-edit[open]{padding-top:6px}
-.tk-form .row{gap:10px}
+.dt-list{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:6px}
+.dt{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
+.dt.over{border-color:var(--bad)}
+.dt.done .dt-main b{text-decoration:line-through;color:var(--ink3)}
+.dt-box{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line2);background:var(--bg2);color:var(--live);font-weight:700;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.dt-box:hover{border-color:var(--live)}
+.dt-main{display:grid;gap:2px;min-width:0}
+.dt-notes{display:block;color:var(--ink2);font-size:13px;white-space:pre-wrap}
+.dt-edit>summary{cursor:pointer;font-size:12px;color:var(--accent);width:max-content}
+.dt-edit[open]{padding-top:6px}
+.dt-form .row{gap:10px}
 .chg{list-style:none;margin:4px 0 0;padding:0;font-size:12.5px;color:var(--ink2)}
 .chg li{margin:1px 0}
 .chg .k{font-size:11px}
@@ -1240,5 +1240,5 @@ form.inline select{padding:5px 8px;border-radius:8px;border:1px solid var(--line
 .deal-move{margin-top:6px;flex-wrap:nowrap}
 .deal-move select{flex:1;min-width:0;max-width:150px}
 .deal-board .pl-top a{min-width:0}
-.tk .tk-main small a{display:inline!important;background:none!important;border:0!important;padding:0!important;margin:0!important;width:auto!important;min-height:0!important;color:var(--accent);font:inherit}
+.dt .dt-main small a{display:inline!important;background:none!important;border:0!important;padding:0!important;margin:0!important;width:auto!important;min-height:0!important;color:var(--accent);font:inherit}
 .atb-co a{color:var(--ink);font-weight:600}

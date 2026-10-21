@@ -63,7 +63,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
               : <li className="empty-li">Nobody waiting.</li>}</ul>
             {can(me, "offices.approve") ? null : <p className="fine">A super admin approves offices.</p>}</div>
           <div><h3 className="md-h">Your tasks <em>{desk.myTasks.length}</em>{myOver ? <span className="pill bad">{myOver} overdue</span> : null}</h3>
-            <ul className="tk-list">{desk.myTasks.length ? desk.myTasks.slice(0, 8).map((t) => <TaskRow key={t.id} t={t} back="/admin" del={can(me, "delete")} {...opts} />) : <li className="empty-li">No open tasks.</li>}</ul>
+            <ul className="dt-list">{desk.myTasks.length ? desk.myTasks.slice(0, 8).map((t) => <TaskRow key={t.id} t={t} back="/admin" del={can(me, "delete")} {...opts} />) : <li className="empty-li">No open tasks.</li>}</ul>
             <a className="btn sm" href="/admin/tasks">All tasks</a>{isSuper(me) && desk.overdueAll ? <span className="fine"> · {desk.overdueAll} overdue across the desk: <a href="/admin/tasks?who=all">see</a></span> : null}</div>
         </div>
       </section>
