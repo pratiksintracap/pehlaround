@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function Board({ searchParams }: { searchParams: Promise<{ msg?: string; who?: string; kind?: string }> }) {
   const me = await requireDesk();
   const { msg, who, kind } = await searchParams;
-  const [all, members, open] = await Promise.all([deskDeals(), deskMembers(), listTasks({ status: "open" })]);
+  const [all, members, open] = await Promise.all([deskDeals(), deskMembers(), listTasks({ status: "open", me })]);
   const ownerFilter = who === "me" ? me.id : who === "none" ? null : who ? Number(who) : undefined;
   const list = all.filter((d) => (ownerFilter === undefined || d.ownerId === ownerFilter) && (!kind || (kind === "listed" ? d.listed : !d.listed)));
   const name = new Map(members.map((m) => [m.id, m.name]));

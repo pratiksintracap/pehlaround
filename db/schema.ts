@@ -43,6 +43,7 @@ export const offices = pgTable("offices", {
   contactEmail: text("contact_email"),
   contactPhone: text("contact_phone"),
   addedBy: text("added_by"),
+  addedById: integer("added_by_id"),            // who on the desk added it: an analyst sees only their own desk-added investors
   // Marketing: where the office first came from (utm tags, referrer, landing page), its own invite code, and who referred it.
   source: jsonb("source").$type<Source>(),
   refCode: text("ref_code"),

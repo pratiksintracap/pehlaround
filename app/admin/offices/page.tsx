@@ -1,6 +1,6 @@
 import { TYPE_LABEL, DECL_LABEL, isQib, type InvestorType } from "@/lib/investor";
 import { requireDesk } from "@/lib/auth";
-import { can, mask } from "@/lib/perm";
+import { can, isSuper, mask } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
 import { desc, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
@@ -10,7 +10,7 @@ import { completeness } from "@/lib/profile";
 import { officeEngagement } from "@/lib/interest";
 import { Msg } from "@/components/AdminBits";
 import { addInvestor, importInvestors, saveInvestorContact } from "@/lib/desk-actions";
-import { listTasks } from "@/lib/desk";
+import { listTasks, officeScope } from "@/lib/desk";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
@@ -21,7 +21,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
   const em = (v?: string | null) => (seeContacts ? v : mask(v));
   const db = await getDb();
   const [os, us, ns, ds, inv] = await Promise.all([
-    db.select().from(offices).orderBy(desc(offices.createdAt)),
+    db.select().from(offices).where(officeScope(me)).orderBy(desc(offices.createdAt)), // an analyst sees only the investors they added by hand
     db.select().from(users),
     db.select().from(ndas).orderBy(desc(ndas.signedAt)),
     db.select({ id: deals.id, company: deals.company }).from(deals),
@@ -35,7 +35,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
     : show === "registered" ? o.origin !== "desk" : show === "desk" ? o.origin === "desk" : o.approval === "rejected";
   const list = [...os].filter(pick).sort((a, b) => order(a) - order(b));
   const deskN = os.filter((o) => o.origin === "desk").length;
-  const openTasks = await listTasks({ status: "open" });
+  const openTasks = await listTasks({ status: "open", me });
   const userEmails = new Map(us.filter((u) => u.officeId).map((u) => [u.email.toLowerCase(), u.officeId!]));
   const addMany = can(me, "investors.add");
   const AP: Record<string, [string, string]> = { pending: ["Awaiting approval", "mid"], approved: ["Approved", "ok"], rejected: ["Declined", "off"] };
@@ -123,7 +123,7 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
       })}
       {!list.length && <p>{os.length ? "No offices in this view." : "No family offices have registered yet."}</p>}
       {addMany && <div className="chart" style={{ marginTop: 24 }} id="add"><span className="k">Add investors you are in touch with</span>
-        <p className="fine" style={{ margin: "4px 0 10px" }}>They are added already approved and tagged <b>Added by desk</b>, so you can filter them from offices that registered. No registration link or email goes to them, and nobody can sign in as them; if they register later, the office list marks the match as &ldquo;Also registered&rdquo;.</p>
+        <p className="fine" style={{ margin: "4px 0 10px" }}>They are added already approved and tagged <b>Added by desk</b>, so you can filter them from offices that registered. {isSuper(me) ? "You see every investor the desk added; each analyst sees only the ones they added." : "Only you (and the super admin) see the investors you add."} No registration link or email goes to them, and nobody can sign in as them; if they register later, the office list marks the match as &ldquo;Also registered&rdquo;.</p>
         <div className="two">
           <form action={addInvestor} className="form"><input type="hidden" name="back" value="/admin/offices?show=desk" />
             <b>One investor</b>

@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function AfterTheBell({ searchParams }: { searchParams: Promise<{ msg?: string; stage?: string }> }) {
   const me = await requireDesk();
   const { msg, stage } = await searchParams;
-  const [all, members, open] = await Promise.all([deskDeals({ listed: true }), deskMembers(), listTasks({ status: "open" })]);
+  const [all, members, open] = await Promise.all([deskDeals({ listed: true }), deskMembers(), listTasks({ status: "open", me })]);
   const list = all.filter((d) => !stage || (stage === "active" ? d.pipelineStage !== "closed" : d.pipelineStage === stage));
   const who = new Map(members.map((m) => [m.id, m.name]));
   const tasksOn = (id: number) => open.filter((t) => t.dealId === id).length;

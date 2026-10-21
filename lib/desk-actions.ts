@@ -11,7 +11,7 @@ import { requirePerm, log, changes } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { asStage, stageLabel } from "@/lib/stages";
 import { investorRows, investorType } from "@/lib/csv";
-import { deskMembers } from "@/lib/desk";
+import { deskMembers, canSeeOffice, officeScope } from "@/lib/desk";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const n = (f: FormData, k: string) => Number(f.get(k)) || 0;
@@ -84,6 +84,7 @@ export async function saveDeskNote(f: FormData) {
     return back(f, fallback, "Note saved.");
   }
   if (dealId && !(await dealRow(dealId))) return back(f, fallback, "Deal not found.");
+  if (officeId) { const [o] = await db.select({ origin: offices.origin, addedById: offices.addedById }).from(offices).where(eq(offices.id, officeId)); if (!o || !canSeeOffice(me, o)) return back(f, fallback, "Investor not found."); }
   const [row] = await db.insert(deskNotes).values({ dealId, officeId, body, userId: me.id, who: me.name }).returning({ id: deskNotes.id });
   await log(me, "Desk added a note", dealId, { entity: "note", entityId: row.id, officeId, detail: { note: body.slice(0, 300) } });
   back(f, fallback, "Note added.");
@@ -142,7 +143,13 @@ export async function saveTask(f: FormData) {
   if (!members.some((m) => m.id === assigneeId)) return back(f, fallback, "Tasks go to a desk member.");
   const dealId = n(f, "dealId") || null, officeId = n(f, "officeId") || null;
   if (dealId && !(await dealRow(dealId))) return back(f, fallback, "Deal not found.");
-  if (officeId && !(await db.select({ id: offices.id }).from(offices).where(eq(offices.id, officeId))).length) return back(f, fallback, "Investor not found.");
+  if (officeId) {
+    const [o] = await db.select({ origin: offices.origin, addedById: offices.addedById }).from(offices).where(eq(offices.id, officeId));
+    if (!o || !canSeeOffice(me, o)) return back(f, fallback, "Investor not found.");
+    // An investor added privately stays private: its tasks go only to someone who can see it.
+    const to = members.find((m) => m.id === assigneeId);
+    if (!to || !canSeeOffice(to, o)) return back(f, fallback, "Only the person who added this investor (or the super admin) can take tasks about it.");
+  }
   const vals = { title, notes: s(f, "notes", 4000) || null, dealId, officeId, assigneeId, dueOn: day(s(f, "dueOn", 10)) };
   const who = (uid: number | null) => members.find((m) => m.id === uid)?.name ?? (uid ? `#${uid}` : "—");
   if (id) {
@@ -222,13 +229,14 @@ export async function saveListedDeal(f: FormData) {
 type NewInvestor = { name: string; type: string; contactName: string; email: string; phone: string; city: string; ticket: string; website: string; notes: string };
 
 /** Adds investors as already-approved offices tagged "added by desk". No user account is made and no email goes out. */
-async function addInvestors(me: { id: number; name: string; officeId: number | null }, list: NewInvestor[]) {
+async function addInvestors(me: { id: number; name: string; role: string; officeId: number | null }, list: NewInvestor[]) {
   const db = await getDb();
   const emails = list.map((r) => r.email).filter(Boolean);
   const [taken, known, names] = await Promise.all([
     emails.length ? db.select({ email: users.email }).from(users).where(inArray(users.email, emails)) : Promise.resolve([]),
-    emails.length ? db.select({ email: offices.contactEmail }).from(offices).where(inArray(offices.contactEmail, emails)) : Promise.resolve([]),
-    db.select({ name: offices.name }).from(offices),
+    // Duplicates are checked only against investors this person can see, so a private list never reveals another's.
+    emails.length ? db.select({ email: offices.contactEmail }).from(offices).where(and(inArray(offices.contactEmail, emails), officeScope(me))) : Promise.resolve([]),
+    db.select({ name: offices.name }).from(offices).where(officeScope(me)),
   ]);
   const seenEmail = new Set([...taken.map((r) => r.email), ...known.map((r) => r.email)].filter(Boolean).map((e) => e!.toLowerCase()));
   const seenName = new Set(names.map((r) => r.name.toLowerCase().trim()));
@@ -241,7 +249,7 @@ async function addInvestors(me: { id: number; name: string; officeId: number | n
       name: r.name.slice(0, 200), investorType: investorType(r.type), origin: "desk", approval: "approved", approvedAt: new Date(), status: "registered",
       contactName: r.contactName.slice(0, 160) || null, contactEmail: email || null, contactPhone: r.phone.slice(0, 40) || null,
       city: r.city.slice(0, 120) || null, ticket: r.ticket.slice(0, 80) || null, website: r.website.slice(0, 300) || null, notes: r.notes.slice(0, 4000) || null,
-      addedBy: me.name, source: { s: "desk", m: "added by hand" },
+      addedBy: me.name, addedById: me.id, source: { s: "desk", m: "added by hand" },
     }).returning({ id: offices.id });
     await log(me, `Desk added the investor ${r.name} (no registration link sent)`, null, { entity: "investor", entityId: row.id, officeId: row.id,
       detail: { changes: changes(null, { name: r.name, contactName: r.contactName, email, phone: r.phone, city: r.city }) } });
@@ -287,7 +295,7 @@ export async function saveInvestorContact(f: FormData) {
   const db = await getDb();
   const id = n(f, "id");
   const [o] = await db.select().from(offices).where(eq(offices.id, id));
-  if (!o) return back(f, "/admin/offices", "Investor not found.");
+  if (!o || !canSeeOffice(me, o)) return back(f, "/admin/offices", "Investor not found.");
   const vals = { contactName: s(f, "contactName", 160) || null, contactEmail: s(f, "contactEmail", 200).toLowerCase() || null, contactPhone: s(f, "contactPhone", 40) || null };
   await db.update(offices).set(vals).where(eq(offices.id, id));
   await log(me, `Desk updated the contact for ${o.name}`, null, { entity: "office", entityId: id, officeId: id, detail: { changes: changes(o, vals) } });

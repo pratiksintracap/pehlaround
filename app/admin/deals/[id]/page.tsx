@@ -1,6 +1,7 @@
 import { requireDesk } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { DeskWorkspace } from "@/components/DeskWorkspace";
+import { officeScope } from "@/lib/desk";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { calls, dealLinks, deals, documents, ndas, offices, questions, users } from "@/db/schema";
@@ -32,7 +33,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   const signedOffices = await db.select({ id: offices.id, name: offices.name }).from(ndas).innerJoin(offices, eq(offices.id, ndas.officeId)).where(eq(ndas.dealId, id));
   const [links, approvedOffices] = await Promise.all([
     db.select().from(dealLinks).where(eq(dealLinks.dealId, id)).orderBy(desc(dealLinks.createdAt)).limit(50),
-    db.select({ id: offices.id, name: offices.name }).from(offices).where(eq(offices.approval, "approved")).orderBy(asc(offices.name)),
+    db.select({ id: offices.id, name: offices.name }).from(offices).where(and(eq(offices.approval, "approved"), officeScope(me))).orderBy(asc(offices.name)),
   ]);
   const officeName = new Map(approvedOffices.map((o) => [o.id, o.name]));
   const promoters = await db.select().from(users).where(and(eq(users.role, "promoter"), eq(users.promoterDealId, id), eq(users.disabled, false)));

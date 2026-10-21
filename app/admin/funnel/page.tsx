@@ -23,7 +23,7 @@ export default async function Funnel() {
   const now = new Date();
   const from = new Date(weekStart(now) - (WEEKS - 1) * 7 * 864e5);
   const [offs, ndaRows, intRows, evRows, subCount, refTop] = await Promise.all([
-    db.select({ id: offices.id, name: offices.name, source: offices.source, approval: offices.approval, createdAt: offices.createdAt, approvedAt: offices.approvedAt, referredBy: offices.referredBy }).from(offices).orderBy(desc(offices.createdAt)),
+    db.select({ id: offices.id, name: offices.name, source: offices.source, approval: offices.approval, createdAt: offices.createdAt, approvedAt: offices.approvedAt, referredBy: offices.referredBy }).from(offices).where(sql`${offices.origin} <> 'desk'`).orderBy(desc(offices.createdAt)), // investors the desk added by hand did not come through the funnel
     db.select({ officeId: ndas.officeId, at: ndas.signedAt }).from(ndas),
     db.select({ officeId: interests.officeId, at: interests.createdAt }).from(interests),
     db.select({ kind: events.kind, at: events.at, source: events.source, meta: events.meta }).from(events).where(gt(events.at, from)),

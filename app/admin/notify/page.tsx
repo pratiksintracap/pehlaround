@@ -1,6 +1,7 @@
 import { requireDesk } from "@/lib/auth";
 import { can } from "@/lib/perm";
-import { asc, desc, ne } from "drizzle-orm";
+import { and, asc, desc, ne } from "drizzle-orm";
+import { officeScope } from "@/lib/desk";
 import { getDb } from "@/lib/db";
 import { broadcasts, deals, offices } from "@/db/schema";
 import { sendBroadcast } from "@/lib/admin-actions";
@@ -23,7 +24,7 @@ export default async function Notify({ searchParams }: { searchParams: Promise<{
   const db = await getDb();
   const [ds, os, hist] = await Promise.all([
     db.select({ id: deals.id, company: deals.company }).from(deals).where(notListed).orderBy(asc(deals.sort)), // listed companies are never announced
-    db.select({ id: offices.id, name: offices.name }).from(offices).where(ne(offices.approval, "rejected")).orderBy(asc(offices.name)),
+    db.select({ id: offices.id, name: offices.name }).from(offices).where(and(ne(offices.approval, "rejected"), officeScope(me))).orderBy(asc(offices.name)),
     db.select().from(broadcasts).orderBy(desc(broadcasts.createdAt)).limit(40),
   ]);
   const dealName = new Map(ds.map((d) => [d.id, d.company]));

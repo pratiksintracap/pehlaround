@@ -10,7 +10,7 @@ import { Changes, TaskRow, TaskForm, fmtT } from "@/components/DeskBits";
 type Me = { id: number; role: string };
 
 export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back: string }) {
-  const [ws, members, nm] = await Promise.all([workspace(d.id), deskMembers(), names()]);
+  const [ws, members, nm] = await Promise.all([workspace(d.id, me), deskMembers(), names(me)]);
   const work = can(me, "workflow"), del = can(me, "delete");
   const opts = { members: members.map((m) => ({ id: m.id, name: m.name })), deals: [...nm.deal.values()].map((x) => ({ id: x.id, name: x.company })), offices: [...nm.office.entries()].map(([id, name]) => ({ id, name })) };
   const open = ws.tasks.filter((t) => t.status === "open");

@@ -29,7 +29,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     db.select().from(notifications).where(sql`to_admin = true`).orderBy(desc(notifications.createdAt)).limit(12),
   ]);
   const unread = alerts.filter((a) => !a.readAt).length;
-  const [desk, members, nm, added] = await Promise.all([myDesk(me), deskMembers(), names(), count(offices, sql`origin = 'desk'`)]);
+  const [desk, members, nm, added] = await Promise.all([myDesk(me), deskMembers(), names(me), count(offices, isSuper(me) ? sql`origin = 'desk'` : sql`origin = 'desk' and added_by_id = ${me.id}`)]);
   const opts = { members: members.map((m) => ({ id: m.id, name: m.name })), deals: [...nm.deal.values()].map((x) => ({ id: x.id, name: x.company })), offices: [...nm.office.entries()].map(([id, name]) => ({ id, name })) };
   const myOver = desk.myTasks.filter((t) => t.dueOn && t.dueOn < new Date(Date.now() + 5.5 * 36e5).toISOString().slice(0, 10)).length;
   // Offices active in a room this week that have neither requested an allocation nor passed: the desk's call list.

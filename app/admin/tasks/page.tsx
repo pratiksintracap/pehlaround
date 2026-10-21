@@ -14,7 +14,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
   const assigneeId = who === "all" ? undefined : who === "me" ? me.id : Number(who) || undefined;
   const st = status === "done" ? "done" : status === "all" ? "all" : "open";
   const [list, members, nm] = await Promise.all([
-    listTasks({ assigneeId, status: st, dealId: Number(deal) || undefined, officeId: Number(office) || undefined }), deskMembers(), names()]);
+    listTasks({ assigneeId, status: st, dealId: Number(deal) || undefined, officeId: Number(office) || undefined, me }), deskMembers(), names(me)]);
   const opts = { members: members.map((m) => ({ id: m.id, name: m.name })), deals: [...nm.deal.values()].map((x) => ({ id: x.id, name: x.company })), offices: [...nm.office.entries()].map(([id, name]) => ({ id, name })) };
   const params = { who, status, deal: deal || "", office: office || "" };
   const q = (k: keyof typeof params, v: string) => { const p = new URLSearchParams(Object.entries({ ...params, [k]: v }).filter(([, x]) => x) as [string, string][]); return `/admin/tasks?${p}`; };
