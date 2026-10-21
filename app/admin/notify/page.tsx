@@ -6,6 +6,7 @@ import { broadcasts, deals, offices } from "@/db/schema";
 import { sendBroadcast } from "@/lib/admin-actions";
 import { emailReady, ALERT_TOPICS } from "@/lib/notify";
 import { Msg } from "@/components/AdminBits";
+import { notListed } from "@/lib/deal-guard";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
 const AUD: Record<string, string> = { approved: "All approved offices", all: "Every registered office", pending: "Offices awaiting approval", deal: "Offices that signed a company's NDA", office: "One office" };
@@ -21,7 +22,7 @@ export default async function Notify({ searchParams }: { searchParams: Promise<{
   try { if (raw && send) dr = JSON.parse(Buffer.from(raw, "base64url").toString("utf8")) as Draft; } catch { dr = {}; }
   const db = await getDb();
   const [ds, os, hist] = await Promise.all([
-    db.select({ id: deals.id, company: deals.company }).from(deals).orderBy(asc(deals.sort)),
+    db.select({ id: deals.id, company: deals.company }).from(deals).where(notListed).orderBy(asc(deals.sort)), // listed companies are never announced
     db.select({ id: offices.id, name: offices.name }).from(offices).where(ne(offices.approval, "rejected")).orderBy(asc(offices.name)),
     db.select().from(broadcasts).orderBy(desc(broadcasts.createdAt)).limit(40),
   ]);

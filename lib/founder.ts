@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth";
 import type { Deal } from "@/lib/deals";
 import { isDesk } from "@/lib/perm";
 import { roundCr } from "@/lib/pipeline";
+import { investorWhere } from "@/lib/deal-guard";
 
 // The founder portal: a promoter sees how their round is going, never which offices.
 
@@ -14,7 +15,7 @@ import { roundCr } from "@/lib/pipeline";
 export async function founderContext(preview?: string) {
   const user = await requireUser("/founder");
   const db = await getDb();
-  const all: Deal[] = await db.select().from(deals).orderBy(deals.sort, deals.id); // live, not the public cache
+  const all: Deal[] = await db.select().from(deals).where(investorWhere()).orderBy(deals.sort, deals.id); // live, not the public cache; never a listed company
   if (isDesk(user)) {
     const d = all.find((x) => x.slug === preview) ?? all[0];
     if (!d) redirect("/admin/deals");

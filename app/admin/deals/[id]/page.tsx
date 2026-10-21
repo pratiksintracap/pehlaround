@@ -1,5 +1,6 @@
 import { requireDesk } from "@/lib/auth";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { DeskWorkspace } from "@/components/DeskWorkspace";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { calls, dealLinks, deals, documents, ndas, offices, questions, users } from "@/db/schema";
@@ -27,6 +28,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   const db = await getDb();
   const [d] = await db.select().from(deals).where(eq(deals.id, id));
   if (!d) notFound();
+  if (d.listed) redirect(`/admin/after-the-bell/${d.id}`); // listed companies have their own desk-only page
   const signedOffices = await db.select({ id: offices.id, name: offices.name }).from(ndas).innerJoin(offices, eq(offices.id, ndas.officeId)).where(eq(ndas.dealId, id));
   const [links, approvedOffices] = await Promise.all([
     db.select().from(dealLinks).where(eq(dealLinks.dealId, id)).orderBy(desc(dealLinks.createdAt)).limit(50),
@@ -49,6 +51,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
       <Msg msg={msg} />
       <p className="crumb"><a href="/admin/deals">← All deals</a> · <a href={`/deals/${d.slug}`}>Public overview</a> · <a href={`/room/${d.slug}`}>Room</a> · <a href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a> · <a href="#promoters">Promoter access</a></p>
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>{d.company}</h1>
+      <DeskWorkspace d={d} me={me} back={`/admin/deals/${d.id}`} />
       <h2 id="interest" style={{ marginTop: 14 }}>Who is how interested</h2>
       <p className="fine">The three layers, read back: who looked, who opened the pitch deck, who signed the NDA, who went into the data bank and who asked for an allocation. An office counts in every layer it has passed.{interest.anon ? ` The overview was also opened ${interest.anon} ${interest.anon === 1 ? "time" : "times"} by visitors not signed in.` : ""}</p>
       <div className="funnel-row">{(["viewed", "deck", "nda", "databank", "asked"] as Stage[]).map((k) => <div key={k}><b>{interest.counts[k]}</b><span>{STAGE_LABEL[k]}</span></div>)}</div>

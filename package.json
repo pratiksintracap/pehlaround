@@ -8,7 +8,9 @@
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "lint": "next lint",
-    "build:motion": "esbuild scripts/motion-lite.mjs --bundle --minify --format=iife --outfile=public/js/motion-lite.js"
+    "build:motion": "esbuild scripts/motion-lite.mjs --bundle --minify --format=iife --outfile=public/js/motion-lite.js",
+    "test": "node scripts/run-tests.mjs",
+    "prebuild": "npm test"
   },
   "engines": {
     "node": ">=20"

@@ -5,6 +5,7 @@ import { articles, deals, emailQueue, interests, ndas, offices, users } from "@/
 import { E, emailReady, layout, sendRaw } from "@/lib/email";
 import { getSettings } from "@/lib/settings";
 import { artHref } from "@/lib/articles";
+import { investorWhere } from "@/lib/deal-guard";
 
 // ---------------------------------------------------------------- the series
 // Each step: when it goes (days after registration or approval, at 9 AM IST; day 0 = straight away),
@@ -110,7 +111,7 @@ async function context(userId: number): Promise<Ctx | null> {
   const [user] = await db.select().from(users).where(eq(users.id, userId));
   if (!user?.officeId) return null;
   const [office] = await db.select().from(offices).where(eq(offices.id, user.officeId));
-  const all = (await db.select().from(deals).where(eq(deals.published, true))).sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  const all = (await db.select().from(deals).where(investorWhere(eq(deals.published, true)))).sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
   const since = office.approvedAt ?? office.createdAt;
   const [arts, nd, it, team] = await Promise.all([
     db.select().from(articles).where(eq(articles.published, true)).orderBy(desc(articles.publishedAt)).limit(3),
@@ -160,7 +161,7 @@ export async function preview(key: string) {
   const step = SERIES.find((s) => s.key === key);
   if (!step) return null;
   const db = await getDb();
-  const all = (await db.select().from(deals).where(eq(deals.published, true))).sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  const all = (await db.select().from(deals).where(investorWhere(eq(deals.published, true)))).sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
   const arts = await db.select().from(articles).where(eq(articles.published, true)).orderBy(desc(articles.publishedAt)).limit(3);
   const now = new Date();
   const c: Ctx = {

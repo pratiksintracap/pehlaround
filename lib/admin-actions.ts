@@ -17,9 +17,10 @@ import { inviteEmail } from "@/lib/invite-mail";
 import { randomBytes } from "node:crypto";
 import { SITE_URL } from "@/lib/site";
 import { saveSettings } from "@/lib/settings";
-import { requireAdmin, requireDesk, requirePerm, log, signOutEverywhere } from "@/lib/auth";
+import { requireAdmin, requireDesk, requirePerm, log, changes, signOutEverywhere } from "@/lib/auth";
 import { can, isDesk, isSuper, ROLE_LABEL, type DeskRole } from "@/lib/perm";
 import { fromText } from "@/lib/pipes";
+import { investorWhere } from "@/lib/deal-guard";
 import type { RoomContent, IpoProgress } from "@/lib/types";
 import ART from "@/lib/deal-art.json";
 
@@ -150,7 +151,7 @@ export async function saveDeal(f: FormData) {
   const pub = can(admin, "deals.publish"); // the whole desk may publish; the permission stays so a role can be narrowed later
   const id = n(f, "id");
   const db = await getDb();
-  const [cur] = await db.select().from(deals).where(eq(deals.id, id));
+  const [cur] = await db.select().from(deals).where(investorWhere(eq(deals.id, id)));
   if (!cur) return;
   const path = `/admin/deals/${id}`;
   let room: RoomContent;
@@ -191,7 +192,7 @@ export async function saveDeal(f: FormData) {
   const rs = (k: string) => { const v = parseFloat(s(f, k, 20).replace(/[₹,\s]/g, "")); return isFinite(v) && v > 0 ? v : undefined; };
   const ipo: IpoProgress = { closed: day("ipo_closed"), drhp: day("ipo_drhp"), sebi: day("ipo_sebi"), rhp: day("ipo_rhp"), priceBand: s(f, "ipo_priceBand", 60) || undefined,
     listing: day("ipo_listing"), listPrice: rs("ipo_listPrice"), lastPrice: rs("ipo_lastPrice"), lastAt: day("ipo_lastAt"), note: s(f, "ipo_note", 300) || undefined };
-  await db.update(deals).set({
+  const vals = {
     company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80), stage: s(f, "stage", 80), status: s(f, "status", 200),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
     score: total ?? manual, scoreParts: Object.keys(parts).length ? parts : null,
@@ -205,8 +206,13 @@ export async function saveDeal(f: FormData) {
     dataRoomUrl: (() => { const v = s(f, "dataRoomUrl", 2000); return /^https:\/\//.test(v) ? v : null; })(),
     art: artKey && (ART as Record<string, string>)[artKey] ? (ART as Record<string, string>)[artKey] : cur.art,
     room, updatedAt: new Date(),
-  }).where(eq(deals.id, id));
-  await log(admin, `Desk updated the deal: ${s(f, "company", 200)}`, id);
+  };
+  await db.update(deals).set(vals).where(eq(deals.id, id));
+  const diff = changes(cur, vals, ["company", "title", "category", "stage", "status", "headline", "listingLabel", "listingMonth", "score", "roundLabel", "preMoney", "peLabel", "minTicket",
+    "open", "published", "preview", "roundCr", "dataRoomUrl", "ndaVersion", "sort", "asOf"]);
+  if (JSON.stringify(cur.room) !== JSON.stringify(room)) diff.room = ["…", "room content edited"];
+  if (JSON.stringify(cur.ipo) !== JSON.stringify(ipo)) diff.ipo = [cur.ipo, ipo];
+  await log(admin, `Desk updated the deal: ${s(f, "company", 200)}`, id, { entity: "deal", entityId: id, detail: { changes: diff } });
   // A new step on the road to listing: tell the offices that hold shares.
   const STEP: [keyof IpoProgress, string][] = [["closed", "the round has closed"], ["drhp", "the draft offer document is filed"], ["sebi", "SEBI observations are in"], ["rhp", "the price band is out"], ["listing", "the listing date is set"]];
   const fresh = STEP.filter(([k]) => ipo[k] && !(cur.ipo || {})[k]);
@@ -228,10 +234,10 @@ export async function setDealPublished(f: FormData) {
   const admin = await requirePerm("deals.publish");
   const id = n(f, "id"), on = f.get("published") === "1";
   const db = await getDb();
-  const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, id));
+  const [d] = await db.select({ company: deals.company }).from(deals).where(investorWhere(eq(deals.id, id)));
   if (!d) return;
   await db.update(deals).set({ published: on, updatedAt: new Date() }).where(eq(deals.id, id));
-  await log(admin, `Desk ${on ? "published" : "took down (in preparation)"} the deal: ${d.company}`, id);
+  await log(admin, `Desk ${on ? "published" : "took down (in preparation)"} the deal: ${d.company}`, id, { entity: "deal", entityId: id, detail: { changes: { published: [!on, on] } } });
   revalidatePath("/", "layout");
   back("/admin/deals", on ? `${d.company} is live again.` : `${d.company} is taken down: in preparation, the desk alone sees it.`);
 }
@@ -249,7 +255,7 @@ export async function createDeal(f: FormData) {
     alerts: ["A new document is added", "The promoter answers a question", "Terms or price change"], passReasons: ["Valuation too rich for us", "Sector outside our mandate", "Other"] };
   const [row] = await db.insert(deals).values({ slug, company, title, category: "Pre-IPO primary", stage: "Draft", status: "In diligence · not open", headline: "",
     listingLabel: "To be set", open: false, published: false, sort: 200, art: Object.values(ART as Record<string, string>)[0], room }).returning({ id: deals.id });
-  await log(admin, `Desk created the deal: ${company}`, row.id);
+  await log(admin, `Desk created the deal: ${company}`, row.id, { entity: "deal", entityId: row.id, detail: { note: "created in preparation" } });
   redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent(can(admin, "deals.publish") ? "Created, in preparation: the desk alone sees it. Fill it in, then tick Published." : "Created, in preparation. Fill it in, then ask a super admin to publish it.")}`);
 }
 
@@ -258,7 +264,7 @@ export async function requestPublish(f: FormData) {
   const me = await requirePerm("deals.edit");
   const id = n(f, "id");
   const db = await getDb();
-  const [d] = await db.select({ company: deals.company, published: deals.published, open: deals.open }).from(deals).where(eq(deals.id, id));
+  const [d] = await db.select({ company: deals.company, published: deals.published, open: deals.open }).from(deals).where(investorWhere(eq(deals.id, id)));
   if (!d) return;
   const what = !d.published ? "publish" : !d.open ? "open for allocation requests" : "review";
   const note = s(f, "note", 600);
@@ -272,6 +278,8 @@ export async function saveDocument(f: FormData) {
   const admin = await requirePerm("deals.edit");
   const dealId = n(f, "dealId"), id = n(f, "id");
   const db = await getDb();
+  // Investor documents belong to private-market deals only; a listed company's files are desk files (After the Bell).
+  if (!(await db.select({ id: deals.id }).from(deals).where(investorWhere(eq(deals.id, dealId)))).length) back("/admin/after-the-bell", "Listed companies keep desk files only; they have no investor documents.");
   const audience = ["approved", "nda", "allocation", "offices"].includes(s(f, "audience", 20)) ? s(f, "audience", 20) : "nda";
   const officeIds = f.getAll("officeIds").map(Number).filter((x) => x > 0);
   const vals = { title: s(f, "title", 300), kind: s(f, "kind", 80) || null, status: s(f, "status", 20) || "available", url: s(f, "url", 2000) || null, sort: n(f, "sort") || 100, audience, officeIds };
@@ -282,7 +290,7 @@ export async function saveDocument(f: FormData) {
   else if (vals.title) await db.insert(documents).values({ ...vals, dealId });
   const nowAvailable = f.get("delete") !== "on" && vals.title && vals.status === "available" && vals.url && (!prev || prev.status !== "available" || !prev.url);
   if (nowAvailable && f.get("tell") !== "off") {
-    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, dealId));
+    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(investorWhere(eq(deals.id, dealId)));
     let to = await ndaOffices(dealId);
     if (audience === "offices") to = to.filter((o) => officeIds.includes(o));
     if (audience === "allocation") {
@@ -291,7 +299,7 @@ export async function saveDocument(f: FormData) {
     }
     if (audience === "approved") {
       // Layer 2: the pitch deck goes to every approved investor, not only the offices with this NDA, and only if the deal is published.
-      const [pub] = await db.select({ published: deals.published }).from(deals).where(eq(deals.id, dealId));
+      const [pub] = await db.select({ published: deals.published }).from(deals).where(investorWhere(eq(deals.id, dealId)));
       to = pub?.published ? (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id) : [];
       await notifyOffices(to, { title: `${d?.company}: ${vals.title} is on the desk`, body: "Read the company's own material, then sign its NDA for the data bank.", link: `/deals/${d?.slug}#deck` }, true, { dealId, topic: "document" });
     } else await notifyOffices(to, { title: `${d?.company}: new in the data room`, body: vals.title, link: `/room/${d?.slug}` }, true, { dealId, topic: "document" });
@@ -314,7 +322,7 @@ export async function answerQuestion(f: FormData) {
   }).where(eq(questions.id, id));
   await log(admin, `Desk ${answer ? "answered" : "updated"} a question`, q.dealId);
   if (answer && !q.answer && f.get("hidden") !== "on") {
-    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, q.dealId));
+    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(investorWhere(eq(deals.id, q.dealId)));
     // A private question is answered only to the office that asked it.
     const to = q.private ? [] : await ndaOffices(q.dealId);
     if (q.officeId) to.push(q.officeId);
@@ -342,7 +350,7 @@ export async function saveCall(f: FormData) {
   const dealId = prev?.dealId ?? n(f, "dealId");
   const changed = !prev || prev.status !== vals.status || prev.scheduledFor !== vals.scheduledFor || (!!vals.summary && prev.summary !== vals.summary);
   if (changed && dealId && vals.status !== "Requested") {
-    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.id, dealId));
+    const [d] = await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(investorWhere(eq(deals.id, dealId)));
     const to = prev?.officeId ? [prev.officeId] : await ndaOffices(dealId);
     await notifyOffices(to, { title: `${d?.company}: ${vals.title || "promoter call"} · ${vals.status}${vals.scheduledFor ? ` · ${vals.scheduledFor}` : ""}`,
       body: vals.summary, link: `/room/${d?.slug}` }, true, prev?.officeId ? undefined : { dealId, topic: "session" });
@@ -363,7 +371,7 @@ export async function saveInterest(f: FormData) {
   await db.update(interests).set({ status, note: f.has("note") ? s(f, "note", 1000) || null : prev.note, shares, price,
     allottedAt: status === "Allotted" ? (prev.allottedAt ?? new Date()) : prev.allottedAt }).where(eq(interests.id, prev.id));
   if (prev.status !== status) {
-    const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, prev.dealId));
+    const [d] = await db.select({ company: deals.company }).from(deals).where(investorWhere(eq(deals.id, prev.dealId)));
     await notifyOffices([prev.officeId], { title: `${d?.company}: your allocation request is ${status.toLowerCase()}`, body: s(f, "note", 1000) || null, link: status === "Allotted" ? "/dashboard#Portfolio" : "/dashboard" });
   }
   await log(admin, `Desk set allocation #${prev.id} to ${status}${shares ? ` · ${shares.toLocaleString("en-IN")} shares` : ""}${price ? ` at ₹${price}` : ""}`, prev.dealId);
@@ -426,7 +434,11 @@ export async function sendBroadcast(f: FormData) {
   if (audience === "approved") ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id);
   else if (audience === "all") ids = (await db.select({ id: offices.id }).from(offices).where(ne(offices.approval, "rejected"))).map((r) => r.id);
   else if (audience === "pending") ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "pending"))).map((r) => r.id);
-  else if (audience === "deal") { dealId = n(f, "dealId"); ids = await ndaOffices(dealId); }
+  else if (audience === "deal") {
+    dealId = n(f, "dealId");
+    if (!(await db.select({ id: deals.id }).from(deals).where(investorWhere(eq(deals.id, dealId)))).length) back("/admin/notify", "That deal is not one offices can hear about.");
+    ids = await ndaOffices(dealId);
+  }
   else if (audience === "office") ids = [n(f, "officeId")].filter(Boolean);
   if (!ids.length) back("/admin/notify", "Nobody is in that audience yet.");
   const [b] = await db.insert(broadcasts).values({ title, body: body || null, link: link || null, audience, dealId, sentBy: admin.name }).returning({ id: broadcasts.id });
@@ -562,7 +574,7 @@ export async function addPromoter(f: FormData) {
   const path = `/admin/deals/${dealId}#promoters`;
   if (!email || !name) back(path, "Name and email are needed.");
   const db = await getDb();
-  const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, dealId));
+  const [d] = await db.select({ company: deals.company }).from(deals).where(investorWhere(eq(deals.id, dealId)));
   if (!d) return;
   const [u] = await db.select().from(users).where(eq(users.email, email));
   if (u && (u.officeId || isDesk(u))) back(path, `${email} is already a family office or desk account. Use the promoter's own email.`);
@@ -593,7 +605,7 @@ export async function createDealLink(f: FormData) {
   const admin = await requirePerm("deals.edit");
   const dealId = n(f, "dealId"), path = `/admin/deals/${dealId}#share`;
   const db = await getDb();
-  const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, dealId));
+  const [d] = await db.select({ company: deals.company }).from(deals).where(investorWhere(eq(deals.id, dealId)));
   if (!d) return;
   let officeId = n(f, "officeId") || null;
   const email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), officeName = s(f, "officeName", 160);

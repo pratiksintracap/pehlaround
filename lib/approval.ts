@@ -7,6 +7,7 @@ import { log } from "@/lib/auth";
 import { track } from "@/lib/track";
 import { notifyOffices } from "@/lib/notify";
 import { startSeries } from "@/lib/onboarding";
+import { investorWhere } from "@/lib/deal-guard";
 
 export type Approval = "approved" | "pending" | "rejected";
 type Actor = { id: number; name: string; officeId: number | null } | null;
@@ -17,12 +18,12 @@ export async function applyApproval(id: number, approval: Approval, actor: Actor
   const [o] = await db.select().from(offices).where(eq(offices.id, id));
   if (!o) return null;
   await db.update(offices).set({ approval, approvedAt: approval === "approved" ? new Date() : null }).where(eq(offices.id, id));
-  await log(actor, `Desk set ${o.name} to ${approval}${via}`);
+  await log(actor, `Desk set ${o.name} to ${approval}${via}`, null, { entity: "office", entityId: id, officeId: id, detail: { changes: o.approval !== approval ? { approval: [o.approval, approval] } : {} } });
   if (approval === "approved" && o.approval !== "approved") {
     await track("office_approved", { officeId: id, userId: actor?.id ?? null, source: o.source ?? null });
     // In-app notice only: the "You're in" email of the onboarding series does the emailing.
     const [withIntent] = await db.select({ intent: users.intent }).from(users).where(and(eq(users.officeId, id), sql`${users.intent} is not null`)).limit(1);
-    const [want] = withIntent?.intent ? await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(eq(deals.slug, withIntent.intent)) : [];
+    const [want] = withIntent?.intent ? await db.select({ company: deals.company, slug: deals.slug }).from(deals).where(investorWhere(eq(deals.slug, withIntent.intent))) : [];
     await notifyOffices([id], { title: "Your office is approved", body: want ? `${want.company} is open to you now: sign its NDA on screen and its room opens.` : "Every company on Before the Bell is now open to you by name. Sign a company's NDA on screen to open its deal room.", link: want ? `/deals/${want.slug}#sign` : "/deals" }, false);
     const team = await db.select({ id: users.id }).from(users).where(and(eq(users.officeId, id), eq(users.disabled, false)));
     for (const t of team) await startSeries(t.id, "approved").catch(() => 0);

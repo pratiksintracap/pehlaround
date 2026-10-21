@@ -2,6 +2,10 @@ import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex,
 import type { RoomContent, IpoProgress } from "@/lib/types";
 import type { Source } from "@/lib/source";
 
+/** What the desk records about a listed company (After the Bell). */
+export type ListedInfo = { exchange?: string; ticker?: string; isin?: string; sector?: string; dealType?: string; side?: string;
+  sizeCr?: number | null; price?: string; marketCap?: string; counterparty?: string; source?: string };
+
 // A family office (the investing entity). Several users can belong to one office.
 export const offices = pgTable("offices", {
   id: serial("id").primaryKey(),
@@ -32,6 +36,13 @@ export const offices = pgTable("offices", {
   coLead: boolean("co_lead").notNull().default(false),
   profileAt: timestamp("profile_at", { withTimezone: true }),
   notes: text("notes"),                         // admin notes
+  // registered: signed up on the site (or through a desk invite). desk: added by the desk by hand or CSV, with no registration
+  // link sent; the people are in contact* below rather than users, so nobody can sign in as this office until they register.
+  origin: text("origin").notNull().default("registered"),
+  contactName: text("contact_name"),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  addedBy: text("added_by"),
   // Marketing: where the office first came from (utm tags, referrer, landing page), its own invite code, and who referred it.
   source: jsonb("source").$type<Source>(),
   refCode: text("ref_code"),
@@ -99,6 +110,14 @@ export const deals = pgTable("deals", {
   promoterDemand: boolean("promoter_demand").notNull().default(false), // the founder portal shows the total indicated
   dataRoomUrl: text("data_room_url"),
   preview: boolean("preview").notNull().default(false), // in preparation, shown publicly as "coming to the desk" (sector and structure only)           // the data bank (a Google Drive folder); reached only from the NDA room, every open logged
+  // After the Bell: a company already listed on an exchange. Desk only, never on any investor-facing surface.
+  // A database check keeps such a deal unpublished, closed and out of "coming to the desk"; lib/deal-guard.ts keeps it out of every investor query.
+  listed: boolean("listed").notNull().default(false),
+  listedInfo: jsonb("listed_info").$type<ListedInfo>(),
+  // The desk's own pipeline (never shown to investors): sourced > diligence > live > interest > docs > escrow > closed. See lib/stages.ts.
+  pipelineStage: text("pipeline_stage").notNull().default("sourced"),
+  stageAt: timestamp("stage_at", { withTimezone: true }),
+  ownerId: integer("owner_id"),                 // the desk member who runs the deal
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("deals_slug_uq").on(t.slug)]);
 
@@ -244,8 +263,58 @@ export const audit = pgTable("audit", {
   action: text("action").notNull(),
   dealId: integer("deal_id"),
   ip: text("ip"),
+  // The structured trail for desk changes: what kind of record, which one, and the fields that changed (before → after).
+  entity: text("entity"),                       // deal | office | task | note | file | investor
+  entityId: integer("entity_id"),
+  detail: jsonb("detail").$type<AuditDetail>(),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [index("audit_office_idx").on(t.officeId)]);
+}, (t) => [index("audit_office_idx").on(t.officeId), index("audit_deal_idx").on(t.dealId), index("audit_entity_idx").on(t.entity, t.entityId)]);
+
+export type AuditDetail = { changes?: Record<string, [unknown, unknown]>; note?: string };
+
+// ---------------------------------------------------------------- desk workflow (desk only; no investor-facing code reads these)
+// Notes the desk keeps on a deal (and optionally about one investor in it).
+export const deskNotes = pgTable("desk_notes", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id"),
+  officeId: integer("office_id"),
+  body: text("body").notNull(),
+  userId: integer("user_id"),
+  who: text("who"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  editedAt: timestamp("edited_at", { withTimezone: true }),
+}, (t) => [index("desk_notes_deal_idx").on(t.dealId), index("desk_notes_office_idx").on(t.officeId)]);
+
+// Internal files on a deal: links the desk keeps for itself. Separate from "documents", which investors see.
+export const deskFiles = pgTable("desk_files", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  title: text("title").notNull(),
+  url: text("url"),
+  kind: text("kind"),
+  note: text("note"),
+  userId: integer("user_id"),
+  who: text("who"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("desk_files_deal_idx").on(t.dealId)]);
+
+// Tasks and reminders, per deal and/or per investor, assigned to a desk member.
+export const tasks = pgTable("tasks", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  notes: text("notes"),
+  dealId: integer("deal_id"),
+  officeId: integer("office_id"),
+  assigneeId: integer("assignee_id"),
+  dueOn: text("due_on"),                        // YYYY-MM-DD (IST); the 9 AM run reminds the assignee on and after this day
+  status: text("status").notNull().default("open"),   // open | done
+  createdById: integer("created_by_id"),
+  createdBy: text("created_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  doneAt: timestamp("done_at", { withTimezone: true }),
+  doneBy: text("done_by"),
+  remindedOn: text("reminded_on"),              // the last day a reminder went out, so the run sends at most one a day
+}, (t) => [index("tasks_assignee_idx").on(t.assigneeId, t.status), index("tasks_deal_idx").on(t.dealId), index("tasks_office_idx").on(t.officeId)]);
 
 // Articles by the desk: the home-page strip and /articles. externalUrl marks a piece published elsewhere.
 export const articles = pgTable("articles", {

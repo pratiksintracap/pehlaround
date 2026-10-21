@@ -6,6 +6,7 @@ import { deals, documents, docViews, interests } from "@/db/schema";
 import { getUser, log, clientIp } from "@/lib/auth";
 import { roomAccess, docAccess, canSeeNames, isPreNda } from "@/lib/deals";
 import { track } from "@/lib/track";
+import { investorWhere } from "@/lib/deal-guard";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = Number((await params).id);
@@ -14,7 +15,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const db = await getDb();
   const [doc] = await db.select().from(documents).where(eq(documents.id, id));
   if (!doc) return new NextResponse("Not found", { status: 404 });
-  const [d] = await db.select().from(deals).where(eq(deals.id, doc.dealId));
+  const [d] = await db.select().from(deals).where(investorWhere(eq(deals.id, doc.dealId)));
+  if (!d) return new NextResponse("Not found", { status: 404 }); // a listed company's file never opens here
   const access = await roomAccess(user, d);
   const admin = access.state === "open" && !!access.admin;
   // Layer 2: the pitch deck, IM or teaser opens to every approved investor from the deal's overview, before any NDA.

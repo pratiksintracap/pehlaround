@@ -17,6 +17,7 @@ import { track, readSource, readRefCode, referrerByCode } from "@/lib/track";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 import { TYPE_LABEL, DECL_LABEL } from "@/lib/investor";
 import { approvalToken } from "@/lib/approval";
+import { investorWhere } from "@/lib/deal-guard";
 
 export async function POST(req: NextRequest) {
   const { data, json } = await readBody(req);
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
     if (dinv) await db.update(deskInvites).set({ usedAt: new Date(), officeId }).where(eq(deskInvites.id, dinv.id));
     if (lk) await db.update(dealLinks).set({ registeredAt: new Date(), registeredOfficeId: officeId }).where(eq(dealLinks.id, lk.id));
     invited = preApproved;
-    how = lk ? `from the desk's link to ${(await db.select({ c: deals.company }).from(deals).where(eq(deals.id, lk.dealId)))[0]?.c ?? "a deal"}`
+    how = lk ? `from the desk's link to ${(await db.select({ c: deals.company }).from(deals).where(investorWhere(eq(deals.id, lk.dealId))))[0]?.c ?? "a deal"}`
       : referred ? `referred by ${referred.name}` : dinv ? "through the desk's invitation" : "";
   }
   // The deal they registered from: once approved, they land on it (see the dashboard).

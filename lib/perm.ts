@@ -26,10 +26,13 @@ export type Perm =
   | "emails"              // onboarding email series
   | "invites"             // invite family offices
   | "team"                // desk team and roles
-  | "log.all";            // everyone's actions in the audit log
+  | "log.all"             // everyone's actions in the audit log
+  | "workflow"            // deal stages and owners, desk notes, desk files, tasks (day-to-day pipeline work)
+  | "investors.add";      // add investors by hand or CSV (no registration link goes out)
 
 // Analysts run the deal book end to end: create, edit, keep a deal in preparation (hidden, desk only), publish, open or close it.
-const ANALYST: Perm[] = ["offices.approve", "offices.notes", "deals.edit", "deals.publish", "leads", "articles.edit"];
+// Deleting anything (documents, desk notes and files, tasks) and settings-level work stay with a super admin.
+const ANALYST: Perm[] = ["offices.approve", "offices.notes", "deals.edit", "deals.publish", "leads", "articles.edit", "workflow"];
 
 /** opts.analystContacts: the super admin's Settings switch that lets analysts see office contact details. */
 export function can(u: Who, p: Perm, opts?: { analystContacts?: boolean }) {

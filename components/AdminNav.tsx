@@ -5,15 +5,18 @@ import { SUPER_ONLY_PAGES } from "@/lib/perm";
 const GROUPS: [string, [string, string, string][]][] = [
   ["Desk", [
     ["/admin", "Overview", "M3 12l9-8 9 8M5 10v10h14V10"],
+    ["/admin/board", "Deal pipeline", "M3 4h5v16H3zM10 4h5v10h-5zM17 4h4v6h-4z"],
+    ["/admin/tasks", "Tasks", "M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"],
     ["/admin/offices", "Family offices", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"],
     ["/admin/invites", "Invite offices", "M4 4h16v16H4zM4 6l8 7 8-7"],
-    ["/admin/pipeline", "Pipeline", "M3 5h4v14H3zM10 5h4v9h-4zM17 5h4v5h-4z"],
+    ["/admin/pipeline", "Investor pipeline", "M3 5h4v14H3zM10 5h4v9h-4zM17 5h4v5h-4z"],
     ["/admin/activity", "Requests and Q&A", "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"],
     ["/admin/tickets", "Support tickets", "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.9 4.9l4.3 4.3M14.8 14.8l4.3 4.3M14.8 9.2l4.3-4.3M4.9 19.1l4.3-4.3"],
     ["/admin/analyst", "AI analyst", "M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.5l-1.8-5L5 9.7l5.2-1.8zM18.5 15l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z"],
   ]],
   ["Content", [
     ["/admin/deals", "Deals", "M3 7h18M3 12h18M3 17h12"],
+    ["/admin/after-the-bell", "After the Bell", "M3 21V9l9-6 9 6v12M8 21v-6h8v6M12 9v.01"],
     ["/admin/articles", "Articles", "M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"],
   ]],
   ["Reach", [

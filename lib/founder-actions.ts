@@ -5,6 +5,7 @@ import { getDb } from "@/lib/db";
 import { deals, documents, questions } from "@/db/schema";
 import { getUser, log } from "@/lib/auth";
 import { notifyDesk } from "@/lib/notify";
+import { investorWhere } from "@/lib/deal-guard";
 
 // What a promoter can do from the founder portal. Nothing here reaches offices: the desk reviews and posts it.
 
@@ -15,7 +16,7 @@ async function promoter() {
   const u = await getUser();
   if (!u || u.role !== "promoter" || !u.promoterDealId) redirect("/login?next=/founder");
   const db = await getDb();
-  const [d] = await db.select({ id: deals.id, company: deals.company }).from(deals).where(eq(deals.id, u.promoterDealId));
+  const [d] = await db.select({ id: deals.id, company: deals.company }).from(deals).where(investorWhere(eq(deals.id, u.promoterDealId)));
   if (!d) redirect("/");
   return { u, d, db };
 }

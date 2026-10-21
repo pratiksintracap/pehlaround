@@ -9,6 +9,8 @@ import { setApproval, setOfficeStatus, saveOfficeNotes, resetPassword, toggleUse
 import { completeness } from "@/lib/profile";
 import { officeEngagement } from "@/lib/interest";
 import { Msg } from "@/components/AdminBits";
+import { addInvestor, importInvestors, saveInvestorContact } from "@/lib/desk-actions";
+import { listTasks } from "@/lib/desk";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
@@ -29,22 +31,30 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
   const eng = await officeEngagement();
   const order = (o: typeof os[number]) => o.approval === "pending" ? -1 : o.approval === "rejected" ? 9 : ({ pan_submitted: 0, registered: 1, verified: 2, rejected: 3 }[o.status] ?? 4);
   const pendingN = os.filter((o) => o.approval === "pending").length;
-  const list = [...os].filter((o) => !show || (show === "pending" ? o.approval === "pending" : show === "approved" ? o.approval === "approved" : o.approval === "rejected")).sort((a, b) => order(a) - order(b));
+  const pick = (o: typeof os[number]) => !show ? true : show === "pending" ? o.approval === "pending" : show === "approved" ? o.approval === "approved" && o.origin !== "desk"
+    : show === "registered" ? o.origin !== "desk" : show === "desk" ? o.origin === "desk" : o.approval === "rejected";
+  const list = [...os].filter(pick).sort((a, b) => order(a) - order(b));
+  const deskN = os.filter((o) => o.origin === "desk").length;
+  const openTasks = await listTasks({ status: "open" });
+  const userEmails = new Map(us.filter((u) => u.officeId).map((u) => [u.email.toLowerCase(), u.officeId!]));
+  const addMany = can(me, "investors.add");
   const AP: Record<string, [string, string]> = { pending: ["Awaiting approval", "mid"], approved: ["Approved", "ok"], rejected: ["Declined", "off"] };
   return (
     <>
       <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Family offices</h1>
       <p className="fine" style={{ marginBottom: 10 }}>New registrations wait here for the desk. An office sees company names, terms and NDAs only after you approve it, and it is told in its dashboard (and by email, once email is set up). {manage ? <>Approval can be switched off in <a href="/admin/settings">Settings</a>.</> : null}</p>
-      <div className="adm-filter">{[["", `All (${os.length})`], ["pending", `Awaiting approval (${pendingN})`], ["approved", "Approved"], ["rejected", "Declined"]].map(([k, l]) =>
+      <div className="adm-filter">{[["", `All (${os.length})`], ["pending", `Awaiting approval (${pendingN})`], ["approved", "Approved (registered)"], ["registered", `Registered (${os.length - deskN})`], ["desk", `Added by desk (${deskN})`], ["rejected", "Declined"]].map(([k, l]) =>
         <a key={k} href={k ? `/admin/offices?show=${k}` : "/admin/offices"} className={(show || "") === k ? "on" : ""}>{l}</a>)}</div>
       <p className="fine" style={{ marginBottom: 16 }}>Putting an office on hold closes every room to it. NDAs are signed with the signatory&apos;s name and a one-time code emailed to them; no PAN is asked until an office invests.</p>
       {list.map((o) => {
         const people = us.filter((u) => u.officeId === o.id), nn = ns.filter((x) => x.officeId === o.id);
         return (
-          <details key={o.id} className="adm-card" open={o.approval === "pending"}>
-            <summary><b>{o.name}</b> <span className="pill">{TYPE_LABEL[o.investorType as InvestorType] || "Family office"}</span> <span className={`pill ${AP[o.approval]?.[1] || ""}`}>{AP[o.approval]?.[0] || o.approval}</span> {o.status === "rejected" && <span className="pill off">On hold</span>}
-              <span className="fine"> · {people.length} {people.length === 1 ? "person" : "people"} · {eng.get(o.id)?.decks ?? 0} decks · {nn.length} NDAs · {eng.get(o.id)?.banks ?? 0} data banks · registered {fmtD(o.createdAt)} · profile {completeness(o).pct}%{o.aum ? ` · AUM ${o.aum}` : ""}</span></summary>
+          <details key={o.id} id={`o${o.id}`} className="adm-card" open={o.approval === "pending"}>
+            <summary><b>{o.name}</b> <span className="pill">{TYPE_LABEL[o.investorType as InvestorType] || "Family office"}</span> {o.origin === "desk" ? <span className="pill mid" title="Added by the desk by hand or CSV; no registration link was sent">Added by desk</span> : <span className={`pill ${AP[o.approval]?.[1] || ""}`}>{AP[o.approval]?.[0] || o.approval}</span>} {o.status === "rejected" && <span className="pill off">On hold</span>}
+              {o.origin === "desk" && o.contactEmail && userEmails.has(o.contactEmail) ? <span className="pill ok" title="Someone with this email has since registered on the site">Also registered</span> : null}
+              {openTasks.some((t) => t.officeId === o.id) ? <span className="pill">{openTasks.filter((t) => t.officeId === o.id).length} open task{openTasks.filter((t) => t.officeId === o.id).length === 1 ? "" : "s"}</span> : null}
+              <span className="fine"> · {people.length} {people.length === 1 ? "person" : "people"} · {eng.get(o.id)?.decks ?? 0} decks · {nn.length} NDAs · {eng.get(o.id)?.banks ?? 0} data banks · {o.origin === "desk" ? `added ${fmtD(o.createdAt)}${o.addedBy ? ` by ${o.addedBy}` : ""}` : `registered ${fmtD(o.createdAt)} · profile ${completeness(o).pct}%`}{o.aum ? ` · AUM ${o.aum}` : ""}</span></summary>
             {o.approval !== "approved" && (
               <div className="adm-approve">
                 <form action={setApproval}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="approval" value="approved" /><input type="hidden" name="back" value={show ? `/admin/offices?show=${show}` : "/admin/offices"} />
@@ -80,6 +90,17 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
                   <label>Desk notes<textarea name="notes" rows={2} defaultValue={o.notes || ""} /></label><div><button className="btn sm" type="submit">Save notes</button></div></form>
               </div>
               <div>
+                {o.origin === "desk" && <>
+                  <span className="k eyebrow">Contact (added by the desk)</span>
+                  <p className="fine" style={{ margin: "2px 0 6px" }}>{o.contactName || "—"} · {em(o.contactEmail) || "—"} · {em(o.contactPhone) || "—"}</p>
+                  <details className="tk-edit"><summary>Edit contact</summary>
+                    <form action={saveInvestorContact} className="form"><input type="hidden" name="id" value={o.id} /><input type="hidden" name="back" value={`/admin/offices?show=desk#o${o.id}`} />
+                      <div className="row"><label>Name<input name="contactName" defaultValue={o.contactName ?? ""} maxLength={160} /></label><label>Phone<input name="contactPhone" defaultValue={seeContacts ? o.contactPhone ?? "" : ""} maxLength={40} /></label></div>
+                      <label>Email<input name="contactEmail" type="email" defaultValue={seeContacts ? o.contactEmail ?? "" : ""} maxLength={200} /></label>
+                      <div><button className="btn sm" type="submit">Save contact</button></div></form></details>
+                </>}
+                <span className="k eyebrow" style={{ display: "block", marginTop: 8 }}>Tasks</span>
+                <p className="fine" style={{ margin: "2px 0 8px" }}><a href={`/admin/tasks?who=all&office=${o.id}`}>Tasks for {o.name}</a> · <a href={`/admin/tasks?who=all&office=${o.id}#add`}>add one</a> · <a href={`/admin/log?office=${o.id}`}>activity</a></p>
                 <span className="k eyebrow">People</span>
                 <ul className="feed">{people.map((u) => (
                   <li key={u.id}><b>{u.name}</b> · {em(u.email)} · {em(u.phone) || "—"} · {u.officeRole || "—"} · {u.rights}{u.disabled ? " · disabled" : ""}<br />
@@ -101,6 +122,25 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
         );
       })}
       {!list.length && <p>{os.length ? "No offices in this view." : "No family offices have registered yet."}</p>}
+      {addMany && <div className="chart" style={{ marginTop: 24 }} id="add"><span className="k">Add investors you are in touch with</span>
+        <p className="fine" style={{ margin: "4px 0 10px" }}>They are added already approved and tagged <b>Added by desk</b>, so you can filter them from offices that registered. No registration link or email goes to them, and nobody can sign in as them; if they register later, the office list marks the match as &ldquo;Also registered&rdquo;.</p>
+        <div className="two">
+          <form action={addInvestor} className="form"><input type="hidden" name="back" value="/admin/offices?show=desk" />
+            <b>One investor</b>
+            <div className="row"><label>Name (office, fund or person)<input name="name" required maxLength={200} /></label>
+              <label>Type<select name="type" defaultValue="Family office"><option>Family office</option><option>Fund</option><option>Individual</option></select></label></div>
+            <div className="row"><label>Contact person<input name="contactName" maxLength={160} /></label><label>Phone<input name="phone" maxLength={40} /></label></div>
+            <div className="row"><label>Email<input name="email" type="email" maxLength={200} /></label><label>City<input name="city" maxLength={120} /></label></div>
+            <div className="row"><label>Ticket<input name="ticket" maxLength={80} placeholder="₹2–5 crore" /></label><label>Website<input name="website" maxLength={300} /></label></div>
+            <label>Notes<textarea name="notes" rows={2} maxLength={4000} /></label>
+            <div><button className="btn sm primary" type="submit">Add investor</button></div></form>
+          <form action={importInvestors} className="form"><input type="hidden" name="back" value="/admin/offices?show=desk" />
+            <b>Many, from a CSV</b>
+            <p className="fine" style={{ margin: 0 }}>First row names the columns. Needed: <span className="mono">Name</span>. Optional: <span className="mono">Type, Contact, Email, Phone, City, Ticket, Website, Notes</span>. Rows whose email or name is already on the desk are skipped.</p>
+            <label>CSV file<input type="file" name="file" accept=".csv,text/csv" /></label>
+            <label>Or paste the rows<textarea name="csv" rows={5} placeholder={"Name,Type,Contact,Email,Phone,City\nMehta Family Office,Family office,Raj Mehta,raj@example.com,+91 98…,Mumbai"} /></label>
+            <div><button className="btn sm primary" type="submit">Import</button></div></form>
+        </div></div>}
     </>
   );
 }

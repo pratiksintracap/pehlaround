@@ -13,6 +13,7 @@ import { readRefCode, referrerByCode } from "@/lib/track";
 import { getSettings } from "@/lib/settings";
 import { listDeals, listUpcoming } from "@/lib/deals";
 import { teaserHtml } from "@/lib/render";
+import { investorWhere } from "@/lib/deal-guard";
 
 export const metadata: Metadata = pageMeta({ path: "/register", title: "Register as an investor", description: "Register your family office, fund or yourself as an investor. Once the desk approves it, every company on the desk opens by name; each company's room opens as soon as you sign its NDA." });
 type P = { searchParams: Promise<{ next?: string; error?: string; invite?: string; link?: string; ref?: string }> };
@@ -27,7 +28,7 @@ export default async function Register({ searchParams }: P) {
   const byCode = !inv ? await referrerByCode(await readRefCode(ref)) : null;
   const referrer = inv?.referrerOfficeId ? (await db.select({ name: offices.name }).from(offices).where(eq(offices.id, inv.referrerOfficeId)))[0]?.name : byCode?.name;
   const lk = link ? (await db.select().from(dealLinks).where(and(eq(dealLinks.token, link), isNull(dealLinks.officeId), isNull(dealLinks.registeredAt))))[0] : undefined;
-  const lkDeal = lk ? (await db.select({ slug: deals.slug, title: deals.title, category: deals.category }).from(deals).where(eq(deals.id, lk.dealId)))[0] : undefined;
+  const lkDeal = lk ? (await db.select({ slug: deals.slug, title: deals.title, category: deals.category }).from(deals).where(investorWhere(eq(deals.id, lk.dealId))))[0] : undefined;
   const next = lkDeal ? `/deals/${lkDeal.slug}#sign` : rawNext;
   const forDeal = /^\/deals\/[a-z0-9-]+/.test(next);
   const approvedOnSignUp = !!lk || (!!inv && (!inv.referrerOfficeId || st.referrals)) || (!!byCode && st.referrals && byCode.approval === "approved");

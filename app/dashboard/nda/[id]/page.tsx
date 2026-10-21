@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 import { deals, ndas, offices } from "@/db/schema";
 import { NdaText } from "@/components/NdaText";
 import { isDesk } from "@/lib/perm";
+import { investorWhere } from "@/lib/deal-guard";
 
 export const metadata: Metadata = { title: "Signed NDA", robots: { index: false } };
 
@@ -14,7 +15,8 @@ export default async function SignedNda({ params }: { params: Promise<{ id: stri
   const db = await getDb();
   const [n] = await db.select().from(ndas).where(eq(ndas.id, Number((await params).id)));
   if (!n || (n.officeId !== user.officeId && !isDesk(user))) notFound();
-  const [d] = await db.select().from(deals).where(eq(deals.id, n.dealId));
+  const [d] = await db.select().from(deals).where(investorWhere(eq(deals.id, n.dealId)));
+  if (!d) notFound();
   const [o] = await db.select().from(offices).where(eq(offices.id, n.officeId));
   const at = n.signedAt.toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short", timeZone: "Asia/Kolkata" });
   return (

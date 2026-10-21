@@ -6,10 +6,16 @@ import { deals, ndas } from "@/db/schema";
 import type { SessionUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { isDesk } from "@/lib/perm";
+import { notListed, investorVisible } from "@/lib/deal-guard";
 
 export type Deal = typeof deals.$inferSelect;
 
-const allDeals = cachedPublic(async () => { const db = await getDb(); return db.select().from(deals).orderBy(asc(deals.sort), asc(deals.id)); }, "deals");
+// Investor-facing: listed companies (After the Bell) are excluded in SQL and again in memory. Desk pages that need
+// them read the table directly (lib/desk.ts).
+const allDeals = cachedPublic(async () => {
+  const db = await getDb();
+  return (await db.select().from(deals).where(notListed).orderBy(asc(deals.sort), asc(deals.id))).filter(investorVisible);
+}, "deals-v2");
 export async function listDeals(includeUnpublished = false) {
   const rows = await allDeals();
   return includeUnpublished ? rows : rows.filter((d) => d.published);

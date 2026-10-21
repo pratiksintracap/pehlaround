@@ -5,7 +5,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { createHash, randomBytes } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { users, offices, audit } from "@/db/schema";
+import { users, offices, audit, type AuditDetail } from "@/db/schema";
 import { can, isDesk, isSuper, type Perm } from "@/lib/perm";
 
 const COOKIE = "pr_session";
@@ -89,9 +89,23 @@ export async function clientIp() {
   return (h.get("x-forwarded-for") || "").split(",")[0].trim() || h.get("x-real-ip") || null;
 }
 
-export async function log(u: { id: number; name: string; officeId: number | null } | null, action: string, dealId?: number | null) {
+/** One row in the audit trail. `more` adds the structured part for desk changes: the record and the fields that changed. */
+export async function log(u: { id: number; name: string; officeId: number | null } | null, action: string, dealId?: number | null,
+  more?: { entity?: string; entityId?: number | null; officeId?: number | null; detail?: AuditDetail | null }) {
   const db = await getDb();
-  await db.insert(audit).values({ userId: u?.id ?? null, officeId: u?.officeId ?? null, who: u?.name ?? null, action, dealId: dealId ?? null, ip: await clientIp() });
+  await db.insert(audit).values({ userId: u?.id ?? null, officeId: more?.officeId ?? u?.officeId ?? null, who: u?.name ?? null, action, dealId: dealId ?? null, ip: await clientIp(),
+    entity: more?.entity ?? null, entityId: more?.entityId ?? null, detail: more?.detail && (more.detail.note || Object.keys(more.detail.changes || {}).length) ? more.detail : null });
+}
+
+/** The fields that differ between two versions of a record, as { field: [before, after] } (long text is trimmed). */
+export function changes<T extends Record<string, unknown>>(before: Partial<T> | null | undefined, after: Partial<T>, keys?: (keyof T)[]) {
+  const out: Record<string, [unknown, unknown]> = {};
+  const norm = (v: unknown) => v instanceof Date ? v.toISOString() : typeof v === "string" && v.length > 300 ? v.slice(0, 300) + "…" : v ?? null;
+  for (const k of keys ?? (Object.keys(after) as (keyof T)[])) {
+    const a = norm(before?.[k]), b = norm(after[k]);
+    if (JSON.stringify(a) !== JSON.stringify(b)) out[String(k)] = [a, b];
+  }
+  return out;
 }
 
 export const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;

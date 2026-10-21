@@ -18,6 +18,7 @@ import { isDesk } from "@/lib/perm";
 import { holding, crore, fmtDay } from "@/lib/portfolio";
 import { SITE_URL } from "@/lib/site";
 import { officeRefCode } from "@/lib/track";
+import { investorWhere } from "@/lib/deal-guard";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
 type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string }> };
@@ -79,7 +80,7 @@ export default async function Dashboard({ searchParams }: P) {
   const userName = new Map(team.map((u) => [u.id, u.name]));
   const allotted = myInterests.filter((i) => i.status === "Allotted");
   // The road to listing straight from the database, so a step the desk just added shows at once.
-  const ipoNow = new Map(allotted.length ? (await db.select({ id: dealsT.id, ipo: dealsT.ipo }).from(dealsT).where(inArray(dealsT.id, allotted.map((x) => x.dealId)))).map((r) => [r.id, r.ipo]) : []);
+  const ipoNow = new Map(allotted.length ? (await db.select({ id: dealsT.id, ipo: dealsT.ipo }).from(dealsT).where(investorWhere(inArray(dealsT.id, allotted.map((x) => x.dealId))))).map((r) => [r.id, r.ipo]) : []);
   const holdings = allotted.map((a) => { const b = byId.get(a.dealId); const d = b ? { ...b, ipo: ipoNow.get(a.dealId) ?? b.ipo } : b; return { a, d, h: holding(a, d?.ipo ?? {}) }; });
   const pfCost = holdings.reduce((t, x) => t + x.h.costRs, 0);
   const marked = holdings.filter((x) => x.h.value);

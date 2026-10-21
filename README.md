@@ -37,3 +37,21 @@ npm run dev          # PGlite in .pglite/, admin@beforethebell.in / omd-local-ad
 ```
 
 After changing `db/schema.ts`: `npm run db:generate` and commit the new file in `drizzle/`.
+
+## Desk workflow and After the Bell
+
+- **After the Bell** (`/admin/after-the-bell`): deals in companies already listed on an exchange. Desk only. They sit in the
+  `deals` table with `listed = true` and are kept off every investor surface three ways: a database check
+  (`deals_listed_desk_only`) refuses to publish, open or preview one; every investor-facing deals query goes through
+  `lib/deal-guard.ts` (`investorWhere` / `notListed`); and `tests/listed-guard-static.test.ts` fails the build if an
+  investor-side file reads `deals` without the guard. Desk pages read every deal through `lib/desk.ts`.
+- **Roles**: `admin` (super admin) and `analyst`, enforced server-side in `lib/perm.ts`. Analysts run the pipeline
+  (`workflow` permission: stages, owners, notes, desk files, tasks); deleting anything, settings and bulk investor import stay with a super admin.
+- **Deal pipeline** (`/admin/board`): sourced → diligence → live → interest collection → term sheet/KYC → escrow/allotment → closed
+  (`lib/stages.ts`). The stage is the desk's own and never changes what investors see.
+- **Desk workspace** on every deal page: stage, owner, tasks, notes, internal desk files (`desk_files`, never shown to investors) and the deal's change trail.
+- **Tasks** (`/admin/tasks`): per deal and/or investor, assigned to a desk member; the 9 AM cron emails each assignee their due and overdue tasks once a day.
+- **Audit trail**: `audit.entity`, `entity_id` and `detail` (field → [before, after]); filter by deal or kind at `/admin/log`.
+- **Investors added by the desk** (Family offices → Added by desk): by hand or CSV, stored as approved offices with `origin = 'desk'`
+  and contact fields, no user account and no email sent.
+- **Tests**: `npm test` (runs before every build): the listed-company leak tests, roles, CSV import, reminders and the trail.

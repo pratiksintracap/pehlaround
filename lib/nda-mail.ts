@@ -4,14 +4,16 @@ import { getDb } from "@/lib/db";
 import { deals, ndas, offices, users } from "@/db/schema";
 import { ndaPdf, type NdaRecord } from "@/lib/nda-pdf";
 import { E, layout, sendRaw } from "@/lib/email";
+import { investorWhere } from "@/lib/deal-guard";
 
 export async function ndaRecord(id: number): Promise<(NdaRecord & { officeId: number; slug: string }) | null> {
   const db = await getDb();
   const [n] = await db.select().from(ndas).where(eq(ndas.id, id));
   if (!n) return null;
   const [[d], [o], [u]] = await Promise.all([
-    db.select().from(deals).where(eq(deals.id, n.dealId)), db.select().from(offices).where(eq(offices.id, n.officeId)), db.select().from(users).where(eq(users.id, n.userId)),
+    db.select().from(deals).where(investorWhere(eq(deals.id, n.dealId))), db.select().from(offices).where(eq(offices.id, n.officeId)), db.select().from(users).where(eq(users.id, n.userId)),
   ]);
+  if (!d || !o) return null;
   return { id: n.id, company: d.company, slug: d.slug, officeId: o.id, officeName: o.name, entityName: o.entityName, signerName: n.signerName,
     signerEmail: n.signerEmail || u?.email || "", codeVerified: n.codeVerified, version: n.version, signedAt: n.signedAt, ip: n.ip };
 }
