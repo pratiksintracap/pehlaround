@@ -25,7 +25,7 @@ export default async function Today({ searchParams }: P) {
   const dueNow = open.filter((t) => t.dueOn && t.dueOn <= today);
   const later = open.filter((t) => !t.dueOn || t.dueOn > today).slice(0, 5);
   const about = (t: (typeof open)[number]) => t.officeId && nm.office.get(t.officeId) ? { href: `/desk/investors/${t.officeId}`, label: nm.office.get(t.officeId)! }
-    : t.dealId && nm.deal.get(t.dealId) ? { href: `/desk/pipeline#d${t.dealId}`, label: nm.deal.get(t.dealId)!.company } : null;
+    : t.dealId && nm.deal.get(t.dealId) ? { href: `/desk/deals/${t.dealId}`, label: nm.deal.get(t.dealId)!.company } : null;
   const hour = Number(new Date().toLocaleString("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }));
   const hello = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   return (
@@ -66,7 +66,7 @@ export default async function Today({ searchParams }: P) {
       <section className="dk-sec">
         <h2>Your deals</h2>
         {d.mine.length ? <ul className="dk-list">{d.mine.map((x) => (
-          <li key={x.id}><a className="dk-row" href={`/desk/pipeline#d${x.id}`}>
+          <li key={x.id}><a className="dk-row" href={`/desk/deals/${x.id}`}>
             <span className="dk-row-main"><b>{x.company}</b><small>{x.listed ? "Listed company" : "Pre-IPO"}</small></span>
             <span className="dk-stage">{stageLabel(x.pipelineStage)}</span>
           </a></li>))}</ul>

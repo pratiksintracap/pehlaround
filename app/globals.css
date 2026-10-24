@@ -1381,3 +1381,41 @@ html.is-app body:has(main.dk) .hdr{display:none}
 .dk-add:has(input[name=title]:placeholder-shown):not(:focus-within) .dk-add-row{display:none}
 .dk-chips a.dim{opacity:.55}
 .dk-sec .dk-add{margin-bottom:0}
+/* desk deal screen */
+.dk-dealhead{margin:2px 0 16px}.dk-dealhead h1{font-size:26px;line-height:1.2;font-weight:700;letter-spacing:-.01em;margin:8px 0 4px}.dk-dealhead p{color:var(--ink3);font-size:14.5px;line-height:1.45}
+.dk-stagebar{list-style:none;margin:0 -16px 12px;padding:0 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.dk-stagebar::-webkit-scrollbar{display:none}
+.dk-stagebar li{flex:none;font-size:12px;font-weight:600;padding:6px 10px;border-radius:16px;background:var(--bg3);color:var(--ink3)}
+.dk-stagebar li.past{background:var(--live-soft);color:var(--live)}.dk-stagebar li.now{background:var(--accent);color:#fff}
+.dk-ctl{display:flex;flex-direction:column;gap:8px;margin:0 0 18px;padding:12px;border-radius:14px;background:var(--bg2);border:1px solid var(--line)}
+.dk-ctl form{display:flex;gap:8px;align-items:center;margin:0}
+.dk-field{flex:1;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;background:var(--bg3);min-height:40px;font-size:13px;color:var(--ink3)}
+.dk-field select{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;min-height:38px}
+.dk-fine{font-size:12.5px;color:var(--ink3);line-height:1.4;margin:2px 2px 0}
+.dk-facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:0 0 22px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dk-facts div{background:var(--bg2);padding:11px 14px}.dk-facts dt{font-size:11.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}.dk-facts dd{margin:3px 0 0;font-size:15px;font-weight:600}
+.dk-stats.two{grid-template-columns:1fr 1fr;margin-bottom:10px}
+.dk-stats div{display:flex;flex-direction:column;gap:2px;padding:14px 12px;border-radius:14px;background:var(--bg2);border:1px solid var(--line)}
+.dk-stats div b{font-size:22px;line-height:1.1;font-weight:700}.dk-stats div span{font-size:12px;color:var(--ink3)}
+.dk-row:not([href]):active{background:none}
+/* the console inside the app: a way back to the phone desk */
+.adm-appback{display:none}
+html.is-app .adm-appback{display:inline-flex;align-items:center;min-height:40px;margin:0 0 8px;color:var(--accent);font-weight:600;text-decoration:none}
+
+/* ---------------------------------------------------------------- investor screens inside the app (look only; the website is unchanged) */
+html.is-app .hdr .logo{font-size:17px}
+html.is-app .phead{padding-left:var(--gutter);padding-right:var(--gutter);padding-top:14px;padding-bottom:6px}
+html.is-app .phead h1{font-size:28px;line-height:1.15}
+html.is-app .phead p{display:none}
+html.is-app .phead .k{display:none}
+html.is-app .dashhead .dh-name{display:none}
+html.is-app #promises{display:none}
+html.is-app .detail h1{font-size:27px;line-height:1.15}
+html.is-app .steps3{display:none}
+html.is-app .sec-head p{font-size:14.5px}
+html.is-app .card .body{padding-top:14px}
+html.is-app .side-nav{scroll-snap-type:x proximity}
+html.is-app .side-nav .tabbtn{scroll-snap-align:start}
+html.is-app .btn{min-height:44px}
+html.is-app .btn:active{transform:scale(.97)}
+html.is-app .card:active,html.is-app .more a:active{opacity:.85}

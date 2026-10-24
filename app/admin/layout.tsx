@@ -32,6 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="as-foot"><a href="/deals">View the site</a><a href="/dashboard">Office view</a></div>
       </aside>
       <div className="app-main">
+        <a className="adm-appback" href="/desk">‹ Back to the desk</a>
         {kind !== "postgres" && (
           <p className="notice" style={{ borderColor: "#c0392b", marginBottom: 16 }}><b>No database connected.</b> The site is running on a temporary built-in database: registrations and edits are lost when the server restarts. In Vercel, open the project → Storage → create a Neon Postgres database and connect it to this project (it sets DATABASE_URL), then redeploy.</p>
         )}

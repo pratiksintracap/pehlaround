@@ -19,7 +19,7 @@ export default async function Tasks({ searchParams }: P) {
   const today = istDay();
   const who = (uid: number | null) => members.find((m) => m.id === uid)?.name.split(" ")[0];
   const about = (t: (typeof list)[number]) => t.officeId && nm.office.get(t.officeId) ? { href: `/desk/investors/${t.officeId}`, label: nm.office.get(t.officeId)! }
-    : t.dealId && nm.deal.get(t.dealId) ? { href: `/desk/pipeline#d${t.dealId}`, label: nm.deal.get(t.dealId)!.company } : null;
+    : t.dealId && nm.deal.get(t.dealId) ? { href: `/desk/deals/${t.dealId}`, label: nm.deal.get(t.dealId)!.company } : null;
   const groups: [string, typeof list][] = view === "done" ? [["Recently done", list.slice(0, 60)]] : [
     ["Overdue", list.filter((t) => t.dueOn && t.dueOn < today)],
     ["Today", list.filter((t) => t.dueOn === today)],

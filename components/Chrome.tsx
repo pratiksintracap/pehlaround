@@ -125,4 +125,4 @@ export function AppBar({ user, unread = 0 }: { user: SessionUser | null; unread?
 }
 
 /** Lights the current tab before the page paints (the longest matching path wins). */
-export const APPBAR_CURRENT = `(function(){try{var p=location.pathname,b=null,l=-1;document.querySelectorAll(".appbar a").forEach(function(a){var h=a.getAttribute("href").split("#")[0];if((p===h||p.indexOf(h+"/")===0)&&h.length>l){b=a;l=h.length}});if(b)b.setAttribute("aria-current","page")}catch(e){}})()`;
+export const APPBAR_CURRENT = `(function(){try{var p=location.pathname.replace(/^\/desk\/deals(\/|$)/,"/desk/pipeline/"),b=null,l=-1;document.querySelectorAll(".appbar a").forEach(function(a){var h=a.getAttribute("href").split("#")[0];if((p===h||p.indexOf(h+"/")===0)&&h.length>l){b=a;l=h.length}});if(b)b.setAttribute("aria-current","page")}catch(e){}})()`;

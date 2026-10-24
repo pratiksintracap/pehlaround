@@ -31,7 +31,7 @@ export default async function Pipeline({ searchParams }: P) {
             <h2>{s.label} <span className="dk-count">{list.length}</span></h2>
             {list.length ? <ul className="dk-cards">{list.map((d) => (
               <li key={d.id} id={`d${d.id}`} className="dk-card">
-                <a className="dk-card-top" href={d.listed ? `/admin/after-the-bell/${d.id}` : `/admin/deals/${d.id}#desk`}>
+                <a className="dk-card-top" href={`/desk/deals/${d.id}`}>
                   <b>{d.company}</b>
                   <small>{[d.listed ? "Listed" : "Pre-IPO", d.ownerId ? owner.get(d.ownerId) : "No owner", d.stageAt ? `since ${shortDay(d.stageAt)}` : ""].filter(Boolean).join(" · ")}</small>
                 </a>
