@@ -256,6 +256,7 @@ export async function createDeal(f: FormData) {
   const [row] = await db.insert(deals).values({ slug, company, title, category: "Pre-IPO primary", stage: "Draft", status: "In diligence · not open", headline: "",
     listingLabel: "To be set", open: false, published: false, sort: 200, art: Object.values(ART as Record<string, string>)[0], room }).returning({ id: deals.id });
   await log(admin, `Desk created the deal: ${company}`, row.id, { entity: "deal", entityId: row.id, detail: { note: "created in preparation" } });
+  revalidateTag(PUBLIC_TAG); // the console's deal list reads the cached list: show the new deal straight away
   redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent(can(admin, "deals.publish") ? "Created, in preparation: the desk alone sees it. Fill it in, then tick Published." : "Created, in preparation. Fill it in, then ask a super admin to publish it.")}`);
 }
 
