@@ -15,10 +15,10 @@ import { deskMembers, canSeeOffice, officeScope } from "@/lib/desk";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const n = (f: FormData, k: string) => Number(f.get(k)) || 0;
-/** Back to a desk page (only same-site admin paths), with a message. */
+/** Back to a desk page (only same-site admin or app-desk paths), with a message. */
 const back = (f: FormData | null, fallback: string, msg: string): never => {
   const want = f ? s(f, "back", 500) : "";
-  const path = /^\/admin(\/|$|\?)/.test(want) ? want : fallback;
+  const path = /^\/(admin|desk)(\/|$|\?)/.test(want) ? want : fallback;
   const [p, hash] = path.split("#");
   redirect(`${p}${p.includes("?") ? "&" : "?"}msg=${encodeURIComponent(msg)}${hash ? `#${hash}` : ""}`);
 };

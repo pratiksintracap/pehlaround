@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
-import { Header, Footer, AppBar } from "@/components/Chrome";
+import { Header, Footer, AppBar, APPBAR_CURRENT } from "@/components/Chrome";
 import { AppPromo, InstallGuide } from "@/components/AppPromo";
 import { getUser } from "@/lib/auth";
 import { listDeals, publicData } from "@/lib/deals";
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#0b1730", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 const THEME = `try{var t=JSON.parse(localStorage.getItem("ud_theme")||"null");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}
-try{var nat=/BeforeTheBellApp/.test(navigator.userAgent);if(nat)document.documentElement.classList.add("is-native");if(nat||matchMedia("(display-mode: standalone)").matches||navigator.standalone===true){document.documentElement.classList.add("is-app");var p=location.pathname;if(p==="/"||p==="/app"||p==="/how-it-works"||p==="/about"||p==="/founders"||p==="/webinars")location.replace("/dashboard")}}catch(e){}`;
+try{var nat=/BeforeTheBellApp/.test(navigator.userAgent);if(nat){document.documentElement.classList.add("is-native");var vt=document.createElement("style");vt.textContent="@view-transition{navigation:auto}";document.head.appendChild(vt);document.addEventListener("DOMContentLoaded",function(){var m=document.querySelector("meta[name=viewport]");if(m&&!/maximum-scale/.test(m.content))m.content+=",maximum-scale=1,user-scalable=no"})}if(nat||matchMedia("(display-mode: standalone)").matches||navigator.standalone===true){document.documentElement.classList.add("is-app");var p=location.pathname;if(p==="/"||p==="/app"||p==="/how-it-works"||p==="/about"||p==="/founders"||p==="/webinars")location.replace("/dashboard")}}catch(e){}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [user, deals, st] = await Promise.all([getUser(), listDeals(), getSettings()]);
@@ -48,14 +48,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Header user={user} unread={unread} />
         {children}
         <Footer />
-        <AppBar user={user} />
+        <AppBar user={user} unread={unread} />
+        <script dangerouslySetInnerHTML={{ __html: APPBAR_CURRENT }} />
         <div className="ap-smart"><AppPromo variant="bar" text="Install it on your phone. Opens straight to your dashboard." /></div>
         <InstallGuide />
         <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
         <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
         <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />
-        <Script src="/js/site.js?v=54" strategy="afterInteractive" />
-        <Script id="app-bridge" strategy="afterInteractive">{`if(/BeforeTheBellApp/.test(navigator.userAgent)){var s=document.createElement("script");s.src="/js/app-bridge.js?v=1";document.body.appendChild(s)}`}</Script>
+        <Script src="/js/site.js?v=55" strategy="afterInteractive" />
+        <Script id="app-bridge" strategy="afterInteractive">{`if(/BeforeTheBellApp/.test(navigator.userAgent)){var s=document.createElement("script");s.src="/js/app-bridge.js?v=2";document.body.appendChild(s)}`}</Script>
         <Analytics />
       </body>
     </html>

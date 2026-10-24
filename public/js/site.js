@@ -702,7 +702,10 @@
       };
       evs.forEach(function (e) { window.addEventListener(e, beacon, { capture: true, passive: true }); });
     }
-    Array.prototype.forEach.call(document.querySelectorAll(".appbar a"), function (a) { var h = a.getAttribute("href").split("#")[0]; if (p === h || p.indexOf(h + "/") === 0) a.setAttribute("aria-current", "page"); });
+    // The tab whose path matches best (so /desk/tasks lights Tasks, not Today too). Usually already set inline.
+    var best = null, bl = -1;
+    Array.prototype.forEach.call(document.querySelectorAll(".appbar a"), function (a) { var h = a.getAttribute("href").split("#")[0]; if ((p === h || p.indexOf(h + "/") === 0) && h.length > bl) { best = a; bl = h.length; } });
+    if (best && !document.querySelector(".appbar a[aria-current]")) best.setAttribute("aria-current", "page");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
 })();

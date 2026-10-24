@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
@@ -39,7 +40,8 @@ const PR_ICONS = [
 
 export default async function Dashboard({ searchParams }: P) {
   const user = await requireUser("/dashboard");
-  if (isDesk(user) && !user.officeId) redirect("/admin");
+  // The desk has no office view: in the phone app it lands on its own Today screen, in a browser on the console.
+  if (isDesk(user) && !user.officeId) redirect(/BeforeTheBellApp/.test((await headers()).get("user-agent") || "") ? "/desk" : "/admin");
   if (user.role === "promoter") redirect("/founder");
   // Registered from a deal: once approved, take them straight back to it (once).
   if (user.intent && user.office?.approval === "approved") {

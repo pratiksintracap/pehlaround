@@ -98,17 +98,31 @@ export function Html({ html, as = "main", className }: { html: string; as?: "mai
   return <T className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-/** Bottom tab bar, shown only when Before the Bell runs as an installed app. */
-export function AppBar({ user }: { user: SessionUser | null }) {
+/** Bottom tab bar, shown only when Before the Bell runs as an installed app.
+ *  The desk gets its own four tabs (Today, Pipeline, Investors, Tasks); investors get Home, Deals, Alerts and Account.
+ *  Articles are left out of the app on purpose: they are there for search, not for people already signed in. */
+export function AppBar({ user, unread = 0 }: { user: SessionUser | null; unread?: number }) {
   const I = (d: string) => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>;
+  const tabs: [string, string, string, number?][] = isDesk(user) ? [
+    ["/desk", "Today", "M4 11 12 4l8 7v9h-5v-6H9v6H4z"],
+    ["/desk/pipeline", "Pipeline", "M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v5h-4z"],
+    ["/desk/investors", "Investors", "M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.8-3.6 3.5-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14.8c1.9.7 3.2 2.4 3.5 5.2"],
+    ["/desk/tasks", "Tasks", "M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"],
+  ] : user ? [
+    ["/dashboard", "Dashboard", "M4 11 12 4l8 7v9h-5v-6H9v6H4z"],
+    ["/deals", "Deals", "M4 6h16M4 12h16M4 18h10"],
+    ["/notifications", "Alerts", "M12 3a5 5 0 0 0-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 0 0-5-5zM10 18a2 2 0 0 0 4 0", unread],
+    ["/dashboard#Team", "Account", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6"],
+  ] : [
+    ["/deals", "Deals", "M4 6h16M4 12h16M4 18h10"],
+    ["/login", "Sign in", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6"],
+  ];
   return (
-    <nav className="appbar" aria-label="App">
-      <a href="/dashboard">{I("M4 11 12 4l8 7v9h-5v-6H9v6H4z")}<span>Dashboard</span></a>
-      <a href="/deals">{I("M4 6h16M4 12h16M4 18h10")}<span>Deals</span></a>
-      <a href="/articles">{I("M6 4h12v16H6zM9 8h6M9 12h6M9 16h4")}<span>Articles</span></a>
-      {isDesk(user)
-        ? <a href="/admin">{I("M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z")}<span>Admin</span></a>
-        : <a href={user ? "/dashboard#Team" : "/login"}>{I("M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6")}<span>{user ? "Account" : "Sign in"}</span></a>}
+    <nav className="appbar" aria-label="App" style={{ gridTemplateColumns: `repeat(${tabs.length},1fr)` }}>
+      {tabs.map(([h, t, d, n]) => <a key={h} href={h}>{I(d)}<span>{t}</span>{n ? <i className="appbar-badge">{n > 9 ? "9+" : n}</i> : null}</a>)}
     </nav>
   );
 }
+
+/** Lights the current tab before the page paints (the longest matching path wins). */
+export const APPBAR_CURRENT = `(function(){try{var p=location.pathname,b=null,l=-1;document.querySelectorAll(".appbar a").forEach(function(a){var h=a.getAttribute("href").split("#")[0];if((p===h||p.indexOf(h+"/")===0)&&h.length>l){b=a;l=h.length}});if(b)b.setAttribute("aria-current","page")}catch(e){}})()`;

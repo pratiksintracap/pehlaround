@@ -16,6 +16,42 @@
   };
   var bioName = plat === "ios" ? "Face ID" : "fingerprint";
 
+  // ---------- feel like an app: a loading bar between screens, pull down to refresh ----------
+  var bar = document.createElement("div"); bar.className = "nav-bar"; document.body.appendChild(bar);
+  var root = document.documentElement;
+  function loading() { root.classList.add("navigating"); }
+  // Links that stay inside the app start the bar straight away (a tap feels answered even on a slow network).
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[href]"); if (!a || e.defaultPrevented) return;
+    var h = a.getAttribute("href"); if (!h || h.charAt(0) === "#" || a.target === "_blank" || a.hasAttribute("download")) return;
+    try { var u = new URL(a.href, location.href); if (u.host !== location.host || (u.pathname === location.pathname && u.search === location.search && u.hash)) return; } catch (x) { return; }
+    loading();
+    var tab = a.closest(".appbar"); if (tab) { Array.prototype.forEach.call(tab.querySelectorAll("a"), function (x) { x.removeAttribute("aria-current"); }); a.setAttribute("aria-current", "page"); }
+  });
+  document.addEventListener("submit", function (e) { if (!e.defaultPrevented) loading(); });
+  // Coming back with the Back gesture shows the page from memory: clear the bar.
+  window.addEventListener("pageshow", function () { root.classList.remove("navigating"); });
+
+  var ptr = document.createElement("div"); ptr.className = "ptr"; ptr.setAttribute("aria-hidden", "true");
+  ptr.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>'; document.body.appendChild(ptr);
+  var y0 = null, pull = 0, MAX = 90;
+  document.addEventListener("touchstart", function (e) {
+    if (window.scrollY > 0 || e.touches.length !== 1 || document.querySelector("dialog[open], .ig-open, .sheet-open")) { y0 = null; return; }
+    y0 = e.touches[0].clientY; pull = 0;
+  }, { passive: true });
+  document.addEventListener("touchmove", function (e) {
+    if (y0 == null) return;
+    pull = Math.max(0, Math.min(MAX, (e.touches[0].clientY - y0) * 0.5));
+    if (window.scrollY > 0) { pull = 0; }
+    ptr.style.opacity = String(pull / MAX); ptr.style.transform = "translateY(" + (pull - 40) + "px) rotate(" + pull * 3 + "deg)";
+  }, { passive: true });
+  document.addEventListener("touchend", function () {
+    if (y0 == null) return; y0 = null;
+    if (pull >= MAX * 0.8) { ptr.classList.add("go"); ptr.style.opacity = "1"; ptr.style.transform = "translateY(" + (MAX * 0.6 - 40) + "px)"; loading(); location.reload(); return; }
+    ptr.style.transition = "transform .2s, opacity .2s"; ptr.style.opacity = "0"; ptr.style.transform = "translateY(-40px)";
+    setTimeout(function () { ptr.style.transition = ""; }, 220);
+  }, { passive: true });
+
   // ---------- push notifications ----------
   function registerPush() {
     if (!Push || !signedIn) return;
