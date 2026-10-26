@@ -8,14 +8,21 @@ const NAV = [
   ["/founders", "List your company"], ["/dashboard", "Dashboard"],
 ] as const;
 
+/** What a signed-in person sees in the header: their product, not the marketing site. */
+function productNav(user: SessionUser): (readonly [string, string])[] {
+  if (isDesk(user)) return [["/admin", "Console"], ["/admin/deals", "Deal pipeline"], ["/admin/tasks", "Tasks"], ["/deals", "Deals as investors see them"]];
+  if (user.role === "promoter") return [["/founder", "My company"], ["/support", "Support"]];
+  return [["/dashboard", user.office?.name ? "My office" : "Dashboard"], ["/deals", "Deals"], ["/support", "Support"]];
+}
+
 export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?: number }) {
+  const nav = user ? productNav(user) : NAV;
   return (
     <header className="hdr">
       <div className="wrap in">
-        <a className="logo" aria-label="Before the Bell home" href="/"><Mark />Before the Bell</a>
+        <a className="logo" aria-label="Before the Bell home" href={user ? "/home" : "/"}><Mark />Before the Bell</a>
         <nav aria-label="Main">
-          {NAV.map(([h, t]) => <a key={h} href={h}>{t}</a>)}
-          {isDesk(user) && <a href="/admin">Admin</a>}
+          {nav.map(([h, t]) => <a key={h} href={h}>{t}</a>)}
         </nav>
         <div className="acts">
           <button type="button" className="iconbtn" id="shortlist-btn" aria-label="Your shortlist" title="Your shortlist" aria-expanded="false" aria-controls="shortlist">
@@ -31,8 +38,8 @@ export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?
           </button>
           {user ? (
             <>
+              {isDesk(user) && <a className="btn ghost sm hide-xs" href="/?site=1" title="See the public website as a visitor does">Public site</a>}
               <a className="btn ghost sm hide-xs" href="/logout">Sign out</a>
-              <a className="btn primary sm hide-xs" href={user.role === "promoter" ? "/founder" : "/dashboard"}>{user.office?.name ? "My office" : user.role === "promoter" ? "My company" : "Dashboard"}</a>
             </>
           ) : (
             <>
@@ -45,8 +52,8 @@ export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7 H20 M4 12 H20 M4 17 H20" /></svg>
             </button>
             <div id="mnav-panel" role="navigation" className="mnav-panel" aria-label="Site">
-              {NAV.map(([h, t]) => <a key={h} href={h}>{t}</a>)}
-              {isDesk(user) && <a href="/admin">Admin</a>}
+              {nav.map(([h, t]) => <a key={h} href={h}>{t}</a>)}
+              {isDesk(user) && <a href="/?site=1">Public site</a>}
               {user && <a href="/notifications">Notifications{unread ? ` (${unread})` : ""}</a>}
               {user ? <a href="/logout">Sign out</a> : <><a href="/login">Sign in</a><a href="/register">Register</a></>}
               <button type="button" className="mnav-theme" data-theme-toggle=""><span className="to-dark">Dark mode</span><span className="to-light">Light mode</span><svg viewBox="0 0 20 20" aria-hidden="true"><path className="sun" d="M10 4.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM10 1v2M10 17v2M1 10h2M17 10h2M3.6 3.6l1.4 1.4M15 15l1.4 1.4M3.6 16.4L5 15M15 5l1.4-1.4" /><path className="moon" d="M16.5 12.5A7 7 0 0 1 7.5 3.5a7 7 0 1 0 9 9z" /></svg></button>
@@ -58,7 +65,18 @@ export function Header({ user, unread = 0 }: { user: SessionUser | null; unread?
   );
 }
 
-export function Footer() {
+export function Footer({ user = null }: { user?: SessionUser | null }) {
+  if (user) return (
+    <footer className="ft-app">
+      <div className="wrap">
+        <div className="ft-app-row">
+          <a className="logo" href="/home"><Mark />Before the Bell</a>
+          <nav aria-label="Footer"><a href="/support">Support</a><a href="/legal">Terms and privacy</a><a href="#" data-show-disclaimer="">Disclaimer</a><a href="/app">Get the app</a><a href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a></nav>
+        </div>
+        <p className="ft-disc">Operated by SintraCap Advisors LLP (LLPIN ACL-6334). Grievance officer: {GRIEVANCE.name}, <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>. Before the Bell is a deal desk, not a stock exchange, broker, merchant banker or investment adviser, and is not registered with SEBI. Nothing here is an offer to subscribe for or buy securities; any offer is made privately to identified investors. Unlisted investments are illiquid and can lose their entire value.</p>
+      </div>
+    </footer>
+  );
   return (
     <footer>
       <div className="wrap">

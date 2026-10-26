@@ -1497,3 +1497,9 @@ html.is-app .card:active,html.is-app .more a:active{opacity:.85}
 .pc-src ul{margin:8px 0 0;padding-left:18px;font-size:13px;display:grid;gap:4px}
 .pc-src a{overflow-wrap:anywhere}
 @media (max-width:760px){.pc-stands{grid-template-columns:1fr}.pc-score{min-width:0;width:100%;grid-auto-flow:column;justify-content:start;gap:12px;align-items:center}.pc-score span{max-width:none;margin:0;text-align:left}}
+
+/* Signed-in footer: the product's, not the website's */
+footer.ft-app{padding:22px 0 26px}
+.ft-app-row{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.ft-app-row nav{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13.5px}
+.ft-app .ft-disc{margin-top:14px;font-size:12px}

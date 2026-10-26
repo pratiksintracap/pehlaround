@@ -3,5 +3,7 @@ import { destroySession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   await destroySession();
-  return NextResponse.redirect(new URL("/", req.url), 303);
+  const res = NextResponse.redirect(new URL("/", req.url), 303);
+  res.cookies.delete("pr_peek");
+  return res;
 }

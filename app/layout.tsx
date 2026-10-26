@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="annc"><div className="wrap">{st.announcementLink ? <a href={st.announcementLink}>{st.announcement} <span aria-hidden="true">→</span></a> : st.announcement}</div></div>)}
         <Header user={user} unread={unread} />
         {children}
-        <Footer />
+        <Footer user={user} />
         <AppBar user={user} unread={unread} />
         <script dangerouslySetInnerHTML={{ __html: APPBAR_CURRENT }} />
         <div className="ap-smart"><AppPromo variant="bar" text="Install it on your phone. Opens straight to your dashboard." /></div>
