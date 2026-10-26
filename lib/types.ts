@@ -8,6 +8,7 @@ export type RoomContent = {
   round: string;                      // "₹50 Cr · Secondary, pre-IPO"
   ticket: string;                     // "₹1 Cr"
   committed?: string;                 // "₹12 Cr of ₹35 Cr committed"
+  fill?: { committedCr: number; anchor?: boolean; note?: string }; // how much of the round is spoken for, set by the desk; shown as a bar in the room
   snapshot: Cell[];
   highlight?: { title: string; a: { label: string; value: number }; b: { label: string; value: number }; center: string; centerNote: string; note: string };
   stake?: { sizeCr: number; postCr: number; note?: string };   // stake on offer = size / post-money
@@ -17,7 +18,8 @@ export type RoomContent = {
   pe?: { label: string; sub: string; value: number }[];
   multiples: Cell[];
   peers?: string;
-  compare?: PeerCompare;              // the full peer comparison; when absent, the desk's researched default for the slug (lib/peers) is shown
+  compare?: PeerCompare;
+  compareDraft?: PeerCompare;         // an AI draft waiting for the desk; never shown to investors until saved as compare              // the full peer comparison; when absent, the desk's researched default for the slug (lib/peers) is shown
   terms: { k: string; v: string }[];
   path: { status: Status; title: string; note: string }[];
   checks: { status: Status; title: string; note?: string; date?: string }[];

@@ -59,6 +59,6 @@ export async function officeRefCode(officeId: number, current?: string | null) {
 export async function referrerByCode(code: string | null) {
   if (!code) return null;
   const db = await getDb();
-  const [o] = await db.select({ id: offices.id, name: offices.name, approval: offices.approval, refCode: offices.refCode }).from(offices).where(eq(offices.refCode, code));
+  const [o] = await db.select({ id: offices.id, name: offices.name, approval: offices.approval, refCode: offices.refCode, investorType: offices.investorType }).from(offices).where(eq(offices.refCode, code));
   return o ?? null;
 }

@@ -61,6 +61,18 @@ export async function setOfficeStatus(f: FormData) {
   back("/admin/offices", "Office updated.");
 }
 
+/** The desk marks what kind of investor an office is. "broker" gives it a Clients view of the offices it introduced. */
+export async function setOfficeType(f: FormData) {
+  const admin = await requirePerm("offices.approve");
+  const id = n(f, "id"), t = s(f, "investorType", 20);
+  if (!["family_office", "fund", "individual", "broker"].includes(t)) return back("/admin/offices", "Choose a type.");
+  const db = await getDb();
+  await db.update(offices).set({ investorType: t }).where(eq(offices.id, id));
+  await log(admin, `Desk set office #${id} as ${t.replace("_", " ")}`);
+  revalidatePath("/admin/offices");
+  back("/admin/offices", "Investor type saved.");
+}
+
 export async function setApproval(f: FormData) {
   const admin = await requirePerm("offices.approve");
   const approval = s(f, "approval");
@@ -171,6 +183,7 @@ export async function saveDeal(f: FormData) {
     room = {
       ...cur.room,
       lede: s(f, "lede"), why: s(f, "why"), founders: fromText.founders(s(f, "founders", 4000)), round: s(f, "round"), ticket: s(f, "ticket"), committed: s(f, "committed") || undefined,
+      fill: (() => { const v = parseFloat(s(f, "fillCr", 12)); return isFinite(v) && v >= 0 ? { committedCr: v, anchor: f.get("fillAnchor") === "on", note: s(f, "fillNote", 200) || undefined } : undefined; })(),
       snapshot: fromText.cells(s(f, "snapshot", 8000)),
       risks: fromText.risks(s(f, "risks", 12000)),
       feed: fromText.feed(s(f, "feed", 8000)),
@@ -188,7 +201,8 @@ export async function saveDeal(f: FormData) {
       stake: json(s(f, "stake", 1000), "Stake"),
       interest: json(s(f, "interest", 2000), "Interest") ?? cur.room.interest,
       scenario: json(s(f, "scenario", 2000), "Scenario"),
-      compare: ownCompare(s(f, "compare", 120000), cur.slug, cur.room.compare),
+      compare: ownCompare(s(f, "compare", 120000), cur.slug, cur.room.compare ?? cur.room.compareDraft),
+      compareDraft: undefined,
     };
   } catch (e) {
     back(path, (e as Error).message);
@@ -472,6 +486,8 @@ export async function saveSiteSettings(f: FormData) {
     promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on", aiBudget: String(Math.max(0, Math.round(Number(s(f, "aiBudget", 10)) || 0))),
     analystContacts: f.get("analystContacts") === "on",
     referrals: f.get("referrals") === "on", approvalTime: s(f, "approvalTime", 120) || "usually within a few minutes",
+    hniMinCr: (() => { const v = parseFloat(s(f, "hniMinCr", 10)); return isFinite(v) && v >= 0.05 && v <= 5 ? String(v) : "0.25"; })(),
+    callTargetHours: (() => { const v = parseInt(s(f, "callTargetHours", 4)); return isFinite(v) && v >= 1 && v <= 168 ? String(v) : "24"; })(),
   });
   await log(admin, "Desk changed the site settings");
   revalidatePath("/", "layout");

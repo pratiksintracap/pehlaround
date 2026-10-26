@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 import { desc, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { deals, invites, ndas, offices, users } from "@/db/schema";
-import { setApproval, setOfficeStatus, saveOfficeNotes, resetPassword, toggleUser, revokeNda } from "@/lib/admin-actions";
+import { setOfficeType, setApproval, setOfficeStatus, saveOfficeNotes, resetPassword, toggleUser, revokeNda } from "@/lib/admin-actions";
 import { completeness } from "@/lib/profile";
 import { officeEngagement } from "@/lib/interest";
 import { Msg } from "@/components/AdminBits";
@@ -81,6 +81,10 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
                   <div><dt>Approved</dt><dd>{o.approval === "approved" ? fmtD(o.approvedAt) : "—"}</dd></div>
                   <div><dt>Consents</dt><dd>{Object.entries(o.consents || {}).filter(([, v]) => v).map(([k]) => k).join(", ") || "—"}</dd></div>
                 </dl>
+                <form action={setOfficeType} className="form" style={{ marginTop: 10, display: "flex", gap: 6, alignItems: "end", flexWrap: "wrap" }}><input type="hidden" name="id" value={o.id} />
+                  <label style={{ minWidth: 200 }}>Investor type<select name="investorType" defaultValue={o.investorType}>{Object.entries(TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+                  <button className="btn sm" type="submit">Save type</button>
+                  {o.investorType === "broker" && <span className="fine">Sees the offices that register through its invite link: their NDAs and allocation requests only.</span>}</form>
                 {manage && <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
                   <form action={setOfficeStatus}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="status" value={o.status === "rejected" ? "registered" : "rejected"} />
                     <button className="btn sm ghost" type="submit">{o.status === "rejected" ? "Release the hold" : "Put on hold (closes every room)"}</button></form>

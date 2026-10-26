@@ -116,6 +116,7 @@ export default async function Register({ searchParams }: P) {
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
           {error && <div className="ok show bad" role="alert">{error}</div>}
           {lk && <div className="ok show" role="status">Sent by the desk. You are approved as soon as you register.</div>}
+          {byCode?.investorType === "broker" && <div className="ok show" role="status">You were introduced by <b>{byCode.name}</b>. They will see which companies your office signs NDAs for and the allocations you request, so they can help you through the round. They do not see your documents, questions or notes.</div>}
           {byCode && !inv && !lk && <div className="ok show" role="status">Referred by {byCode.name}. {approvedOnSignUp ? "You are approved as soon as you register." : `The desk approves new investors ${st.approvalTime}.`}</div>}
           {inv && !lk && <div className="ok show" role="status">{referrer ? `Referred by ${referrer}. ` : "Invited by the desk. "}{approvedOnSignUp ? "You are approved as soon as you register." : `The desk approves new investors ${st.approvalTime}.`}</div>}
           {invite && !inv && <div className="ok show bad" role="alert">This invitation link was already used or is not valid. You can still register; the desk approves new offices {st.approvalTime}.</div>}

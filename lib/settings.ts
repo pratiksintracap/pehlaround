@@ -18,8 +18,10 @@ export type Settings = {
   analystContacts: boolean;   // desk analysts may see family office people's email and phone
   referrals: boolean;         // approved offices can refer peers, who are approved when they register
   approvalTime: string;       // what new offices are told about the wait for approval
+  hniMinCr: string;           // the smallest allocation an individual investor (HNI) may request, in ₹ crore; below a room's own minimum
+  callTargetHours: string;    // the desk's target for setting up a requested management call
 };
-const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false, referrals: true, approvalTime: "usually within a few minutes" };
+const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false, referrals: true, approvalTime: "usually within a few minutes", hniMinCr: "0.25", callTargetHours: "24" };
 
 const settingRows = cachedPublic(async () => { const db = await getDb(); return db.select().from(settings); }, "settings");
 export async function getSettings(): Promise<Settings> {

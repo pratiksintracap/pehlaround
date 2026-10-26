@@ -6,9 +6,9 @@ import { deals, deskNotes, ndas, offices, users } from "@/db/schema";
 import { can, mask } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
 import { canSeeOffice, deskMembers, listTasks } from "@/lib/desk";
-import { saveDeskNote } from "@/lib/desk-actions";
+import { saveDeskNote, logCall } from "@/lib/desk-actions";
 import { setApproval } from "@/lib/admin-actions";
-import { DkToast, DkTask, DkAddTask, DkEmpty, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
+import { DkToast, DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
 
 type P = { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> };
 const TYPE: Record<string, string> = { family_office: "Family office", fund: "Fund", individual: "Individual" };
@@ -96,6 +96,9 @@ export default async function Investor({ params, searchParams }: P) {
 
       <section className="dk-sec">
         <h2>Notes <span className="dk-count">{notes.length}</span></h2>
+        {work && <DkLogCall action={logCall} officeId={o.id} back={back} />}
+
+        {work && <DkLogCall action={logCall} officeId={o.id} back={back} />}
         {work && (
           <form action={saveDeskNote} className="dk-note-form">
             <input type="hidden" name="officeId" value={o.id} /><input type="hidden" name="back" value={back} />

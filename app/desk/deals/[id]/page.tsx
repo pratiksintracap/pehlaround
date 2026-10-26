@@ -6,8 +6,8 @@ import { interests, ndas } from "@/db/schema";
 import { can } from "@/lib/perm";
 import { deskDeal, deskMembers, hiddenOffices, names, workspace } from "@/lib/desk";
 import { DEAL_STAGES, stageLabel } from "@/lib/stages";
-import { saveDeskNote, setDealOwner, setDealStage } from "@/lib/desk-actions";
-import { DkToast, DkTask, DkAddTask, DkEmpty, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
+import { saveDeskNote, setDealOwner, setDealStage, logCall } from "@/lib/desk-actions";
+import { DkToast, DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
 
 type P = { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> };
 
@@ -95,6 +95,7 @@ export default async function DeskDeal({ params, searchParams }: P) {
 
       <section className="dk-sec">
         <h2>Notes <span className="dk-count">{ws.notes.length}</span></h2>
+        {work && <DkLogCall action={logCall} dealId={d.id} back={back} />}
         {work && (
           <form action={saveDeskNote} className="dk-note-form">
             <input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="back" value={back} />

@@ -1,7 +1,10 @@
+import { getSettings } from "@/lib/settings";
+import { minTicket } from "@/lib/ticket";
+import { investorWhere } from "@/lib/deal-guard";
 import { NextResponse, type NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { calls, dealPrefs, interests, passes, questions } from "@/db/schema";
+import { calls, dealPrefs, deals, interests, passes, questions, tasks } from "@/db/schema";
 import { getUser, log } from "@/lib/auth";
 import { getDeal, roomAccess } from "@/lib/deals";
 import { track } from "@/lib/track";
@@ -28,8 +31,9 @@ export async function POST(req: NextRequest, { params }: P) {
   switch (action) {
     case "interest": {
       const it = d.room.interest;
+      const min = minTicket(it, user.office?.investorType, (await getSettings()).hniMinCr);
       const amount = Number(data.amount);
-      if (!isFinite(amount) || amount < it.min || amount > it.max) return jerr(`Choose an amount between ₹${it.min} Cr and ₹${it.max} Cr.`);
+      if (!isFinite(amount) || amount < min - 1e-9 || amount > it.max) return jerr(`Choose an amount between ${min < 1 ? `₹${Math.round(min * 100)} lakh` : `₹${min} Cr`} and ₹${it.max} Cr.`);
       if (!/commit/i.test(user.rights)) return jerr("Your access is view-only. Ask your office's principal to request an allocation.", 403);
       await db.insert(interests).values({ ...base, amountCr: String(amount), colead: !!data.colead });
       await log(user, `Requested an allocation of ₹${amount} Cr${data.colead ? " (co-lead interest)" : ""}: ${d.company}`, d.id);
@@ -58,6 +62,13 @@ export async function POST(req: NextRequest, { params }: P) {
       const slot = str(data.slot, 60), who = str(data.who, 200);
       if (!slot || !who) return jerr("Choose a slot and say who will attend.");
       await db.insert(calls).values({ ...base, slot, attendees: who, questions: str(data.qs, 1500) || null });
+      // Every request becomes a desk task for the deal's owner, due within the desk's target, so none sits unanswered.
+      // Desk-only: tasks never show to investors, and no line is written to the office's log for it.
+      const hours = Number((await getSettings()).callTargetHours) || 24;
+      const due = new Date(Date.now() + hours * 3600e3 + 5.5 * 3600e3).toISOString().slice(0, 10);
+      const [own] = await db.select({ ownerId: deals.ownerId }).from(deals).where(investorWhere(eq(deals.id, d.id)));
+      await db.insert(tasks).values({ title: `Set up the management call ${user.office?.name ?? "an investor"} asked for (${slot})`, dealId: d.id, officeId: user.officeId,
+        assigneeId: own?.ownerId ?? null, dueOn: due, createdBy: "Call request", notes: `Attendees: ${who}${data.qs ? `\nQuestions in advance: ${str(data.qs, 1500)}` : ""}` });
       await log(user, `Requested a management call: ${d.company}`, d.id);
       await track("call_requested", base);
       await notifyDesk({ title: `Call request: ${d.company}`, body: `${user.office?.name} · ${slot} · ${who}`, link: "/admin/activity#calls" });

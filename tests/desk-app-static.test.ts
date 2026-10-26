@@ -8,7 +8,7 @@ const read = (p: string) => readFileSync(new URL(`../${p}`, import.meta.url), "u
 
 test("the app desk is desk-only", () => {
   assert.match(read("app/desk/layout.tsx"), /await requireDesk\(\)/);
-  for (const p of ["app/desk/page.tsx", "app/desk/pipeline/page.tsx", "app/desk/investors/page.tsx", "app/desk/investors/[id]/page.tsx", "app/desk/tasks/page.tsx"])
+  for (const p of ["app/desk/page.tsx", "app/desk/pipeline/page.tsx", "app/desk/investors/page.tsx", "app/desk/investors/[id]/page.tsx", "app/desk/tasks/page.tsx", "app/desk/tasks/[id]/page.tsx", "app/desk/deals/[id]/page.tsx"])
     assert.match(read(p), /requireDesk\(\)/, `${p} checks the desk itself`);
 });
 

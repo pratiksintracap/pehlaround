@@ -6,7 +6,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const DESK_ONLY = [/^app\/admin\//, /^lib\/admin-actions\.ts$/, /^lib\/desk(-actions)?\.ts$/, /^lib\/task-reminders\.ts$/, /^lib\/pipeline\.ts$/, /^lib\/db\.ts$/,
+const DESK_ONLY = [/^app\/admin\//, /^lib\/admin-actions\.ts$/, /^lib\/desk(-actions)?\.ts$/, /^lib\/task-reminders\.ts$/, /^lib\/desk-weekly\.ts$/, /^lib\/peer-draft\.ts$/, /^app\/desk\//, /^lib\/pipeline\.ts$/, /^lib\/db\.ts$/,
   /^lib\/deal-guard\.ts$/, /^components\/(DeskWorkspace|DeskBits|AdminNav|AdminBits)\.tsx$/];
 const walk = (dir: string): string[] => readdirSync(path.join(root, dir)).flatMap((f) => {
   const p = path.join(dir, f);

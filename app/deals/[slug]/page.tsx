@@ -15,6 +15,7 @@ import { NdaSign } from "@/components/NdaSign";
 import { emailReady } from "@/lib/email";
 import { trustedDevice } from "@/lib/trust";
 import { getSettings } from "@/lib/settings";
+import { DeckPanel } from "@/components/DeckPanel";
 
 type P = { params: Promise<{ slug: string }> };
 
@@ -115,7 +116,7 @@ export default async function Overview({ params }: P) {
           <ul className="docs rv inview deck-list">{decks.map((doc) => {
             const live = doc.status === "available" && !!doc.url;
             return <li key={doc.id}><div><b>{doc.title}</b>{doc.kind && <small>{doc.kind}</small>}</div>
-              {live ? <><span className="pill ok">Available</span><a className="btn sm" href={`/api/docs/${doc.id}`} target="_blank" rel="noopener">Open</a></> : <><span className="pill mid">Being uploaded</span><span className="fine">Soon</span></>}</li>;
+              {live ? <><span className="pill ok">Available</span><a className="btn sm primary" href={`/api/docs/${doc.id}?embed=1`} data-deck={`/api/docs/${doc.id}?embed=1`} data-deck-title={`${d.company}: ${doc.title}`}>Read</a><a className="btn sm ghost" href={`/api/docs/${doc.id}`} target="_blank" rel="noopener">New tab</a></> : <><span className="pill mid">Being uploaded</span><span className="fine">Soon</span></>}</li>;
           })}</ul>
         )}
         <Journey at={layer} slug={d.slug} canSign={canSign} open={d.open} />
@@ -141,6 +142,6 @@ export default async function Overview({ params }: P) {
           </ul>
         </section>
       )}
-    </div></main>
+    </div><DeckPanel /></main>
   );
 }

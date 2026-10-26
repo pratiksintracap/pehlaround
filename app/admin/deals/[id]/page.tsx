@@ -62,6 +62,10 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
       </tbody></table></div>}
       <p className="fine" style={{ marginBottom: 16 }}>Lists take one item per line, with fields separated by a vertical bar ( | ). Statuses are done, in progress or pending. Never put the floor valuation, fees or confidential process detail anywhere here.</p>
 
+      <form method="post" action={`/api/admin/peers/${d.id}`} className="adm-aidraft">
+        <button className="btn sm" type="submit">Draft the peer comparison with the AI analyst</button>
+        <span className="fine">Uses the figures in this room and looks up listed peers on the web. Takes a few minutes; the draft waits in the Peer comparison box below until you save.</span>
+      </form>
       <form action={saveDeal} className="form adm-form">
         <input type="hidden" name="id" value={d.id} />
         <div className="adm-vis"><span className="k">Visibility · {d.published ? (d.open ? "live, room open" : "live, room closed") : "in preparation (desk only)"}</span>
@@ -105,6 +109,9 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <TA name="founders" label="Founders and management: name | role | LinkedIn URL" value={toText.founders(r.founders)} rows={3} hint="One person per line, e.g. Anil Mehta | Founder and MD | https://www.linkedin.com/in/anilmehta. Shown with the company name to approved investors, on the overview and in the room. The link is optional." />
         <div className="row"><IN name="round" label="Round line" value={r.round} /><IN name="ticket" label="Family office ticket" value={r.ticket} /></div>
         <IN name="committed" label="Committed so far (optional)" value={r.committed} />
+        <div className="row"><IN name="fillCr" label="Round fill: ₹ Cr committed (shows a bar in the room; blank for none)" value={r.fill ? String(r.fill.committedCr) : ""} ph="12" />
+          <label className="chk" style={{ alignSelf: "end" }}><input type="checkbox" name="fillAnchor" defaultChecked={!!r.fill?.anchor} /> The lead (anchor) investor is in</label></div>
+        <IN name="fillNote" label="Line under the fill bar (optional)" value={r.fill?.note} ph="Individual tickets close the balance" />
         <TA name="snapshot" label="Snapshot: label | value | note" value={toText.cells(r.snapshot)} rows={6} />
         <TA name="risks" label="Key risks: title | text" value={toText.risks(r.risks)} rows={7} />
         <TA name="feed" label="What changed: date | text (newest first) · desk only, not shown to investors" value={toText.feed(r.feed)} rows={5} />
@@ -113,8 +120,9 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <TA name="finNote" label="Note under the financials (sources, audit status)" value={r.fin?.note || ""} rows={2} />
         <TA name="pe" label="P/E chart: label | note | number" value={toText.pe(r.pe || [])} rows={3} />
         <TA name="multiples" label="Multiples: label | value | note" value={toText.cells(r.multiples)} rows={4} />
-        <TA name="compare" label="Peer comparison (JSON) · the Peers tab in the room" value={(() => { const pc = peerCompareFor(d.slug, r.compare); return pc ? JSON.stringify(pc, null, 1) : ""; })()} rows={10}
-          hint={r.compare ? "The desk's own edit is live in the room. Clear the box to go back to the researched comparison." : "This is the desk's researched comparison. Edit and save to make it this room's own; leave it unchanged to keep following the researched one. Clear it to hide the Peers tab only if no researched comparison exists."} />
+        <span id="compare" />
+        <TA name="compare" label="Peer comparison (JSON) · the Peers tab in the room" value={(() => { const pc = r.compareDraft ?? peerCompareFor(d.slug, r.compare); return pc ? JSON.stringify(pc, null, 1) : ""; })()} rows={10}
+          hint={r.compareDraft ? "An AI draft is waiting here. Check the figures and wording, then save the deal to put it in the room; until then the room shows nothing new." : r.compare ? "The desk's own edit is live in the room. Clear the box to go back to the researched comparison." : "This is the desk's researched comparison. Edit and save to make it this room's own; leave it unchanged to keep following the researched one. Clear it to hide the Peers tab only if no researched comparison exists."} />
         <TA name="terms" label="Terms: label | text" value={toText.terms(r.terms)} rows={8} />
         <TA name="path" label="IPO path: status | milestone | note" value={toText.path(r.path)} rows={6} />
         <TA name="checks" label="Desk diligence tracker: status | check | note | date" value={toText.checks(r.checks)} rows={9} />

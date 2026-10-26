@@ -7,6 +7,7 @@ import { getUser, log, clientIp } from "@/lib/auth";
 import { roomAccess, docAccess, canSeeNames, isPreNda } from "@/lib/deals";
 import { track } from "@/lib/track";
 import { investorWhere } from "@/lib/deal-guard";
+import { embeddable } from "@/lib/embed";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = Number((await params).id);
@@ -29,5 +30,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   await db.insert(docViews).values({ documentId: doc.id, userId: user.id, officeId: user.officeId, ip: await clientIp() });
   if (isPreNda(doc) && !admin) await track("deck_opened", { officeId: user.officeId, userId: user.id, dealId: d.id, meta: { document: doc.id, title: doc.title } });
   await log(user, `${isPreNda(doc) ? "Opened" : "Viewed"} ${doc.title}: ${d.company}`, d.id);
-  return NextResponse.redirect(doc.url, 302);
+  // ?embed=1: the same file in a form that shows inside a side panel (Google Drive, Docs and Slides have a /preview view).
+  return NextResponse.redirect(req.nextUrl.searchParams.get("embed") === "1" ? embeddable(doc.url) : doc.url, 302);
 }

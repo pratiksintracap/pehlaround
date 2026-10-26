@@ -20,9 +20,10 @@ import { holding, crore, fmtDay } from "@/lib/portfolio";
 import { SITE_URL } from "@/lib/site";
 import { officeRefCode } from "@/lib/track";
 import { investorWhere } from "@/lib/deal-guard";
+import { DeckPanel } from "@/components/DeckPanel";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
-type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string }> };
+type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string; show?: string }> };
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "";
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
@@ -50,7 +51,7 @@ export default async function Dashboard({ searchParams }: P) {
     const d = (await listDeals()).find((x) => x.slug === want);
     if (d && d.open && !(await signedDealIds(user.officeId)).has(d.id)) redirect(`/deals/${d.slug}#sign`);
   }
-  const { msg, error, deal: tDeal, cat: tCat } = await searchParams;
+  const { msg, error, deal: tDeal, cat: tCat, show = "" } = await searchParams;
   const office = user.office!;
   const db = await getDb();
   const [allDeals, names, st, ans] = await Promise.all([listDeals(), canSeeNames(user), getSettings(), answerStats()]);
@@ -75,6 +76,16 @@ export default async function Dashboard({ searchParams }: P) {
   // The office's own invite link, created the first time an approved office opens this page.
   const refCode = office.approval === "approved" ? await officeRefCode(office.id, office.refCode) : null;
   const referredCount = refCode ? (await db.select({ n: sql<number>`count(*)::int` }).from(offices).where(eq(offices.referredBy, office.id)))[0]?.n ?? 0 : 0;
+  // A broker sees the offices it introduced (through its invite link): which companies they signed for and what they
+  // asked for. Not their documents, questions, notes or log. An office introduced by a broker is told so (Team).
+  const isBroker = office.investorType === "broker";
+  const clients = isBroker ? await db.select({ id: offices.id, name: offices.name, approval: offices.approval, createdAt: offices.createdAt }).from(offices).where(eq(offices.referredBy, office.id)).orderBy(desc(offices.createdAt)) : [];
+  const cIds = clients.map((c) => c.id);
+  const [cNdas, cAsks] = cIds.length ? await Promise.all([
+    db.select({ officeId: ndas.officeId, dealId: ndas.dealId, signedAt: ndas.signedAt }).from(ndas).where(and(inArray(ndas.officeId, cIds), isNull(ndas.revokedAt))),
+    db.select({ officeId: interests.officeId, dealId: interests.dealId, amountCr: interests.amountCr, status: interests.status, createdAt: interests.createdAt }).from(interests).where(inArray(interests.officeId, cIds)).orderBy(desc(interests.createdAt)),
+  ]) : [[], []];
+  const [introducer] = office.referredBy ? await db.select({ name: offices.name, investorType: offices.investorType }).from(offices).where(eq(offices.id, office.referredBy)) : [];
   const myTickets = await db.select().from(tickets).where(eq(tickets.officeId, office.id)).orderBy(desc(tickets.updatedAt));
   const ticketsWaiting = myTickets.filter((t) => t.status === "answered").length;
   const signed = new Set(myNdas.map((n) => n.dealId));
@@ -113,12 +124,36 @@ export default async function Dashboard({ searchParams }: P) {
   const prof = completeness(office);
   const fits = new Map(deals.map((d) => [d.id, fit(office, d)]));
   // Deals whose pitch deck, IM or teaser is open before the NDA: the shelf leads with it.
-  const deckDeals = names ? new Set((await db.select({ d: documents.dealId }).from(documents).where(eq(documents.audience, "approved"))).map((r) => r.d)) : new Set<number>();
+  const deckRows = names ? await db.select({ id: documents.id, d: documents.dealId, title: documents.title, status: documents.status, url: documents.url, sort: documents.sort })
+    .from(documents).where(eq(documents.audience, "approved")).orderBy(documents.sort, documents.id) : [];
+  const deckOf = new Map<number, { id: number; title: string }>();
+  for (const r of deckRows) if (r.status === "available" && r.url && !deckOf.has(r.d)) deckOf.set(r.d, { id: r.id, title: r.title });
+  const deckDeals = new Set(deckRows.map((r) => r.d));
+  // One line per deal: where this office stands with it, and the single next thing to do.
+  const qByDeal = new Map<number, { n: number; open: number }>();
+  for (const q of myQs) { const x = qByDeal.get(q.dealId) ?? { n: 0, open: 0 }; x.n++; if (!q.answer) x.open++; qByDeal.set(q.dealId, x); }
+  const askOf = new Map<number, (typeof indicated)[number]>(); for (const i of indicated) if (!askOf.has(i.dealId)) askOf.set(i.dealId, i);
+  type Row = { d: (typeof deals)[number]; key: string; label: string; tone: string; detail: string; primary?: { href: string; text: string; deck?: boolean }; };
+  const rowFor = (d: (typeof deals)[number]): Row => {
+    const ask = askOf.get(d.id), q = qByDeal.get(d.id), ps = passedBy.get(d.id), deck = deckOf.get(d.id);
+    const qs = q ? ` · ${q.n} question${q.n === 1 ? "" : "s"}${q.open ? `, ${q.open} awaiting` : ""}` : "";
+    if (ask?.status === "Allotted") return { d, key: "rooms", label: "Allotted", tone: "ok", detail: `₹${Number(ask.amountCr)} Cr allotted`, primary: { href: "#Portfolio", text: "See holding" } };
+    if (ps) return { d, key: "passed", label: "Passed", tone: "off", detail: `“${ps.reason}”`, primary: signed.has(d.id) ? { href: `/room/${d.slug}`, text: "Open room" } : undefined };
+    if (ask) return { d, key: "requested", label: `Requested ₹${Number(ask.amountCr)} Cr`, tone: "ok", detail: `${ask.status}${qs}`, primary: { href: `/room/${d.slug}`, text: "Open room" } };
+    if (signed.has(d.id)) return { d, key: "rooms", label: "Room open", tone: "ok", detail: `NDA signed${qs}`, primary: { href: `/room/${d.slug}`, text: "Open room" } };
+    if (!names) return { d, key: "new", label: "After approval", tone: "", detail: "Company names open once the desk approves your office", primary: { href: `/deals/${d.slug}`, text: "Overview" } };
+    if (d.open) return { d, key: "new", label: "Not opened yet", tone: "mid", detail: deck ? "Read the deck, then sign the NDA to open the room" : "Sign the NDA to open the room", primary: deck ? { href: `/api/docs/${deck.id}?embed=1`, text: "Pitch deck", deck: true } : { href: `/deals/${d.slug}#sign`, text: "Sign NDA" } };
+    return { d, key: "new", label: "Room not open yet", tone: "", detail: "The desk is preparing the room", primary: deck ? { href: `/api/docs/${deck.id}?embed=1`, text: "Pitch deck", deck: true } : { href: `/deals/${d.slug}`, text: "Overview" } };
+  };
+  const rows = deals.map(rowFor);
+  const FILTERS: [string, string, number][] = [["", "All", rows.length], ["new", "Not opened", rows.filter((r) => r.key === "new").length], ["rooms", "Rooms open", rows.filter((r) => r.key === "rooms").length], ["requested", "Requested", rows.filter((r) => r.key === "requested").length], ["passed", "Passed", rows.filter((r) => r.key === "passed").length]];
+  const shown = show ? rows.filter((r) => r.key === show) : rows;
   const NAV: [string, string, string, number | null][] = [
-    ["Shelf", "Deals", "M3 7h18M3 12h18M3 17h12", null],
-    ["Rooms", "My rooms", "M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16M9 21v-6h6v6", signed.size || null],
+    ["Shelf", "Your deals", "M3 7h18M3 12h18M3 17h12", null],
+    ["Rooms", "Questions and requests", "M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16M9 21v-6h6v6", signed.size || null],
     ["Calls", "Calls", "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2", null],
     ["Documents", "Documents", "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6", null],
+    ...(isBroker ? [["Clients", "Your clients", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", clients.length || null] as [string, string, string, number | null]] : []),
     ["Portfolio", "Portfolio", "M4 19V9M10 19V5M16 19v-7M22 19H2", allotted.length || null],
     ["Profile", "Investment profile", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", null],
     ["Team", "Team", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", team.length > 1 ? team.length : null],
@@ -153,9 +188,9 @@ export default async function Dashboard({ searchParams }: P) {
       <div className="dashhead">
         <div className="dh-name"><button type="button" className="dm-btn" data-menu="" aria-expanded="false" aria-controls="dash-menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>Menu <em data-menu-label="" suppressHydrationWarning>{NAV[0][1]}</em></button><span className="eyebrow">Office dashboard</span><h1>{office.name}</h1></div>
         <div className="dh-stats">
-          <a href="#Rooms"><b>{signed.size}</b><span>{signed.size === 1 ? "room open" : "rooms open"}</span></a>
-          <a href="#Rooms"><b>{myQs.length}</b><span>questions</span></a>
-          <a href="#Rooms"><b>{indicated.length ? `₹${+totalInd.toFixed(2)} Cr` : "0"}</b><span>{indicated.length ? `requested · ${indicated.length}` : "allocations requested"}</span></a>
+          <a href="/dashboard?show=rooms#Shelf"><b>{signed.size}</b><span>{signed.size === 1 ? "room open" : "rooms open"}</span></a>
+          <a href="#Rooms"><b>{myQs.length}</b><span>{myQs.length ? `questions · ${myQs.filter((q) => q.answer).length} answered` : "questions"}</span></a>
+          <a href="/dashboard?show=requested#Shelf"><b>{indicated.length ? `₹${+totalInd.toFixed(2)} Cr` : "0"}</b><span>{indicated.length ? `requested · ${indicated.length}` : "allocations requested"}</span></a>
           {latest && <a className="btn primary sm dh-go" href={`/room/${latest.slug}`}>Continue in {latest.company} →</a>}
         </div>
       </div>
@@ -176,31 +211,37 @@ export default async function Dashboard({ searchParams }: P) {
 
 
       <section className="panel" data-panel="Shelf">
-        <div className="cmpwrap"><table className="cmp plain" id="shelf-t"><thead><tr><th>Deal</th><th>Structure</th><th>Target listing</th><th>Round</th><th>Pre-money</th><th>P/E trailing · forward</th><th>Min ticket</th><th>Desk Score</th><th /></tr></thead>
-          <tbody>{deals.map((d) => (
-            <tr key={d.id} data-struct={d.category} data-months={monthsTo(d.listingMonth) ?? 999}>
-              <th scope="row">{d.company}{names && <><br /><small className="fine">{d.title}</small></>}<br />
-                {passedBy.has(d.id) ? <span className="pill off" title={`Passed: ${passedBy.get(d.id)!.reason}`}>Passed</span>
-                  : <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>}{!passedBy.has(d.id) && fits.get(d.id) && <span className="fitpill" title={fits.get(d.id)!}>Fits your thesis</span>}</th>
-              <td>{d.category}</td><td>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</td><td>{d.roundLabel || "—"}</td><td>{d.preMoney || "—"}</td><td>{d.peLabel || "—"}</td><td>{d.minTicket || "—"}</td><td>{d.score != null ? <b>{d.score.toFixed(1)}</b> : "—"}</td>
-              <td><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : deckDeals.has(d.id) ? <a className="btn sm primary" href={`/deals/${d.slug}#deck`}>Pitch deck</a> : null}
-                {!signed.has(d.id) && d.open && names ? <a className="btn sm" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
-                {!deckDeals.has(d.id) && <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a>}</div></td>
-            </tr>
-          ))}</tbody></table></div>
-        <ul className="dash-cards">{deals.map((d) => (
-          <li key={d.id}>
-            <div className="dc-top"><b>{d.company}</b>{passedBy.has(d.id) ? <span className="pill off">Passed</span> : <span className={`pill ${signed.has(d.id) ? "ok" : ""}`}>{signed.has(d.id) ? "NDA signed" : d.open ? "Room open" : "Not open"}</span>}</div>
-            <small>{names ? `${d.title} · ` : ""}{d.category}</small>{!passedBy.has(d.id) && fits.get(d.id) && <span className="fitpill">{fits.get(d.id)}</span>}
-            <dl><div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div><div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
-              <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div><div><dt>Listing</dt><dd>{d.listingLabel}</dd></div>{d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)} / 10</dd></div>}</dl>
-            <div className="dc-acts">
-              {signed.has(d.id) ? <a className="btn sm primary" href={`/room/${d.slug}`}>Open room</a> : deckDeals.has(d.id) ? <a className="btn sm primary" href={`/deals/${d.slug}#deck`}>Pitch deck</a> : null}
-              {!signed.has(d.id) && d.open && names ? <a className="btn sm" href={`/deals/${d.slug}#sign`}>Sign NDA</a> : null}
-              {!deckDeals.has(d.id) && <a className="btn sm" href={`/deals/${d.slug}`}>Overview</a>}</div>
-          </li>))}</ul>
-        <p className="fine">Same fields for every deal so offices can compare quickly.</p>
+        <nav className="dk-chips dl-filter" aria-label="Show">
+          {FILTERS.filter(([k, , n]) => !k || n).map(([k, l, n]) => <a key={k} href={`/dashboard${k ? `?show=${k}` : ""}#Shelf`} aria-current={show === k ? "true" : undefined}>{l} <span>{n}</span></a>)}
+        </nav>
+        <ul className="dealrows">{shown.map(({ d, label, tone, detail, primary }) => (
+          <li key={d.id} className="dr">
+            <div className="dr-main">
+              <div className="dr-name"><b>{d.company}</b>{names && <small>{d.title}</small>}</div>
+              <div className="dr-status"><span className={`pill ${tone}`}>{label}</span><small>{detail}</small>
+                {!passedBy.has(d.id) && fits.get(d.id) && <span className="fitpill" title={fits.get(d.id)!}>Fits your thesis</span>}</div>
+            </div>
+            <dl className="dr-facts">
+              <div><dt>Structure</dt><dd>{d.category}</dd></div>
+              <div><dt>Round</dt><dd>{d.roundLabel || "—"}</dd></div>
+              <div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
+              <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div>
+              <div><dt>Listing</dt><dd>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</dd></div>
+              <div><dt>Min ticket</dt><dd>{d.minTicket || "—"}</dd></div>
+              {d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)}</dd></div>}
+            </dl>
+            <div className="dr-acts">
+              {primary && (primary.deck
+                ? <a className="btn sm primary" href={primary.href} data-deck={primary.href} data-deck-title={`${d.company}: pitch deck`} data-deck-next={d.open && !signed.has(d.id) ? `/deals/${d.slug}#sign` : undefined}>{primary.text}</a>
+                : <a className="btn sm primary" href={primary.href}>{primary.text}</a>)}
+              {deckOf.has(d.id) && !primary?.deck && <a className="btn sm" href={`/api/docs/${deckOf.get(d.id)!.id}?embed=1`} data-deck={`/api/docs/${deckOf.get(d.id)!.id}?embed=1`} data-deck-title={`${d.company}: pitch deck`}>Deck</a>}
+              {!signed.has(d.id) && d.open && names && primary?.deck && <a className="btn sm" href={`/deals/${d.slug}#sign`}>Sign NDA</a>}
+              <a className="btn sm ghost" href={`/deals/${d.slug}`}>Overview</a>
+            </div>
+          </li>))}
+          {!shown.length && <li className="empty-li">Nothing here. <a href="/dashboard#Shelf">Show all deals</a></li>}
+        </ul>
+        <p className="fine">Every deal on the desk, where your office stands with it, and the next step.</p>
         {promises.length > 0 && (
           <section className="promises" id="promises" aria-label="What the desk commits to">
             <div className="pr-head"><h2 className="tt">What the desk commits to.<span className="tt2">Hold us to it.</span></h2>
@@ -264,6 +305,19 @@ export default async function Dashboard({ searchParams }: P) {
         </>}
         <p className="fine">Every document view is written to the activity log.</p>
       </section>
+
+      {isBroker && <section className="panel" data-panel="Clients" hidden>
+        <div className="panel-head"><div><h2>Your clients</h2><p className="fine">Offices that registered through your invite link. You see which companies they have signed NDAs for and the allocations they asked for. Their documents, questions and notes stay private to them. Share your link from Team.</p></div></div>
+        {clients.length ? <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Client</th><th>Status</th><th>NDAs signed</th><th>Allocations requested</th></tr></thead><tbody>
+          {clients.map((c) => { const n = cNdas.filter((x) => x.officeId === c.id), a = cAsks.filter((x) => x.officeId === c.id && x.status !== "Withdrawn"); return (
+            <tr key={c.id}><th scope="row">{c.name}<br /><small className="fine">Joined {fmtD(c.createdAt)}</small></th>
+              <td><span className={`pill ${c.approval === "approved" ? "ok" : ""}`}>{c.approval === "approved" ? "Approved" : c.approval === "rejected" ? "On hold" : "Awaiting approval"}</span></td>
+              <td>{n.length ? n.map((x) => byId.get(x.dealId)?.company).filter(Boolean).join(", ") : "—"}</td>
+              <td>{a.length ? a.map((x) => `${byId.get(x.dealId)?.company ?? ""}: ₹${Number(x.amountCr)} Cr (${x.status})`).join(" · ") : "—"}</td></tr>); })}
+        </tbody></table></div>
+          : <div className="chart"><p>No clients yet. Send your office&apos;s invite link (under Team) to the people you advise; when they register through it, they appear here.</p></div>}
+        <p className="fine">Totals: {cAsks.filter((x) => x.status !== "Withdrawn").reduce((t, x) => t + Number(x.amountCr), 0).toLocaleString("en-IN")} Cr requested, {cAsks.filter((x) => x.status === "Allotted").reduce((t, x) => t + Number(x.amountCr), 0).toLocaleString("en-IN")} Cr allotted. Your terms with the desk are agreed separately.</p>
+      </section>}
 
       <section className="panel" data-panel="Portfolio" hidden>
         {holdings.length ? <>
@@ -376,6 +430,7 @@ export default async function Dashboard({ searchParams }: P) {
       </section>
 
       <section className="panel" data-panel="Team" hidden>
+        {introducer?.investorType === "broker" && <p className="notice">Your office was introduced by <b>{introducer.name}</b>. They see which companies you sign NDAs for and the allocations you request, not your documents, questions or notes. To change this, <a href="/dashboard?cat=other#Support">raise a ticket</a>.</p>}
         <div className="panel-head"><div><h2>Team</h2><p className="fine">Everyone from your office on the desk. Each deal&apos;s NDA covers your office&apos;s team for that deal, and every view is logged against a name.</p></div></div>
         <div className="chart">
           <div className="cmpwrap"><table className="cmp plain" style={{ minWidth: 0 }}><thead><tr><th>Name</th><th>Role</th><th>Rights</th></tr></thead><tbody>
@@ -438,6 +493,7 @@ export default async function Dashboard({ searchParams }: P) {
         </dialog>
       )}
     </div></div>
+    <DeckPanel />
     {aiOn && <Analyst deal={null} starters={starters(null)} who={user.name} />}
     </main>
   );

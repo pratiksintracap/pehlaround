@@ -301,3 +301,35 @@ export async function saveInvestorContact(f: FormData) {
   await log(me, `Desk updated the contact for ${o.name}`, null, { entity: "office", entityId: id, officeId: id, detail: { changes: changes(o, vals) } });
   back(f, "/admin/offices?show=desk", "Contact saved.");
 }
+
+// ---------------------------------------------------------------- quick actions from the phone and from emails
+/** Push a task's due date out by a few days (from the task page or the phone). */
+export async function snoozeTask(f: FormData) {
+  const me = await requirePerm("workflow");
+  const db = await getDb();
+  const id = n(f, "id"), days = Math.min(30, Math.max(1, n(f, "days") || 1));
+  const [prev] = await db.select().from(tasks).where(eq(tasks.id, id));
+  if (!prev) return back(f, "/desk/tasks", "Task not found.");
+  const ist = new Date(Date.now() + 5.5 * 3600e3 + days * 86400e3).toISOString().slice(0, 10);
+  await db.update(tasks).set({ dueOn: ist, remindedOn: null }).where(eq(tasks.id, id));
+  await log(me, `Desk moved the task "${prev.title}" to ${ist}`, prev.dealId, { entity: "task", entityId: id, officeId: prev.officeId, detail: { changes: { dueOn: [prev.dueOn, ist] } } });
+  back(f, "/desk/tasks", `Moved to ${ist}.`);
+}
+
+/** One line after a call: kept as a desk note on the deal or investor, with an optional follow-up task for whoever logged it. */
+export async function logCall(f: FormData) {
+  const me = await requirePerm("workflow");
+  const db = await getDb();
+  const dealId = n(f, "dealId") || null, officeId = n(f, "officeId") || null;
+  const fallback = dealId ? `/desk/deals/${dealId}` : officeId ? `/desk/investors/${officeId}` : "/desk";
+  const what = s(f, "outcome", 2000), next = s(f, "next", 200), due = day(s(f, "due", 10));
+  if (!what) return back(f, fallback, "Say how the call went in a line.");
+  if (officeId) { const [o] = await db.select().from(offices).where(eq(offices.id, officeId)); if (!o || !canSeeOffice(me, o)) return back(f, "/desk", "Not found."); }
+  const [note] = await db.insert(deskNotes).values({ dealId, officeId, body: `Call: ${what}${next ? `\nNext: ${next}${due ? ` (by ${due})` : ""}` : ""}`, userId: me.id, who: me.name }).returning({ id: deskNotes.id });
+  await log(me, "Desk logged a call", dealId, { entity: "note", entityId: note.id, officeId });
+  if (next) {
+    const [t] = await db.insert(tasks).values({ title: next, dealId, officeId, assigneeId: me.id, dueOn: due, createdById: me.id, createdBy: me.name, notes: `From a call: ${what}` }).returning({ id: tasks.id });
+    await log(me, `Desk added the task "${next}"`, dealId, { entity: "task", entityId: t.id, officeId });
+  }
+  back(f, fallback, next ? "Call logged, follow-up added to your tasks." : "Call logged.");
+}

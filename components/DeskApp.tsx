@@ -46,7 +46,7 @@ export function DkTask({ t, back, who, about }: { t: Task; back: string; who?: s
         <button type="submit" className="dk-tick" aria-label={done ? `Reopen: ${t.title}` : `Mark done: ${t.title}`}>{done ? <Ico d="M5 12l5 5 9-10" size={16} /> : null}</button>
       </form>
       <div className="dk-task-main">
-        <b>{t.title}</b>
+        <a className="dk-task-t" href={`/desk/tasks/${t.id}`}><b>{t.title}</b></a>
         <small>
           {t.dueOn ? <span className={over ? "dk-due bad" : due ? "dk-due mid" : "dk-due"}>{over ? "Overdue · " : due ? "Today · " : ""}{fmtDay(t.dueOn)}</span> : null}
           {who ? <span>{who}</span> : null}
@@ -93,3 +93,20 @@ export const ago = (d: Date) => {
   const days = Math.round(h / 24);
   return days < 7 ? `${days}d ago` : shortDay(d);
 };
+
+/** "Log a call" in one line, with an optional follow-up that becomes a task. */
+export function DkLogCall({ action, dealId, officeId, back }: { action: (f: FormData) => Promise<void>; dealId?: number; officeId?: number; back: string }) {
+  return (
+    <details className="dk-add dk-call"><summary>Log a call</summary>
+      <form action={action} className="dk-form">
+        {dealId ? <input type="hidden" name="dealId" value={dealId} /> : null}
+        {officeId ? <input type="hidden" name="officeId" value={officeId} /> : null}
+        <input type="hidden" name="back" value={back} />
+        <label className="sr-only" htmlFor={`call-${dealId ?? officeId}`}>How it went</label>
+        <input id={`call-${dealId ?? officeId}`} name="outcome" required maxLength={2000} placeholder="How it went, in a line" />
+        <div className="dk-row2"><input name="next" maxLength={200} placeholder="Next step (optional, becomes a task)" /><input type="date" name="due" aria-label="By when" /></div>
+        <button className="dk-btn" type="submit">Save</button>
+      </form>
+    </details>
+  );
+}
