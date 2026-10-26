@@ -16,7 +16,7 @@ const config: NextConfig = {
       { source: "/diligence", destination: "/how-it-works", permanent: true },
       { source: "/nda", destination: "/deals", permanent: false },
       { source: "/room/:slug/memo", destination: "/room/:slug/summary", permanent: true },
-      { source: "/:path((?!google[0-9a-f]+$).+)\\.html", destination: "/:path", permanent: true }, // search-engine verification files stay reachable
+      { source: "/:path((?!google[0-9a-f]+\\.html$).+)\\.html", destination: "/:path", permanent: true }, // search-engine verification files stay reachable
     ];
   },
   async headers() {
