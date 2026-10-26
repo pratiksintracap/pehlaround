@@ -14,6 +14,8 @@ import { aiReady, starters } from "@/lib/ai";
 import { getSettings } from "@/lib/settings";
 import { isDesk } from "@/lib/perm";
 import { Founders } from "@/components/Founders";
+import { PeerCompare } from "@/components/PeerCompare";
+import { peerCompareFor } from "@/lib/peers";
 
 type P = { params: Promise<{ slug: string }> };
 export const metadata: Metadata = { title: "Deal room", robots: { index: false } };
@@ -64,6 +66,7 @@ export default async function Room({ params }: P) {
   if (!recent.length) { await log(user, `Opened the room: ${d.company}`, d.id); if (user!.officeId) await track("room_opened", { officeId: user!.officeId, userId: user!.id, dealId: d.id }); }
 
   const r = d.room, c = trackerCounts(d);
+  const pc = peerCompareFor(d.slug, r.compare);
   // until an office chooses, every alert is on
   const alertsOn = new Set(prefs[0]?.alertsSet ? prefs[0].alerts : r.alerts), ticks = new Set(prefs[0]?.ticks ?? []);
   const inter = myInterest[0], passed = myPass[0];
@@ -113,7 +116,7 @@ export default async function Room({ params }: P) {
           <div className="undisc"><span className="k">Why it is on the desk</span><p>{r.why}</p></div>
 
           <div className="tabs" role="tablist">
-            {["Overview", "Financials", "Terms", "IPO path", "Diligence", "Documents", "Q&A"].map((t, i) =>
+            {["Overview", "Financials", ...(pc ? ["Peers"] : []), "Terms", "IPO path", "Diligence", "Documents", "Q&A"].map((t, i) =>
               <button key={t} role="tab" type="button" data-tab={t} aria-selected={i === 0} className="tabbtn">{t}</button>)}
           </div>
 
@@ -158,8 +161,10 @@ export default async function Room({ params }: P) {
               <h3 style={{ marginTop: 22 }}>Implied multiples at the offered price</h3>
               <div className="snap">{r.multiples.map((s, i) => <div key={i} className="snapcell"><span className="k">{s.k}</span><b>{s.v}</b>{s.s && <small>{s.s}</small>}</div>)}</div>
             </>}
-            {r.peers && <p className="note">Listed peers for your own comparison: {r.peers}. The desk does not publish a view on whether the multiple is fair.</p>}
+            {pc ? <p className="note">How the company compares with {pc.companies.length - 1} listed peers, figure by figure: see the Peers tab.</p> : r.peers && <p className="note">Listed peers for your own comparison: {r.peers}. The desk does not publish a view on whether the multiple is fair.</p>}
           </section>
+
+          {pc && <section className="panel" data-panel="Peers" hidden><PeerCompare c={pc} /></section>}
 
           <section className="panel" data-panel="Terms" hidden>
             <dl className="terms">{r.terms.map((t, i) => <div key={i}><dt>{t.k}</dt><dd>{t.v}</dd></div>)}</dl>

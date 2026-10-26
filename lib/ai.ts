@@ -7,6 +7,7 @@ import { listDeals, signedDealIds, docAccess, type Deal } from "@/lib/deals";
 import { completeness } from "@/lib/profile";
 import type { SessionUser } from "@/lib/auth";
 import { isDesk } from "@/lib/perm";
+import { peerCompareFor } from "@/lib/peers";
 
 // The desk analyst: Claude, answering an office's questions from the rooms it has opened (the data bank)
 // and from the web for listed peers, sectors and markets. It only ever sees rooms this office has signed for.
@@ -59,7 +60,7 @@ function room(d: Deal, sections: Section[]) {
   const want = (s: Section) => !sections.length || sections.includes(s);
   if (want("overview")) Object.assign(out, { sector: d.title, structure: d.category, targetListing: `${d.listingLabel}${d.listingNote ? `, ${d.listingNote}` : ""}`, deskScore: d.score, asOf: d.asOf, lede: r.lede, whyOnTheDesk: r.why, snapshot: r.snapshot, highlight: r.highlight, stakeOnOffer: r.stake });
   if (want("financials")) Object.assign(out, { financials: r.fin, pe: r.pe, scenario: r.scenario });
-  if (want("valuation_and_peers")) Object.assign(out, { multiples: r.multiples, pe: r.pe, peers: r.peers, preMoney: d.preMoney, peLabel: d.peLabel });
+  if (want("valuation_and_peers")) Object.assign(out, { multiples: r.multiples, pe: r.pe, peers: r.peers, preMoney: d.preMoney, peLabel: d.peLabel, peerComparison: peerCompareFor(d.slug, r.compare) });
   if (want("round_and_terms")) Object.assign(out, { round: r.round, minTicket: r.ticket, committed: r.committed, terms: r.terms, stakeOnOffer: r.stake,
     allocation: { minCr: r.interest.min, maxCr: r.interest.max, pricePerShare: r.interest.price, sharesCr: r.interest.sharesCr, postMoneyCr: r.interest.postCr, coLeadOpen: r.interest.colead, note: r.interest.note } });
   if (want("risks")) out.risks = r.risks;

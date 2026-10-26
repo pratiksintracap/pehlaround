@@ -1,0 +1,678 @@
+{
+ "asOf": "Market data as of 23 Oct 2026 close (Felix Industries 26 Oct 2026)",
+ "basis": "LAHS Green figures from the deal file (FY26 provisional, profit before tax) and valuation at the ₹100 Cr pre-money; peers FY26 (year to Mar 2026) annual results, consolidated except Felix (standalone), and market capitalisation on 23 Oct 2026.",
+ "companies": [
+  {
+   "name": "LAHS Green India Pvt Ltd",
+   "short": "LAHS Green",
+   "subject": true,
+   "mcapCr": 100,
+   "note": "Thane maker of composting machines (Goldust, Towgo) and 15–100 TPD solid-waste plants; valued at ₹100 Cr pre-money."
+  },
+  {
+   "name": "Antony Waste Handling Cell Ltd",
+   "short": "Antony Waste",
+   "ticker": "NSE:AWHCL",
+   "mcapCr": 796,
+   "note": "Thane-based municipal solid-waste collection, processing and waste-to-energy operator; same municipal customer base."
+  },
+  {
+   "name": "EMS Ltd",
+   "short": "EMS",
+   "ticker": "NSE:EMSLIMITED",
+   "mcapCr": 1582,
+   "note": "Ghaziabad water, sewerage and wastewater EPC contractor for urban local bodies; municipal-tender peer."
+  },
+  {
+   "name": "Ion Exchange (India) Ltd",
+   "short": "Ion Exchange",
+   "ticker": "NSE:IONEXCHANG",
+   "mcapCr": 4954,
+   "note": "Mumbai environmental-equipment maker (water/wastewater treatment plants, resins, chemicals) for industry and municipalities."
+  },
+  {
+   "name": "Enviro Infra Engineers Ltd",
+   "short": "Enviro Infra",
+   "ticker": "NSE:EIEL",
+   "mcapCr": 2833,
+   "note": "Delhi builder-operator of water and wastewater treatment plants, mainly for government bodies; listed Nov 2024."
+  },
+  {
+   "name": "Eco Recycling Ltd",
+   "short": "Eco Recycling",
+   "ticker": "NSE:ECORECO",
+   "mcapCr": 735,
+   "note": "Mumbai-region e-waste recycling and IT asset disposition company; small listed waste-processing peer."
+  },
+  {
+   "name": "Felix Industries Ltd",
+   "short": "Felix",
+   "ticker": "NSE:FELIX (SME)",
+   "mcapCr": 310,
+   "note": "Ahmedabad SME-listed environmental engineering firm (water/wastewater, solid waste, recycling); closest in size and listing route."
+  }
+ ],
+ "metrics": [
+  {
+   "group": "Scale",
+   "label": "Revenue FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    31.3,
+    1053,
+    731,
+    2915,
+    1146,
+    48,
+    77
+   ],
+   "note": "Subject FY26 provisional; peers FY26 annual (consolidated where available; Felix standalone)."
+  },
+  {
+   "group": "Scale",
+   "label": "Net profit FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    4.5,
+    92,
+    91,
+    143.2,
+    188,
+    23,
+    20
+   ],
+   "note": "Subject figure is provisional and BEFORE tax; peers are profit after tax."
+  },
+  {
+   "group": "Scale",
+   "label": "Net worth",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    6.7,
+    739,
+    1056,
+    1340,
+    1233,
+    110,
+    149
+   ],
+   "note": "Subject: audited net worth at Mar 2025 (FY26 not available); peers: equity + reserves at Mar 2026."
+  },
+  {
+   "group": "Scale",
+   "label": "Market cap / valuation",
+   "unit": "₹ Cr",
+   "better": "none",
+   "vals": [
+    100,
+    796,
+    1582,
+    4954,
+    2833,
+    735,
+    310
+   ],
+   "note": "Subject at round pre-money (₹133 Cr post-money); peers at 23 Oct 2026 close (Felix 26 Oct)."
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    25.2,
+    12.7,
+    -24.8,
+    6.5,
+    7.5,
+    9.1,
+    156.7
+   ],
+   "note": "FY26 over FY25."
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue CAGR FY24–26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    24.2,
+    10.3,
+    -4.0,
+    11.4,
+    25.4,
+    30.9,
+    62.9
+   ],
+   "note": "Two-year compound growth. Eco Recycling and Felix computed on rounded crore figures."
+  },
+  {
+   "group": "Profitability",
+   "label": "EBITDA margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    19.6,
+    19.6,
+    7.2,
+    24.2,
+    60.4,
+    36.4
+   ],
+   "note": "Subject EBITDA not disclosed in the deal file."
+  },
+  {
+   "group": "Profitability",
+   "label": "Net margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    14.4,
+    8.7,
+    12.4,
+    4.9,
+    16.4,
+    47.9,
+    26.0
+   ],
+   "note": "Subject margin is before tax (provisional), so not like-for-like with peers' after-tax margins."
+  },
+  {
+   "group": "Returns",
+   "label": "ROE FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    12.4,
+    8.6,
+    10.7,
+    15.2,
+    20.9,
+    13.4
+   ],
+   "note": "PAT / closing net worth. Subject FY26 net worth not available (FY25 audited ROE ≈ 9%: ₹0.6 Cr on ₹6.7 Cr)."
+  },
+  {
+   "group": "Returns",
+   "label": "ROCE",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    11.2,
+    12.8,
+    14.0,
+    20.2,
+    30.8,
+    22.3
+   ],
+   "note": "Latest reported ROCE from screener.in / tapetide (FY26). Not available for the subject."
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Debt / equity",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    null,
+    0.62,
+    0.15,
+    0.36,
+    0.34,
+    0.04,
+    0.19
+   ],
+   "note": "Borrowings / net worth at Mar 2026. Subject borrowings not disclosed."
+  },
+  {
+   "group": "Efficiency",
+   "label": "Debtor days",
+   "unit": "days",
+   "better": "low",
+   "vals": [
+    null,
+    112,
+    193,
+    135,
+    53,
+    119,
+    133
+   ],
+   "note": "FY26. Subject not disclosed; the deal file flags long municipal payment cycles."
+  },
+  {
+   "group": "Efficiency",
+   "label": "Working capital days",
+   "unit": "days",
+   "better": "low",
+   "vals": [
+    null,
+    -16,
+    297,
+    null,
+    137,
+    232,
+    406
+   ],
+   "note": "FY26 per screener.in; not verified for Ion Exchange or the subject."
+  },
+  {
+   "group": "Valuation",
+   "label": "P/E FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    22.2,
+    8.7,
+    17.4,
+    34.6,
+    15.1,
+    32.0,
+    15.5
+   ],
+   "note": "Subject at pre-money on provisional pre-tax profit (₹100 Cr / ₹4.5 Cr); peers market cap / FY26 PAT."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / sales FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    3.19,
+    0.76,
+    2.16,
+    1.7,
+    2.47,
+    15.31,
+    4.03
+   ],
+   "note": "Subject at pre-money."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / book",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    14.9,
+    1.08,
+    1.5,
+    3.7,
+    2.3,
+    6.68,
+    2.08
+   ],
+   "note": "Subject at pre-money on Mar 2025 audited net worth (pre-round); peers on Mar 2026 net worth."
+  },
+  {
+   "group": "Valuation",
+   "label": "P/E FY27E",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    6.4,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "note": "Subject at pre-money on the company's ₹15.6 Cr FY27 projection; peer forward estimates not verified."
+  }
+ ],
+ "scatter": {
+  "x": "Revenue growth FY26",
+  "y": "P/E FY26"
+ },
+ "dims": [
+  {
+   "name": "Product / technology",
+   "scores": [
+    4,
+    2,
+    2,
+    5,
+    3,
+    3,
+    3
+   ],
+   "why": "LAHS Green has two patents and IIT and BARC licences behind owned products (Goldust seven-day composter, patented Towgo mobile 1.5 TPD unit). Ion Exchange has decades of proprietary resin and treatment technology; Antony, EMS and Enviro Infra are mainly service/EPC operators."
+  },
+  {
+   "name": "Customers and concentration",
+   "scores": [
+    2,
+    3,
+    2,
+    4,
+    2,
+    3,
+    2
+   ],
+   "why": "LAHS Green cites 50+ municipal and corporate clients but the deal file says much of the business comes from municipal tenders. Ion Exchange spreads across industry, municipal and consumer; EMS and Enviro Infra depend on government water contracts."
+  },
+  {
+   "name": "Entry barriers",
+   "scores": [
+    3,
+    4,
+    3,
+    4,
+    3,
+    2,
+    2
+   ],
+   "why": "Patents and IIT/BARC licences give LAHS Green some product protection, but composting machines face many unlisted fabricators. Antony's long-tenure municipal concessions and Ion Exchange's technology base are harder to replicate."
+  },
+  {
+   "name": "Distribution / reach",
+   "scores": [
+    1,
+    3,
+    3,
+    5,
+    3,
+    2,
+    2
+   ],
+   "why": "LAHS Green has ₹31 Cr of revenue and 50+ clients; peers run multi-state operations, and Ion Exchange sells pan-India and overseas on ₹2,915 Cr of revenue."
+  },
+  {
+   "name": "Scale of operations",
+   "scores": [
+    1,
+    4,
+    3,
+    5,
+    4,
+    2,
+    2
+   ],
+   "why": "LAHS Green's FY26 revenue of ₹31.3 Cr is below every peer except Eco Recycling (₹48 Cr), and about 1% of Ion Exchange's."
+  },
+  {
+   "name": "Management and governance",
+   "scores": [
+    2,
+    4,
+    3,
+    4,
+    3,
+    3,
+    2
+   ],
+   "why": "LAHS Green is founder-run with the founder at about 95%, no institutional investor yet and FY26 unaudited. Listed peers have independent boards, audited results and exchange disclosures; Felix is SME-listed with lighter disclosure."
+  },
+  {
+   "name": "Growth runway",
+   "scores": [
+    4,
+    3,
+    2,
+    3,
+    3,
+    2,
+    4
+   ],
+   "why": "LAHS Green grew revenue 25% in FY26 and projects ₹100 Cr+ in FY27 (projection not audited and stated differently across documents). Felix grew 157%; EMS revenue fell 25% in FY26."
+  },
+  {
+   "name": "Order book visibility",
+   "scores": [
+    1,
+    4,
+    3,
+    5,
+    4,
+    2,
+    3
+   ],
+   "why": "No order book is disclosed for LAHS Green. Ion Exchange reported a ₹2,643 Cr engineering order book at Mar 2026; Antony works on multi-year municipal concessions."
+  },
+  {
+   "name": "Working-capital intensity",
+   "scores": [
+    2,
+    4,
+    1,
+    3,
+    3,
+    2,
+    1
+   ],
+   "why": "Higher score = lighter working capital. LAHS Green's figure is not disclosed but the deal file flags long municipal payment cycles. EMS (297 days) and Felix (406 days) are the heaviest; Antony runs negative working capital."
+  }
+ ],
+ "matrix": [
+  {
+   "aspect": "Core product",
+   "cells": [
+    "Composters, mobile Towgo unit, 15–100 TPD waste plants, solar heater",
+    "MSW collection, transport, processing, waste-to-energy",
+    "Water/sewerage/wastewater EPC for urban bodies",
+    "Water treatment plants, resins, chemicals, consumer purifiers",
+    "Water and wastewater treatment plant EPC and O&M",
+    "E-waste recycling and IT asset disposition",
+    "Water/wastewater, solid waste and recycling engineering"
+   ],
+   "edge": "mixed",
+   "why": "LAHS Green is the only one in the set selling its own composting machines; most peers are EPC or service operators."
+  },
+  {
+   "aspect": "Business model",
+   "cells": [
+    "Product sales and plant supply",
+    "Long-term municipal concessions",
+    "Contract EPC, some HAM/O&M",
+    "Engineering + products + chemicals",
+    "Contract EPC, HAM and O&M",
+    "Recycling services",
+    "EPC, BOOT, O&M, PPP"
+   ],
+   "edge": "par",
+   "why": "Equipment sales give LAHS Green a shorter cycle than concessions, with less recurring revenue."
+  },
+  {
+   "aspect": "Main customers",
+   "cells": [
+    "Municipal bodies and companies (50+ clients)",
+    "Municipal corporations",
+    "Urban local bodies, state agencies",
+    "Industry, municipalities, households",
+    "Government water authorities",
+    "Corporates, OEMs",
+    "Industry and government"
+   ],
+   "edge": "behind",
+   "why": "LAHS Green depends on municipal tenders like Antony, EMS and Enviro Infra, but with far fewer contracts to spread the risk."
+  },
+  {
+   "aspect": "IP / licences",
+   "cells": [
+    "2 patents; IIT and BARC licences",
+    "Operating concessions",
+    "Contractor registrations",
+    "Proprietary resin and process technology",
+    "Contractor registrations",
+    "Pollution-board recycling authorisations",
+    "Contractor registrations"
+   ],
+   "edge": "ahead",
+   "why": "Patents and research licences are unusual for a company this size; only Ion Exchange has a deeper technology base in the set."
+  },
+  {
+   "aspect": "Revenue FY26",
+   "cells": [
+    "₹31.3 Cr (provisional)",
+    "₹1,053 Cr",
+    "₹731 Cr",
+    "₹2,915 Cr",
+    "₹1,146 Cr",
+    "₹48 Cr",
+    "₹77 Cr (standalone)"
+   ],
+   "edge": "behind",
+   "why": "LAHS Green is the smallest company in the set."
+  },
+  {
+   "aspect": "Revenue growth FY26",
+   "cells": [
+    "+25%",
+    "+13%",
+    "−25%",
+    "+7%",
+    "+8%",
+    "+9%",
+    "+157%"
+   ],
+   "edge": "ahead",
+   "why": "Faster than every main-board peer in the set; only SME-listed Felix grew faster."
+  },
+  {
+   "aspect": "Profit FY26",
+   "cells": [
+    "₹4.5 Cr before tax (provisional)",
+    "₹92 Cr PAT",
+    "₹91 Cr PAT",
+    "₹143 Cr PAT",
+    "₹188 Cr PAT",
+    "₹23 Cr PAT",
+    "₹20 Cr PAT"
+   ],
+   "edge": "behind",
+   "why": "LAHS Green's FY25 audited PAT was ₹0.6 Cr; FY26 is a jump that is not yet audited."
+  },
+  {
+   "aspect": "Valuation basis",
+   "cells": [
+    "₹100 Cr pre-money, 22.2x FY26",
+    "₹796 Cr, 8.7x",
+    "₹1,582 Cr, 17.4x",
+    "₹4,954 Cr, 34.6x",
+    "₹2,833 Cr, 15.1x",
+    "₹735 Cr, 32.0x",
+    "₹310 Cr, 15.5x"
+   ],
+   "edge": "mixed",
+   "why": "The round's 22.2x FY26 P/E (on pre-tax profit) compares with a peer median of 16.5x on after-tax profit; 6.4x on the FY27 projection."
+  },
+  {
+   "aspect": "Listing status",
+   "cells": [
+    "Unlisted; SME IPO targeted Sep 2027",
+    "NSE/BSE main board",
+    "NSE/BSE main board",
+    "NSE/BSE main board",
+    "NSE/BSE main board (2024 IPO)",
+    "NSE/BSE main board",
+    "NSE Emerge (SME)"
+   ],
+   "edge": "behind",
+   "why": "No listing yet; the SME route is the one Felix took."
+  },
+  {
+   "aspect": "Ownership",
+   "cells": [
+    "Founder ≈95%; first institutional round",
+    "Listed, promoter-led",
+    "Listed, promoter-led",
+    "Listed, promoter-led",
+    "Listed, promoter-led",
+    "Listed, promoter-led",
+    "SME-listed, promoter-led"
+   ],
+   "edge": "behind",
+   "why": "Key-person concentration is higher than at any listed peer."
+  }
+ ],
+ "barriers": [
+  {
+   "name": "Patents and technology licences",
+   "level": 2,
+   "note": "Two patents (including the Towgo mobile unit) and IIT and BARC licences protect specific designs, but composting machines can be built around them by unlisted fabricators."
+  },
+  {
+   "name": "Municipal tender qualification",
+   "level": 2,
+   "note": "Past municipal references and 50+ clients help pass technical bids; turnover thresholds in larger tenders still favour bigger players like Antony and EMS."
+  },
+  {
+   "name": "Track record of working plants",
+   "level": 2,
+   "note": "15–100 TPD plants in operation act as references for new buyers; the deal file gives no count of installed plants."
+  },
+  {
+   "name": "Working capital to carry municipal receivables",
+   "level": 1,
+   "note": "Long municipal payment cycles need balance sheet; LAHS Green's net worth was ₹6.7 Cr at Mar 2025 against peers' ₹110–1,340 Cr."
+  },
+  {
+   "name": "Regulation (SWM Rules, bulk-generator composting mandates)",
+   "level": 2,
+   "note": "Rules requiring bulk generators and cities to process wet waste create demand for on-site composters, but apply equally to all suppliers."
+  }
+ ],
+ "stands": {
+  "ahead": [
+   "Revenue grew 25% in FY26 (₹25.0 Cr to ₹31.3 Cr, provisional), above every main-board peer here: Antony +13%, Enviro Infra +8%, Ion Exchange +7%, EMS −25%.",
+   "Owns its products: two patents and IIT and BARC licences, against peers that are mostly EPC contractors or service operators.",
+   "Net margin of 14.4% in FY26 (before tax, provisional) is above Antony (8.7%) and Ion Exchange (4.9%), though not like-for-like with after-tax margins."
+  ],
+  "behind": [
+   "Smallest in the set: ₹31.3 Cr of FY26 revenue against ₹48 Cr (Eco Recycling) to ₹2,915 Cr (Ion Exchange).",
+   "Audited PAT was ₹0.6 Cr in FY25; FY26 profit of ₹4.5 Cr is provisional and before tax, and there is no FY26 audit yet.",
+   "Founder holds about 95%; listed peers have audited results and independent boards.",
+   "No disclosed order book, debtor days or borrowings, while peers report them; municipal payment cycles are long across this sector (peer debtor days 53–193)."
+  ],
+  "watch": [
+   "FY26 audit: whether ₹31.3 Cr revenue and ₹4.5 Cr pre-tax profit hold, and the tax-adjusted figure.",
+   "Reconciliation of FY27 revenue projections (₹75 Cr, ₹100 Cr and ₹106 Cr appear in different documents) and H1 FY27 actuals.",
+   "Order wins and an order book disclosure, especially multi-year municipal plant contracts.",
+   "Progress toward the September 2027 SME IPO; Felix (SME, ₹310 Cr market cap, 15.5x FY26 P/E) is the nearest listed reference."
+  ],
+  "valuation": [
+   "At the round, the FY27E P/E is 6.4x on the company's ₹15.6 Cr projection; no verified forward estimates were available for peers.",
+   "FY26 P/E at the round is 22.2x (pre-money, pre-tax profit) against a peer median of 16.5x; P/B is 14.9x on Mar 2025 net worth against 1.1–6.7x for peers."
+  ]
+ },
+ "sources": [
+  {
+   "title": "Antony Waste Handling Cell — consolidated financials and market data (screener.in)",
+   "url": "https://www.screener.in/company/AWHCL/consolidated/"
+  },
+  {
+   "title": "EMS Ltd — consolidated financials and market data (screener.in)",
+   "url": "https://www.screener.in/company/EMSLIMITED/consolidated"
+  },
+  {
+   "title": "Ion Exchange (India) — FY24–FY26 financials and market data (tapetide)",
+   "url": "https://tapetide.com/stocks/IONEXCHANG"
+  },
+  {
+   "title": "Ion Exchange Q4 FY26 results and FY26 full year (multibagg)",
+   "url": "https://www.multibagg.ai/market-pulse/articles/ion-exchange-q4-fy26-results-cmresc0ha001jnp0jjqlmiw44"
+  },
+  {
+   "title": "Enviro Infra Engineers — consolidated financials and market data (screener.in)",
+   "url": "https://www.screener.in/company/EIEL/consolidated/"
+  },
+  {
+   "title": "Enviro Infra Engineers — standalone page (screener.in)",
+   "url": "https://www.screener.in/company/544290/"
+  },
+  {
+   "title": "Eco Recycling — consolidated financials and market data (screener.in)",
+   "url": "https://www.screener.in/company/ECORECO/consolidated/"
+  },
+  {
+   "title": "Felix Industries — financials and market data (screener.in)",
+   "url": "https://screener.in/company/FELIX"
+  }
+ ]
+}

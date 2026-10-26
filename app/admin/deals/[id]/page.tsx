@@ -9,6 +9,7 @@ import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestP
 import { SITE_URL } from "@/lib/site";
 import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
+import { peerCompareFor } from "@/lib/peers";
 import { Msg } from "@/components/AdminBits";
 import ART from "@/lib/deal-art.json";
 import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
@@ -112,6 +113,8 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <TA name="finNote" label="Note under the financials (sources, audit status)" value={r.fin?.note || ""} rows={2} />
         <TA name="pe" label="P/E chart: label | note | number" value={toText.pe(r.pe || [])} rows={3} />
         <TA name="multiples" label="Multiples: label | value | note" value={toText.cells(r.multiples)} rows={4} />
+        <TA name="compare" label="Peer comparison (JSON) · the Peers tab in the room" value={(() => { const pc = peerCompareFor(d.slug, r.compare); return pc ? JSON.stringify(pc, null, 1) : ""; })()} rows={10}
+          hint={r.compare ? "The desk's own edit is live in the room. Clear the box to go back to the researched comparison." : "This is the desk's researched comparison. Edit and save to make it this room's own; leave it unchanged to keep following the researched one. Clear it to hide the Peers tab only if no researched comparison exists."} />
         <TA name="terms" label="Terms: label | text" value={toText.terms(r.terms)} rows={8} />
         <TA name="path" label="IPO path: status | milestone | note" value={toText.path(r.path)} rows={6} />
         <TA name="checks" label="Desk diligence tracker: status | check | note | date" value={toText.checks(r.checks)} rows={9} />

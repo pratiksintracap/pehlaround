@@ -1,0 +1,618 @@
+{
+ "asOf": "Market data as of 26 Oct 2026 (Kalyan Jewellers: close of 23 Oct 2026)",
+ "basis": "Company figures FY25 audited and FY26 provisional, valuation at the round's ₹125 Cr pre-money; peers FY26 (year to Mar 2026) consolidated annual results and market capitalisation on 23–26 Oct 2026.",
+ "companies": [
+  {
+   "name": "Jandani Jewellers Limited",
+   "short": "Jandani",
+   "subject": true,
+   "mcapCr": 125,
+   "note": "Indore jewellery manufacturer and retailer with an in-house manufacturing technology unit (CGT); 1 company store and 3 franchises; pre-money valuation of the round."
+  },
+  {
+   "name": "Senco Gold Limited",
+   "short": "Senco Gold",
+   "ticker": "NSE:SENCO",
+   "mcapCr": 5010,
+   "note": "Kolkata-based national jewellery retailer (201 showrooms); also Jandani's store-in-store partner, so both a peer and a customer."
+  },
+  {
+   "name": "Kalyan Jewellers India Limited",
+   "short": "Kalyan",
+   "ticker": "NSE:KALYANKJIL",
+   "mcapCr": 52877,
+   "note": "Largest listed jewellery retailer by revenue (507 showrooms in India, Middle East, UK, US); grows through franchise-owned showrooms, the route Jandani is taking."
+  },
+  {
+   "name": "Thangamayil Jewellery Limited",
+   "short": "Thangamayil",
+   "ticker": "NSE:THANGAMAYL",
+   "mcapCr": 14395,
+   "note": "Madurai-based regional chain (66+ stores across Tamil Nadu); a regional retailer that scaled from a single home market."
+  },
+  {
+   "name": "Sky Gold and Diamonds Limited",
+   "short": "Sky Gold",
+   "ticker": "NSE:SKYGOLD",
+   "mcapCr": 16273,
+   "note": "Navi Mumbai B2B gold jewellery manufacturer supplying organised retailers and export; peer to Jandani's manufacturing and supply business."
+  },
+  {
+   "name": "RBZ Jewellers Limited",
+   "short": "RBZ",
+   "ticker": "NSE:RBZJEWEL",
+   "mcapCr": 689,
+   "note": "Ahmedabad antique-jewellery maker with one retail showroom and B2B supply to ~190 retailers; the closest listed peer in size and model."
+  }
+ ],
+ "metrics": [
+  {
+   "group": "Scale",
+   "label": "Revenue FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    84.9,
+    8430,
+    35743,
+    8499,
+    6295,
+    636.5
+   ],
+   "note": "Revenue from operations, consolidated. Jandani FY26 provisional."
+  },
+  {
+   "group": "Scale",
+   "label": "Revenue FY25",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    44.3,
+    6328,
+    25045,
+    4911,
+    3548,
+    530.1
+   ]
+  },
+  {
+   "group": "Scale",
+   "label": "PAT FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    10.0,
+    574,
+    1350,
+    351.7,
+    281.8,
+    54.8
+   ],
+   "note": "Reported PAT. Jandani FY26 provisional."
+  },
+  {
+   "group": "Scale",
+   "label": "Stores",
+   "unit": "",
+   "better": "high",
+   "vals": [
+    4,
+    201,
+    507,
+    66,
+    0,
+    1
+   ],
+   "note": "Retail showrooms incl. franchises. Jandani 1 own + 3 franchise; Senco and Kalyan at Mar 2026; Thangamayil 66+ at Aug 2026; Sky Gold is B2B only."
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    91.6,
+    33.2,
+    42.7,
+    73.1,
+    77.4,
+    20.1
+   ],
+   "note": "FY26 over FY25. Peers' growth includes the effect of higher gold prices."
+  },
+  {
+   "group": "Growth",
+   "label": "PAT growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    270,
+    261,
+    89,
+    196,
+    112,
+    41
+   ],
+   "note": "Senco's FY25 base includes a ₹57 Cr one-time customs duty impact."
+  },
+  {
+   "group": "Profitability",
+   "label": "EBITDA margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    11.5,
+    7.6,
+    6.5,
+    6.9,
+    14.5
+   ],
+   "note": "Jandani EBITDA not disclosed. Kalyan and RBZ are operating profit summed from quarterly results; RBZ is approximate. Senco says 7.5–7.7% is sustainable without gold price gains."
+  },
+  {
+   "group": "Profitability",
+   "label": "PAT margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    11.8,
+    6.8,
+    3.8,
+    4.1,
+    4.5,
+    8.6
+   ]
+  },
+  {
+   "group": "Returns",
+   "label": "ROE",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    25.6,
+    24.3,
+    27.9,
+    30.2,
+    20.1
+   ],
+   "note": "Latest reported ROE from screener.in (Senco) and fyers.in (others). Jandani equity base not disclosed."
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Debt to equity",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    null,
+    1.07,
+    0.65,
+    0.56,
+    0.71,
+    0.47
+   ],
+   "note": "Senco from Mar 2026 balance sheet (borrowings ₹2,699 Cr, net worth ₹2,514 Cr); others latest from fyers.in. Jandani not disclosed."
+  },
+  {
+   "group": "Valuation",
+   "label": "Market cap / valuation",
+   "unit": "₹ Cr",
+   "better": "none",
+   "vals": [
+    125,
+    5010,
+    52877,
+    14395,
+    16273,
+    689
+   ],
+   "note": "Jandani at the round's pre-money (₹137.5 Cr post-money)."
+  },
+  {
+   "group": "Valuation",
+   "label": "P/E FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    12.5,
+    8.7,
+    39.2,
+    40.9,
+    57.7,
+    12.6
+   ],
+   "note": "Market cap over FY26 reported PAT. Jandani at pre-money on provisional PAT."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / sales FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    1.5,
+    0.59,
+    1.48,
+    1.69,
+    2.59,
+    1.08
+   ],
+   "note": "Market cap over FY26 revenue. Jandani at pre-money."
+  }
+ ],
+ "scatter": {
+  "x": "Revenue growth FY26",
+  "y": "P/E FY26"
+ },
+ "dims": [
+  {
+   "name": "Product / technology",
+   "scores": [
+    4,
+    3,
+    3,
+    2,
+    4,
+    3
+   ],
+   "why": "Jandani runs an in-house manufacturing technology unit (CGT) that contributed about ₹15 Cr of FY26 revenue, and it supplies Senco Gold. The process is disclosed only in general terms. Sky Gold has comparable depth in lightweight manufacturing at far larger volume. The retail chains mostly source from outside manufacturers."
+  },
+  {
+   "name": "Customers and concentration",
+   "scores": [
+    2,
+    5,
+    5,
+    4,
+    3,
+    3
+   ],
+   "why": "Jandani's revenue comes from one company store, three franchises and a store-in-store arrangement with Senco Gold, whose volumes are not yet fixed. The listed retailers sell to millions of retail customers across 66 to 507 stores."
+  },
+  {
+   "name": "Entry barriers",
+   "scores": [
+    2,
+    4,
+    5,
+    4,
+    3,
+    2
+   ],
+   "why": "In jewellery retail the protection comes from brand trust and access to gold funding. Kalyan and Senco have both at national scale. Jandani's main protection is its manufacturing process, which investors cannot yet verify."
+  },
+  {
+   "name": "Distribution / reach",
+   "scores": [
+    1,
+    4,
+    5,
+    3,
+    3,
+    2
+   ],
+   "why": "Jandani has 4 stores in four cities and plans to open Pune and Bhopal franchises in FY27. Kalyan has 507 showrooms in four countries, Senco 201, and Thangamayil 66+ in one state. RBZ has 1 showroom plus B2B supply to about 190 retailers."
+  },
+  {
+   "name": "Scale of operations",
+   "scores": [
+    1,
+    4,
+    5,
+    4,
+    4,
+    2
+   ],
+   "why": "Jandani's FY26 revenue of ₹84.9 Cr is 13% of RBZ's (₹636 Cr) and 0.2% of Kalyan's (₹35,743 Cr)."
+  },
+  {
+   "name": "Management and governance",
+   "scores": [
+    2,
+    4,
+    4,
+    4,
+    3,
+    3
+   ],
+   "why": "Jandani was incorporated as a public limited company in 2024, and its FY26 accounts are still provisional, with completion conditional on audit. The listed peers publish audited results every quarter. Sky Gold's operating cash flow was negative in both FY25 and FY26."
+  },
+  {
+   "name": "Growth runway",
+   "scores": [
+    4,
+    3,
+    4,
+    4,
+    4,
+    3
+   ],
+   "why": "Jandani grew revenue 92% in FY26 and projects ₹164 Cr for FY27 (93% growth) through franchises and Senco supply. Peers grew 20–77% in FY26, partly because gold prices rose."
+  },
+  {
+   "name": "Gold working capital access",
+   "scores": [
+    2,
+    3,
+    4,
+    3,
+    3,
+    3
+   ],
+   "why": "The company names gold working capital, not equipment, as the limit on the technology unit; ₹7.25 Cr of the ₹12.5 Cr round goes there. Listed peers fund inventory through bank lines and gold metal loans, with debt to equity between 0.47x and 1.07x."
+  },
+  {
+   "name": "Brand strength",
+   "scores": [
+    1,
+    4,
+    5,
+    4,
+    2,
+    2
+   ],
+   "why": "Jandani is a single-city brand that is starting to enter other cities through franchises. Kalyan and Senco are national consumer brands, and Thangamayil is a strong regional one. Sky Gold and RBZ mostly sell under other retailers' brands."
+  }
+ ],
+ "matrix": [
+  {
+   "aspect": "Core business",
+   "cells": [
+    "Gold jewellery manufacturing (tech unit) and retail",
+    "National jewellery retail chain",
+    "National and international jewellery retail chain",
+    "Regional jewellery retail chain",
+    "B2B gold jewellery manufacturer",
+    "Antique jewellery maker; wholesale plus one showroom"
+   ],
+   "edge": "mixed",
+   "why": "Jandani combines manufacturing and retail, as RBZ does, while the large peers are mainly retailers or mainly manufacturers."
+  },
+  {
+   "aspect": "Home market",
+   "cells": [
+    "Indore (MP); franchises in Jaipur, Vadodara, Surat",
+    "Kolkata / East India",
+    "Kerala-origin; pan-India, Middle East, UK, US",
+    "Madurai; Tamil Nadu only",
+    "Navi Mumbai; supplies pan-India and exports",
+    "Ahmedabad; supplies 72 cities in 20 states"
+   ],
+   "edge": "behind",
+   "why": "Jandani sells in four cities in western and central India. Its peers are present across a state, a region or the whole country."
+  },
+  {
+   "aspect": "Store network",
+   "cells": [
+    "1 company store + 3 franchises",
+    "201 (102 own, 85 franchise, 12 Sennes, 2 Dubai)",
+    "507 showrooms",
+    "66+ stores (Aug 2026)",
+    "None (B2B)",
+    "1 showroom; Surat and Rajkot planned FY27"
+   ],
+   "edge": "behind",
+   "why": "Jandani has 4 stores against 66–507 at the retail peers. RBZ has a similar retail footprint, with one showroom."
+  },
+  {
+   "aspect": "Expansion route",
+   "cells": [
+    "Franchise-only; stock bought upfront; Pune Q3, Bhopal Q4 FY27",
+    "Own and franchise showrooms",
+    "Franchise-owned showrooms drive new openings",
+    "Own stores within Tamil Nadu",
+    "Asset-light leased manufacturing; retailer partnerships",
+    "New own showrooms plus wholesale"
+   ],
+   "edge": "par",
+   "why": "Kalyan also expands through franchise-owned showrooms. Jandani's franchisees buy their stock upfront, so it extends no gold credit to them."
+  },
+  {
+   "aspect": "Revenue FY26",
+   "cells": [
+    "₹84.9 Cr (provisional)",
+    "₹8,430 Cr",
+    "₹35,743 Cr",
+    "₹8,499 Cr",
+    "₹6,295 Cr",
+    "₹636 Cr"
+   ],
+   "edge": "behind",
+   "why": "Jandani is the smallest company in the set, about one-seventh the size of RBZ."
+  },
+  {
+   "aspect": "Growth and margin FY26",
+   "cells": [
+    "Revenue +92%; PAT margin 11.8%",
+    "Revenue +33%; PAT margin 6.8%",
+    "Revenue +43%; PAT margin 3.8%",
+    "Revenue +73%; PAT margin 4.1%",
+    "Revenue +77%; PAT margin 4.5%",
+    "Revenue +20%; PAT margin 8.6%"
+   ],
+   "edge": "ahead",
+   "why": "Jandani reported the fastest growth and the highest PAT margin in the set, on provisional figures from a small base."
+  },
+  {
+   "aspect": "Link to listed jewellers",
+   "cells": [
+    "Store-in-store supplier to Senco (first order: bangles)",
+    "Buys from Jandani under store-in-store",
+    "Sources from third-party manufacturers",
+    "Sources from third-party manufacturers",
+    "Supplies organised retailers",
+    "Supplies Titan, Malabar, PNG, Senco"
+   ],
+   "edge": "mixed",
+   "why": "Jandani, like RBZ, supplies a listed retailer, but its Senco volumes are not yet committed."
+  },
+  {
+   "aspect": "Gold funding",
+   "cells": [
+    "Round funds ₹7.25 Cr working capital; debt not disclosed",
+    "Debt/equity 1.07x; 40–50% hedged",
+    "Debt/equity 0.65x",
+    "Debt/equity 0.56x",
+    "Debt/equity 0.71x; negative operating cash flow FY26",
+    "Debt/equity 0.47x"
+   ],
+   "edge": "behind",
+   "why": "The listed peers have bank and gold-loan lines in place. Jandani is raising equity to fund gold."
+  },
+  {
+   "aspect": "Reporting status",
+   "cells": [
+    "FY25 audited; FY26 provisional",
+    "Listed; quarterly audited results",
+    "Listed; quarterly audited results",
+    "Listed; quarterly audited results",
+    "Listed; quarterly audited results",
+    "Listed; quarterly audited results"
+   ],
+   "edge": "behind",
+   "why": "The round closes only after Jandani's FY26 audit is complete. The listed peers report every quarter."
+  },
+  {
+   "aspect": "Valuation basis",
+   "cells": [
+    "12.5x FY26 P/E at pre-money",
+    "8.7x FY26 P/E",
+    "39.2x FY26 P/E",
+    "40.9x FY26 P/E",
+    "57.7x FY26 P/E",
+    "12.6x FY26 P/E"
+   ],
+   "edge": "mixed",
+   "why": "The round prices Jandani at 12.5x FY26 PAT. The peer range is 8.7x (Senco) to 57.7x (Sky Gold), with a median of 39.2x."
+  }
+ ],
+ "barriers": [
+  {
+   "name": "Brand trust",
+   "level": 1,
+   "note": "Buyers of gold jewellery pay a premium for brands they trust. Jandani's brand is established in Indore but is still new in the franchise cities."
+  },
+  {
+   "name": "Gold working capital",
+   "level": 1,
+   "note": "Growth requires funding gold inventory. Jandani says gold funding is its constraint, and 58% of the round is going to it."
+  },
+  {
+   "name": "Manufacturing process know-how",
+   "level": 2,
+   "note": "The technology unit's process is proprietary and gave about ₹15 Cr of FY26 revenue. It has not been shown to investors in detail, so how much it protects the business cannot be judged from outside."
+  },
+  {
+   "name": "Relationships with listed retailers",
+   "level": 2,
+   "note": "The Senco store-in-store arrangement is an approved-vendor relationship that is hard to obtain. So far only a first bangles order has been placed, and annual volumes are not fixed."
+  },
+  {
+   "name": "Franchise network",
+   "level": 1,
+   "note": "Three franchises are open and two more are planned for FY27. Because franchisees pay for stock upfront, Jandani's credit risk is low, but the network is not yet large enough to deter competitors."
+  },
+  {
+   "name": "Hallmarking and compliance",
+   "level": 1,
+   "note": "BIS hallmarking and HUID rules apply to every jeweller in the set. They raise the cost of operating for all of them rather than favouring any one company."
+  }
+ ],
+ "stands": {
+  "ahead": [
+   "Fastest growth in the set: revenue up 91.6% in FY26 (₹44.3 Cr to ₹84.9 Cr) against 20–77% at listed peers.",
+   "Highest PAT margin: 11.8% in FY26 against 3.8–8.6% at peers (Kalyan 3.8%, Senco 6.8%, RBZ 8.6%).",
+   "Owns its manufacturing, including a technology unit (about ₹15 Cr of FY26 revenue), and supplies Senco Gold under a store-in-store arrangement."
+  ],
+  "behind": [
+   "Smallest in the set: FY26 revenue of ₹84.9 Cr is about 13% of RBZ's ₹636 Cr and 0.2% of Kalyan's ₹35,743 Cr.",
+   "4 stores in four cities, against 66 to 507 showrooms at the listed retailers.",
+   "FY26 figures are provisional and the round is conditional on audit; the peers report audited results every quarter.",
+   "Gold working capital limits growth; listed peers already carry bank and gold-loan lines (debt to equity 0.47–1.07x).",
+   "The FY26 margins of all peers include gains from higher gold prices; Senco puts its sustainable EBITDA margin at 7.5–7.7% against 11.5% reported. The subject's 11.8% PAT margin has not been split the same way."
+  ],
+  "watch": [
+   "Audited FY26 accounts confirming ₹84.9 Cr revenue and ₹10.0 Cr PAT.",
+   "Annual volumes under the Senco store-in-store arrangement beyond the first bangles order.",
+   "Opening of the Pune (Q3 FY27) and Bhopal (Q4 FY27) franchises on schedule.",
+   "FY27 progress against the ₹164 Cr revenue / ₹15.3 Cr PAT projection, and the effect of gold price moves on margins."
+  ],
+  "valuation": [
+   "P/E at the round is 12.5x FY26 PAT (pre-money), against a peer median of 39.2x; RBZ trades at 12.6x and Senco at 8.7x."
+  ]
+ },
+ "sources": [
+  {
+   "title": "Senco Gold — screener.in consolidated page (FY26 P&L, balance sheet, ratios)",
+   "url": "https://www.screener.in/company/SENCO/consolidated"
+  },
+  {
+   "title": "Senco Gold — Q4 FY26 / FY2025-26 press release (NSE)",
+   "url": "https://nsearchives.nseindia.com/corporate/Sencogold_27052026002727_SGL_PressRelease_FY2025-26_Q4.pdf"
+  },
+  {
+   "title": "Senco Gold — 5paisa share price and market cap (26 Oct 2026)",
+   "url": "https://www.5paisa.com/marathi/stocks/senco-share-price"
+  },
+  {
+   "title": "Kalyan Jewellers reports 43% revenue growth in FY26 — GJEPC Solitaire",
+   "url": "https://gjepc.org/solitaire/?p=36277"
+  },
+  {
+   "title": "Kalyan Jewellers — annual financials (stockanalysis.com)",
+   "url": "https://stockanalysis.com/quote/nse/KALYANKJIL/financials/"
+  },
+  {
+   "title": "Kalyan Jewellers — 5paisa share price and market cap",
+   "url": "https://www.5paisa.com/stocks/kalyankjil-share-price"
+  },
+  {
+   "title": "Kalyan Jewellers — fyers.in results and ratios",
+   "url": "https://fyers.in/stocks/kalyan-jewellers-india-ltd/results"
+  },
+  {
+   "title": "Thangamayil Jewellery — annual income statement (stockanalysis.com)",
+   "url": "https://stockanalysis.com/quote/nse/THANGAMAYL/financials/income-statement/"
+  },
+  {
+   "title": "Thangamayil Jewellery — 5paisa share price and market cap (26 Oct 2026)",
+   "url": "https://www.5paisa.com/hindi/stocks/thangamayl-share-price"
+  },
+  {
+   "title": "Thangamayil Jewellery — fyers.in P&L and ratios",
+   "url": "https://fyers.in/stocks/thangamayil-jewellery-ltd/profit-loss"
+  },
+  {
+   "title": "Thangamayil opens 2 new Chennai stores, operating over 66 outlets",
+   "url": "https://www.sahi.com/news/thangamayil-jewellery-opens-2-new-stores-in-chennai-operating-over-66-outlets-3851-PE1_COR"
+  },
+  {
+   "title": "Sky Gold and Diamonds posts robust FY26 revenue and profit growth — Indian Retailer",
+   "url": "https://indianretailer.com/news/sky-gold-and-diamonds-posts-robust-fy26-revenue-and-profit-growth"
+  },
+  {
+   "title": "Sky Gold — 5paisa share price and market cap (26 Oct 2026)",
+   "url": "https://5paisa.com/stocks/skygold-share-price"
+  },
+  {
+   "title": "Sky Gold — fyers.in results and ratios",
+   "url": "https://fyers.in/stocks/sky-gold-and-diamonds-ltd/results"
+  },
+  {
+   "title": "RBZ Jewellers Q4 profit jumps 36%, FY26 revenue crosses ₹636 crore — Free Press Journal",
+   "url": "https://www.freepressjournal.in/amp/business/rbz-jewellers-q4-profit-jumps-36-fy26-revenue-crosses-636-crore"
+  },
+  {
+   "title": "RBZ Jewellers — fyers.in P&L and ratios",
+   "url": "https://fyers.in/stocks/rbz-jewellers-ltd/profit-loss"
+  },
+  {
+   "title": "RBZ Jewellers — investor factsheet (Valorem Advisors)",
+   "url": "https://www.valoremadvisors.com/assets/admin/fact_file/1774002411_RBZ_Factsheet.pdf"
+  },
+  {
+   "title": "Motisons vs RBZ Jewellers comparison (market cap, 26 Oct 2026) — Stockezee",
+   "url": "https://www.stockezee.com/compare/motisons-vs-rbzjewel"
+  }
+ ]
+}

@@ -1,0 +1,709 @@
+{
+ "asOf": "Market data as of 23 Oct 2026 close (screener.in); BCL Industries and Gokul Refoils read 26 Oct 2026 intraday, Vijay Solvex 21 Oct 2026 close",
+ "basis": "Royal Oils & Foods: FY26 audited figures combining the proprietorship's first half and the company's second half, with valuation at the ₹200 Cr pre-money. Peers: FY26 (year to Mar 2026) annual results from screener.in (consolidated where available; Gujarat Ambuja Exports and Vijay Solvex standalone) and market cap in late Oct 2026. Peer multiples are computed on FY26 figures, not TTM. EV uses gross debt for every company.",
+ "companies": [
+  {
+   "name": "Royal Oils & Foods Ltd",
+   "short": "Royal Oils",
+   "subject": true,
+   "mcapCr": 200,
+   "note": "Groundnut-oil refiner at Gondal, Rajkot (85–90% groundnut), expanding from 70 to 260 TPD; valued at the ₹200 Cr pre-money."
+  },
+  {
+   "name": "AWL Agri Business Ltd",
+   "short": "AWL Agri",
+   "ticker": "NSE:AWL",
+   "mcapCr": 22497,
+   "note": "Formerly Adani Wilmar. India's largest branded edible-oil company (Fortune, Kings), sells groundnut oil among others; it is the sector's scale benchmark."
+  },
+  {
+   "name": "Gokul Agro Resources Ltd",
+   "short": "Gokul Agro",
+   "ticker": "NSE:GOKULAGRO",
+   "mcapCr": 5789,
+   "note": "Gujarat edible-oil refiner (main plant at Gandhidham; Vitalife, Mahek, Zaika). Like the subject, it runs a high-volume, thin-margin refining model."
+  },
+  {
+   "name": "Gujarat Ambuja Exports Ltd",
+   "short": "Guj Ambuja",
+   "ticker": "NSE:GAEL",
+   "mcapCr": 7056,
+   "note": "Gujarat agro-processor: corn starch, soya derivatives, feed, cotton yarn and edible oils. A diversified regional peer."
+  },
+  {
+   "name": "BCL Industries Ltd",
+   "short": "BCL Inds",
+   "ticker": "NSE:BCLIND",
+   "mcapCr": 812,
+   "note": "Bathinda-based edible-oil refiner (Homecook) with a large grain-ethanol distillery business; a mid-size refining peer."
+  },
+  {
+   "name": "Vijay Solvex Ltd",
+   "short": "Vijay Solvex",
+   "ticker": "BSE:531069",
+   "mcapCr": 191,
+   "note": "Rajasthan mustard-oil crusher and refiner (edible oils, vanaspati, de-oiled cake). A small-cap peer with a market cap close to the subject's valuation."
+  },
+  {
+   "name": "Gokul Refoils and Solvent Ltd",
+   "short": "Gokul Refoils",
+   "ticker": "NSE:GOKUL",
+   "mcapCr": 342,
+   "note": "Gujarat (Sidhpur) seed processor, solvent extractor and refiner that also sells groundnut and cottonseed oils; the closest listed Gujarat model in size."
+  }
+ ],
+ "metrics": [
+  {
+   "group": "Scale",
+   "label": "Revenue FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    517.8,
+    74731,
+    24077,
+    5729,
+    2792,
+    2366,
+    4120
+   ]
+  },
+  {
+   "group": "Scale",
+   "label": "EBITDA FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    17.6,
+    2131,
+    676,
+    468,
+    242,
+    35,
+    36
+   ],
+   "note": "Peers: screener operating profit"
+  },
+  {
+   "group": "Scale",
+   "label": "PAT FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    10.4,
+    1045,
+    369,
+    305,
+    126,
+    19,
+    18
+   ]
+  },
+  {
+   "group": "Scale",
+   "label": "Net worth Mar 2026",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    18,
+    10440,
+    1423,
+    3298,
+    910,
+    321,
+    364
+   ],
+   "note": "Equity capital plus reserves"
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    17.4,
+    23.1,
+    24.2,
+    -0.8,
+    29.2,
+    17.4
+   ],
+   "note": "Subject: FY25 revenue not disclosed in the deal file (business was in a proprietorship)"
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue CAGR FY23–26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    9,
+    31,
+    5,
+    15,
+    null,
+    10
+   ],
+   "note": "Screener 3-year compounded sales growth; Vijay Solvex not verified"
+  },
+  {
+   "group": "Profitability",
+   "label": "EBITDA margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    3.4,
+    2.9,
+    2.8,
+    8.2,
+    8.7,
+    1.5,
+    0.9
+   ],
+   "note": "Gujarat Ambuja and BCL include higher-margin non-oil businesses (starch, ethanol)"
+  },
+  {
+   "group": "Profitability",
+   "label": "PAT margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    2,
+    1.4,
+    1.5,
+    5.3,
+    4.5,
+    0.8,
+    0.4
+   ]
+  },
+  {
+   "group": "Returns",
+   "label": "ROE FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    57.8,
+    10,
+    25.9,
+    9.2,
+    13.8,
+    5.9,
+    4.9
+   ],
+   "note": "FY26 PAT ÷ Mar 2026 net worth for every company. The subject's figure is inflated because its PAT includes the proprietorship's first half while its net worth is the new company's ₹18.0 Cr"
+  },
+  {
+   "group": "Returns",
+   "label": "ROCE",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    18.3,
+    36.7,
+    12.5,
+    13.9,
+    9.7,
+    8.3
+   ],
+   "note": "Peers as reported by screener.in; subject EBIT not disclosed"
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Borrowings Mar 2026",
+   "unit": "₹ Cr",
+   "better": "low",
+   "vals": [
+    28.4,
+    1109,
+    589,
+    440,
+    569,
+    65,
+    386
+   ],
+   "note": "Subject: bank cash credit ₹25.0 Cr plus promoter loans ₹3.4 Cr"
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Debt / equity",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    1.58,
+    0.11,
+    0.41,
+    0.13,
+    0.63,
+    0.2,
+    1.06
+   ]
+  },
+  {
+   "group": "Efficiency",
+   "label": "Cash conversion cycle FY26",
+   "unit": "days",
+   "better": "low",
+   "vals": [
+    null,
+    1,
+    4,
+    84,
+    49,
+    33,
+    23
+   ],
+   "note": "Screener; subject working-capital days not disclosed"
+  },
+  {
+   "group": "Valuation",
+   "label": "P/E FY26",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    19.3,
+    21.5,
+    15.7,
+    23.1,
+    6.4,
+    10.1,
+    19
+   ],
+   "note": "Subject at ₹200 Cr pre-money on ₹10.4 Cr combined PAT; peers market cap ÷ FY26 PAT"
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / sales FY26",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    0.39,
+    0.3,
+    0.24,
+    1.23,
+    0.29,
+    0.08,
+    0.08
+   ],
+   "note": "Subject at pre-money"
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / book",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    11.1,
+    2.2,
+    4.1,
+    2.1,
+    0.9,
+    0.6,
+    0.9
+   ],
+   "note": "Subject at pre-money on ₹18.0 Cr net worth"
+  },
+  {
+   "group": "Valuation",
+   "label": "EV / EBITDA FY26",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    13,
+    11.1,
+    9.4,
+    16,
+    5.7,
+    7.3,
+    20.2
+   ],
+   "note": "EV = market cap (subject: pre-money) plus gross borrowings; cash not deducted"
+  }
+ ],
+ "scatter": {
+  "x": "PAT margin FY26",
+  "y": "P/E FY26"
+ },
+ "dims": [
+  {
+   "name": "Product / technology",
+   "scores": [
+    2,
+    5,
+    4,
+    4,
+    3,
+    2,
+    2
+   ],
+   "why": "Royal Oils refines bought-in crude groundnut oil (85–90% of its mix); its distillation plant is still planned. AWL and Gokul Agro run multi-oil, multi-plant refining with vanaspati and specialty fats, and Gujarat Ambuja adds corn-starch derivatives."
+  },
+  {
+   "name": "Customers and concentration",
+   "scores": [
+    1,
+    5,
+    4,
+    4,
+    4,
+    3,
+    3
+   ],
+   "why": "Six or seven customers take Royal Oils' whole output, and exports go on 7–14 day credit after arrival with no advance. Listed peers sell through dealer networks, retail and institutions across many buyers."
+  },
+  {
+   "name": "Entry barriers",
+   "scores": [
+    2,
+    5,
+    4,
+    4,
+    3,
+    2,
+    2
+   ],
+   "why": "A 70 TPD groundnut refinery is small, licensable plant in a crowded Saurashtra cluster. AWL's brand and national distribution and Gokul Agro's port-based import refining at scale are far harder to copy."
+  },
+  {
+   "name": "Distribution / reach",
+   "scores": [
+    1,
+    5,
+    4,
+    3,
+    3,
+    3,
+    2
+   ],
+   "why": "Royal Oils sells business-to-business to a handful of buyers plus exports and has no stated retail network. AWL (Fortune) has pan-India FMCG reach, and Gokul Agro sells nationally under Vitalife, Mahek and Zaika."
+  },
+  {
+   "name": "Scale of operations",
+   "scores": [
+    1,
+    5,
+    4,
+    3,
+    2,
+    2,
+    3
+   ],
+   "why": "Royal Oils had ₹518 Cr revenue on 70 TPD of refining capacity, against ₹2,366–74,731 Cr for peers. Even at 260 TPD it stays below the smallest peer. Gokul Agro ran its refineries at about 82% in FY26 and is adding 46% capacity."
+  },
+  {
+   "name": "Management and governance",
+   "scores": [
+    2,
+    4,
+    3,
+    4,
+    3,
+    3,
+    3
+   ],
+   "why": "Royal Oils moved from a proprietorship to a company on 1 Oct 2025, so restated combined financials are still needed for the IPO. The desk's related-party review and its check of the ₹65 Cr subsidy are pending. Peers have multi-year listed disclosure records."
+  },
+  {
+   "name": "Growth runway",
+   "scores": [
+    4,
+    3,
+    4,
+    3,
+    3,
+    2,
+    2
+   ],
+   "why": "Capacity rising from 70 to 260 TPD (3.7x) underpins the company's ~₹27 Cr FY27E PAT, against ₹10.4 Cr in FY26, but that figure is a company estimate. Gokul Agro has compounded sales at 31% over three years and is executing a ₹430 Cr capex, while AWL's FY26 PAT fell 15%."
+  },
+  {
+   "name": "Raw-material sourcing",
+   "scores": [
+    2,
+    5,
+    4,
+    4,
+    3,
+    3,
+    3
+   ],
+   "why": "Royal Oils buys crude groundnut oil from small mills around Gondal. That puts it in the heart of the groundnut belt but exposes it to a single seasonal crop, without crushing integration. AWL and Gokul Agro source imported crude oils at scale through ports, and Vijay Solvex and Gokul Refoils crush their own seed."
+  },
+  {
+   "name": "Brand strength",
+   "scores": [
+    2,
+    5,
+    3,
+    2,
+    3,
+    2,
+    1
+   ],
+   "why": "Royal Oils has four registered brands, but its output goes largely to a few bulk and export buyers. Fortune is the category's leading national brand, while Gokul Agro and BCL (Homecook) have regional brand franchises."
+  }
+ ],
+ "matrix": [
+  {
+   "aspect": "Core product",
+   "cells": [
+    "Refined groundnut oil (85–90% of mix)",
+    "Multi-oil edible oils plus atta, rice, pulses, sugar",
+    "Edible oils, vanaspati, specialty fats, meals",
+    "Corn starch, soya derivatives, feed, yarn, edible oil",
+    "Edible oil refining plus grain ethanol distillery",
+    "Mustard and blended oils, vanaspati, oil cake",
+    "Seed processing, solvent extraction, refined oils"
+   ],
+   "edge": "mixed",
+   "why": "Royal Oils is a groundnut specialist, which sets it apart from the palm/soya-led large peers, but it is a single-oil business."
+  },
+  {
+   "aspect": "Main location",
+   "cells": [
+    "Gondal, Rajkot (Gujarat)",
+    "Pan-India multi-plant network",
+    "Gandhidham (Gujarat); also Andhra Pradesh",
+    "Gujarat",
+    "Bathinda (Punjab); distillery also in West Bengal",
+    "Rajasthan",
+    "Sidhpur (Gujarat)"
+   ],
+   "edge": "par",
+   "why": "Gondal sits in Saurashtra's groundnut belt, close to its crude-oil suppliers."
+  },
+  {
+   "aspect": "Refining capacity",
+   "cells": [
+    "70 TPD, going to 260 TPD",
+    "Not verified here",
+    "~82% utilised FY26; +46% capex of ₹430 Cr under way",
+    "Not verified here",
+    "~1,020 TPD total processing at Bathinda (FY23)",
+    "Not verified here",
+    "Not verified here"
+   ],
+   "edge": "behind",
+   "why": "Even after the expansion, Royal Oils' refining capacity is a fraction of the peers that disclose capacity."
+  },
+  {
+   "aspect": "Raw-material model",
+   "cells": [
+    "Buys crude groundnut oil from small mills",
+    "Imported and domestic crude oils at scale",
+    "Port-based importer; own palm plantations planned",
+    "Multi-crop agri procurement",
+    "Grain and oilseed procurement in Punjab",
+    "Crushes mustard seed",
+    "Crushes seed and runs solvent extraction"
+   ],
+   "edge": "behind",
+   "why": "Royal Oils is not backward-integrated into crushing, so its margin depends on crude groundnut oil spreads."
+  },
+  {
+   "aspect": "Brands",
+   "cells": [
+    "Four registered brands",
+    "Fortune, Kings",
+    "Vitalife, Mahek, Zaika; Richfield, Puffpride",
+    "Not a consumer edible-oil brand leader",
+    "Homecook",
+    "Not verified here",
+    "No consumer brands named"
+   ],
+   "edge": "behind",
+   "why": "Royal Oils' brands are registered but are not yet a meaningful sales channel against Fortune or Gokul Agro's portfolio."
+  },
+  {
+   "aspect": "Customers / channel",
+   "cells": [
+    "6–7 customers take all output; exports on 7–14 day credit",
+    "Dealers, modern trade, institutions, e-commerce",
+    "Distributors, institutions, exports",
+    "Industrial and food customers",
+    "Dealers and distillery off-takers",
+    "Dealers and bulk",
+    "Trading and bulk buyers, exports"
+   ],
+   "edge": "behind",
+   "why": "Concentration is the subject's sharpest difference from listed peers."
+  },
+  {
+   "aspect": "Revenue FY26",
+   "cells": [
+    "₹518 Cr",
+    "₹74,731 Cr",
+    "₹24,077 Cr",
+    "₹5,729 Cr",
+    "₹2,792 Cr",
+    "₹2,366 Cr",
+    "₹4,120 Cr"
+   ],
+   "edge": "behind",
+   "why": "Royal Oils is the smallest in the set, at about a fifth of Vijay Solvex's revenue."
+  },
+  {
+   "aspect": "EBITDA margin FY26",
+   "cells": [
+    "3.4%",
+    "2.9%",
+    "2.8%",
+    "8.2% (includes starch)",
+    "8.7% (includes ethanol)",
+    "1.5%",
+    "0.9%"
+   ],
+   "edge": "ahead",
+   "why": "Among the pure edible-oil refiners (AWL, Gokul Agro, Vijay Solvex, Gokul Refoils: 0.9–2.9%), Royal Oils' 3.4% is the highest."
+  },
+  {
+   "aspect": "Leverage",
+   "cells": [
+    "Debt/equity 1.58x (₹28.4 Cr on ₹18.0 Cr)",
+    "0.11x",
+    "0.41x",
+    "0.13x",
+    "0.63x",
+    "0.20x",
+    "1.06x"
+   ],
+   "edge": "behind",
+   "why": "Royal Oils has the highest leverage in the set; the ₹50 Cr primary raise would bring it down."
+  },
+  {
+   "aspect": "Valuation basis",
+   "cells": [
+    "₹200 Cr pre-money; P/E 19.3x, P/B 11.1x",
+    "₹22,497 Cr; P/E 21.5x, P/B 2.2x",
+    "₹5,789 Cr; P/E 15.7x, P/B 4.1x",
+    "₹7,056 Cr; P/E 23.1x, P/B 2.1x",
+    "₹812 Cr; P/E 6.4x, P/B 0.9x",
+    "₹191 Cr; P/E 10.1x, P/B 0.6x",
+    "₹342 Cr; P/E 19.0x, P/B 0.9x"
+   ],
+   "edge": "mixed",
+   "why": "Royal Oils' P/E sits within the peer range (6.4–23.1x). Its price/book is well above every peer because its net worth is small."
+  },
+  {
+   "aspect": "Listing status",
+   "cells": [
+    "Unlisted; IPO targeted Sep 2028",
+    "Listed (NSE/BSE)",
+    "Listed (NSE/BSE)",
+    "Listed (NSE/BSE)",
+    "Listed (NSE/BSE)",
+    "Listed (BSE)",
+    "Listed (NSE/BSE)"
+   ],
+   "edge": "behind",
+   "why": "Shares are illiquid until listing, and the IPO first needs restated combined financials."
+  }
+ ],
+ "barriers": [
+  {
+   "name": "Location in the groundnut belt",
+   "level": 2,
+   "note": "Gondal sits among Saurashtra's crude groundnut oil mills, giving Royal Oils short supply lines. Many local refiners share the same advantage."
+  },
+  {
+   "name": "Refining capacity and capex",
+   "level": 1,
+   "note": "At 70 TPD, today's plant is small and replicable. Moving to 260 TPD adds scale, but large peers' capacity is far bigger."
+  },
+  {
+   "name": "Buyer and export relationships",
+   "level": 2,
+   "note": "Six or seven repeat buyers take all output, which gives the company sticky volume. The same concentration makes it a vulnerability."
+  },
+  {
+   "name": "Brand franchise",
+   "level": 1,
+   "note": "Royal Oils has four registered brands, but sales are largely bulk and export. Consumer pull is not yet a moat against Fortune or regional brands."
+  },
+  {
+   "name": "Working-capital access",
+   "level": 2,
+   "note": "Refining needs bank lines for crude-oil inventory, and Royal Oils has ₹25.0 Cr of cash credit today. Equity from this round strengthens access; smaller entrants find this harder."
+  },
+  {
+   "name": "Licences and approvals",
+   "level": 1,
+   "note": "FSSAI and factory approvals for an edible-oil refinery are standard and do not restrict new entrants materially."
+  }
+ ],
+ "stands": {
+  "ahead": [
+   "Royal Oils' EBITDA margin of 3.4% in FY26 is above every pure edible-oil peer: AWL 2.9%, Gokul Agro 2.8%, Vijay Solvex 1.5% and Gokul Refoils 0.9%.",
+   "Its PAT margin of 2.0% compares with 0.4–1.5% for the same pure refiners.",
+   "Planned capacity growth of 3.7x (70 to 260 TPD) is proportionally larger than any peer's announced expansion; Gokul Agro is adding 46%.",
+   "It is a groundnut specialist (85–90% of its mix) at the source of supply in Gondal, a niche the palm and soya-led large peers do not focus on."
+  ],
+  "behind": [
+   "Royal Oils is the smallest in the set by far: FY26 revenue of ₹518 Cr against ₹2,366 Cr for the smallest peer (Vijay Solvex) and ₹74,731 Cr for AWL.",
+   "Six or seven customers take its whole output, while listed peers sell through dealer, retail and institutional networks.",
+   "Debt/equity of 1.58x is the highest in the set (peers 0.11–1.06x), and its net worth is only ₹18.0 Cr.",
+   "FY26 combines a proprietorship and the company, so there is no clean prior-year comparison, and restated financials are still needed."
+  ],
+  "watch": [
+   "Commissioning of the 260 TPD capacity, and whether second-half FY27 sales reach about twice the first half, as the ~₹27 Cr FY27E PAT requires.",
+   "Restated combined financials and the desk's related-party review.",
+   "Verification of the stated ₹65 Cr subsidy (about ₹6.5 Cr a year).",
+   "Broadening of the customer base beyond six or seven buyers, and progress of the distillation plant toward the targeted 3.5–4.5% PAT margin."
+  ],
+  "valuation": [
+   "At the pre-money, price/book is 11.1x against a peer range of 0.6–4.1x, and EV/EBITDA is 13.0x against a peer median of about 10.3x."
+  ]
+ },
+ "sources": [
+  {
+   "title": "AWL Agri Business — screener.in consolidated page",
+   "url": "https://www.screener.in/company/AWL/consolidated"
+  },
+  {
+   "title": "Gokul Agro Resources — screener.in consolidated page",
+   "url": "https://www.screener.in/company/GOKULAGRO/consolidated"
+  },
+  {
+   "title": "Gujarat Ambuja Exports — screener.in page",
+   "url": "https://www.screener.in/company/GAEL"
+  },
+  {
+   "title": "BCL Industries — screener.in consolidated page",
+   "url": "https://screener.in/company/BCLIND/consolidated"
+  },
+  {
+   "title": "Vijay Solvex — screener.in page",
+   "url": "https://www.screener.in/company/VIJSOLX/"
+  },
+  {
+   "title": "Gokul Refoils and Solvent — screener.in consolidated page",
+   "url": "https://screener.in/company/GOKUL/consolidated"
+  },
+  {
+   "title": "AWL Agri Business — annual income statement (stockanalysis.com)",
+   "url": "https://stockanalysis.com/quote/nse/AWL/financials/income-statement/"
+  },
+  {
+   "title": "AWL Agri Business — Tickertape stock page",
+   "url": "https://www.tickertape.in/stocks/adani-wilmar-AWL"
+  },
+  {
+   "title": "Gokul Agro Resources — Tickertape stock page",
+   "url": "https://www.tickertape.in/stocks/gokul-agro-resources-GOKG"
+  },
+  {
+   "title": "Gokul Agro Q4 FY26 results and ₹430 Cr refining capex (Free Press Journal)",
+   "url": "https://www.freepressjournal.in/amp/business/gokul-agro-q4-profit-jumps-144-to-119-crore-fy26-revenue-crosses-24000-crore"
+  },
+  {
+   "title": "Gokul Agro capacity expansion plans (Sahi, Aug 2026)",
+   "url": "https://www.sahi.com/news/gokul-agro-resources-plans-8-lakh-mtpa-capacity-hike-and-900-hectare-expansion-by-fy27-4459-PE1_COR"
+  },
+  {
+   "title": "BCL Industries factsheet FY23 (Valorem Advisors)",
+   "url": "https://final.valoremadvisors.com/assets/admin/fact_file/1688992523_BCL_Industries_-_Factsheet_FY23.pdf"
+  }
+ ]
+}

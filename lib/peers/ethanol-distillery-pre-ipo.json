@@ -1,0 +1,692 @@
+{
+ "asOf": "Market data as of 23 Oct 2026 close (screener.in); TruAlt fell a further 7.7% to ₹373 (≈₹3,199 Cr) on 26 Oct 2026",
+ "basis": "Company figures FY26 audited, from the deal's information memorandum, with valuation at the round's ≈₹459 Cr pre-money; peers FY26 (year to Mar 2026) annual results (AABL and Gulshan standalone, others consolidated) and market capitalisation on 23 Oct 2026.",
+ "companies": [
+  {
+   "name": "Karthik Agro Industries Pvt Ltd",
+   "short": "Karthik Agro",
+   "subject": true,
+   "mcapCr": 459,
+   "note": "245 KLPD grain distillery at Badami, Bagalkote (Karnataka) making ENA, fuel ethanol, DDGS and CO₂; valued at ≈₹459 Cr pre-money."
+  },
+  {
+   "name": "Associated Alcohols & Breweries Ltd",
+   "short": "Assoc. Alcohols",
+   "ticker": "NSE:ASALCBR",
+   "mcapCr": 1081,
+   "note": "Madhya Pradesh grain distiller selling merchant ENA, fuel ethanol and its own IMIL/IMFL brands; closest in revenue size."
+  },
+  {
+   "name": "TruAlt Bioenergy Ltd",
+   "short": "TruAlt",
+   "ticker": "NSE:TRUALT",
+   "mcapCr": 3488,
+   "note": "India's largest ethanol producer by installed capacity, 2,000 KLPD across five Karnataka units including Badami; listed Sep 2025."
+  },
+  {
+   "name": "CIAN Agro Industries & Infrastructure Ltd",
+   "short": "CIAN Agro",
+   "ticker": "BSE:519477",
+   "mcapCr": 2305,
+   "note": "Nagpur-based diversified group that entered distillery/ethanol in FY25 through acquisitions; ethanol is one of several businesses."
+  },
+  {
+   "name": "Globus Spirits Ltd",
+   "short": "Globus Spirits",
+   "ticker": "NSE:GLOBUSSPR",
+   "mcapCr": 2243,
+   "note": "Multi-state grain-to-glass distiller (Rajasthan, Haryana, West Bengal, Jharkhand, Bihar) selling ENA, ethanol and IMIL/IMFL brands."
+  },
+  {
+   "name": "Gulshan Polyols Ltd",
+   "short": "Gulshan Polyols",
+   "ticker": "NSE:GULPOLY",
+   "mcapCr": 941,
+   "note": "Grain-based ethanol producer (≈810 KLPD; UP, MP, Assam) with grain processing and mineral chemicals; ethanol was ₹1,609 Cr of FY26 revenue."
+  }
+ ],
+ "metrics": [
+  {
+   "group": "Scale",
+   "label": "Revenue FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    862.1,
+    1020,
+    1728,
+    2211,
+    2710,
+    2312
+   ],
+   "note": "Revenue from operations. Subject audited; AABL and Gulshan standalone, others consolidated (screener.in)."
+  },
+  {
+   "group": "Scale",
+   "label": "EBITDA FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    63.5,
+    143,
+    290,
+    476,
+    256,
+    234
+   ],
+   "note": "Operating profit before other income."
+  },
+  {
+   "group": "Scale",
+   "label": "PAT FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    13,
+    88,
+    97,
+    223,
+    91,
+    107
+   ]
+  },
+  {
+   "group": "Scale",
+   "label": "Market cap / valuation",
+   "unit": "₹ Cr",
+   "better": "none",
+   "vals": [
+    459,
+    1081,
+    3488,
+    2305,
+    2243,
+    941
+   ],
+   "note": "Peers: market cap at 23 Oct 2026 close. Subject: ≈₹459 Cr pre-money at the round."
+  },
+  {
+   "group": "Scale",
+   "label": "Distillery capacity",
+   "unit": "KLPD",
+   "better": "high",
+   "vals": [
+    245,
+    null,
+    2000,
+    null,
+    null,
+    810
+   ],
+   "note": "Installed. Subject 245 KLPD per deal file; TruAlt per Jul 2026 investor presentation; Gulshan ethanol capacity per May 2026 call. Others not verified."
+  },
+  {
+   "group": "Efficiency",
+   "label": "Capacity utilisation",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    100,
+    null,
+    60.6,
+    null,
+    89,
+    null
+   ],
+   "note": "Subject: running at full capacity (deal file). TruAlt 60.6% (Jul 2026 presentation); Globus 89% manufacturing utilisation in Q1 FY27. Periods differ."
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    20.7,
+    -5.1,
+    -9.4,
+    115.9,
+    6.8,
+    14.5
+   ],
+   "note": "FY26 over FY25."
+  },
+  {
+   "group": "Growth",
+   "label": "PAT growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    78.1,
+    8.6,
+    -34,
+    443.9,
+    313.6,
+    328
+   ],
+   "note": "FY26 over FY25; low FY25 bases inflate Cian, Globus and Gulshan."
+  },
+  {
+   "group": "Profitability",
+   "label": "EBITDA margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    7.4,
+    14,
+    16.8,
+    21.5,
+    9.4,
+    10.1
+   ]
+  },
+  {
+   "group": "Profitability",
+   "label": "PAT margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    1.5,
+    8.6,
+    5.6,
+    10.1,
+    3.4,
+    4.6
+   ]
+  },
+  {
+   "group": "Returns",
+   "label": "ROE FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    14.3,
+    12.7,
+    6.4,
+    10.3,
+    8.3,
+    14.9
+   ],
+   "note": "PAT over March 2026 net worth. TruAlt's net worth includes its Sep 2025 IPO proceeds."
+  },
+  {
+   "group": "Returns",
+   "label": "ROCE",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    18,
+    10.4,
+    12.3,
+    11.2,
+    18.6
+   ],
+   "note": "Peers as shown on screener.in (Oct 2026). Not derivable for the subject from the deal file."
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Borrowings Mar 2026",
+   "unit": "₹ Cr",
+   "better": "low",
+   "vals": [
+    195.6,
+    69,
+    1652,
+    1199,
+    527,
+    318
+   ],
+   "note": "Gross borrowings."
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Debt / equity",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    2.2,
+    0.1,
+    1.1,
+    0.6,
+    0.5,
+    0.4
+   ],
+   "note": "Gross borrowings over net worth, March 2026."
+  },
+  {
+   "group": "Balance sheet",
+   "label": "EBITDA / interest FY26",
+   "unit": "x",
+   "better": "high",
+   "vals": [
+    null,
+    23.8,
+    1.8,
+    2.8,
+    4.3,
+    5.7
+   ],
+   "note": "Subject interest cost not in the deal file."
+  },
+  {
+   "group": "Valuation",
+   "label": "P/E FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    35.3,
+    12.3,
+    36,
+    10.3,
+    24.6,
+    8.8
+   ],
+   "note": "Peers: market cap over FY26 PAT. Subject: pre-money over audited FY26 PAT (round is priced at 10x FY27E projected PAT)."
+  },
+  {
+   "group": "Valuation",
+   "label": "EV / EBITDA FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    10.3,
+    8,
+    17.7,
+    7.4,
+    10.8,
+    5.4
+   ],
+   "note": "EV = market cap (subject: pre-money) plus gross borrowings; cash not deducted."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / book",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    5.1,
+    1.6,
+    2.3,
+    1.1,
+    2.1,
+    1.3
+   ],
+   "note": "Subject at pre-money over March 2026 net worth of ₹90.8 Cr."
+  }
+ ],
+ "scatter": {
+  "x": "Revenue growth FY26",
+  "y": "P/E FY26"
+ },
+ "dims": [
+  {
+   "name": "Product / technology",
+   "scores": [
+    3,
+    4,
+    4,
+    2,
+    4,
+    3
+   ],
+   "why": "Karthik Agro runs one grain plant with ENA, fuel ethanol, DDGS, food-grade CO₂, 8.4 MW captive power and zero liquid discharge, a complete grain-distillery set-up. TruAlt adds dual-feed (65% of capacity) and CBG units; AABL and Globus carry ENA through to their own liquor brands."
+  },
+  {
+   "name": "Customers and concentration",
+   "scores": [
+    3,
+    4,
+    2,
+    3,
+    4,
+    2
+   ],
+   "why": "The subject sells ENA to beverage, pharma and personal-care buyers as well as fuel ethanol to OMCs; the deal file does not give the split. TruAlt and Gulshan depend mainly on OMC ethanol (Gulshan ethanol ₹1,609 Cr of ₹2,314 Cr), while AABL and Globus also sell their own brands to consumers."
+  },
+  {
+   "name": "Entry barriers",
+   "scores": [
+    3,
+    4,
+    3,
+    3,
+    4,
+    3
+   ],
+   "why": "Distillery licences, environmental clearance and ZLD compliance protect all six. AABL and Globus add state excise brand registrations and liquor distribution, which a pure ENA/ethanol plant such as the subject does not have."
+  },
+  {
+   "name": "Distribution / reach",
+   "scores": [
+    2,
+    3,
+    2,
+    3,
+    4,
+    3
+   ],
+   "why": "The subject is a single-site B2B seller in Karnataka. Globus sells branded liquor across several states; AABL is entering Odisha, Karnataka and Andhra Pradesh; Gulshan runs plants in UP, MP and Assam."
+  },
+  {
+   "name": "Scale of operations",
+   "scores": [
+    2,
+    2,
+    5,
+    3,
+    4,
+    4
+   ],
+   "why": "At 245 KLPD and ₹862 Cr revenue, the subject is about one-eighth of TruAlt's 2,000 KLPD and under a third of Gulshan's 810 KLPD. Its revenue is close to AABL's ₹1,020 Cr."
+  },
+  {
+   "name": "Management and governance",
+   "scores": [
+    2,
+    4,
+    3,
+    2,
+    4,
+    4
+   ],
+   "why": "The subject's account was an NPA in 2014-15 and was resolved through an ARC (repaid FY21), and it has no listed disclosure record. AABL, Globus and Gulshan have long listed histories. TruAlt listed in Sep 2025 and is litigating allocation shortfalls. CIAN grew mainly by acquisition."
+  },
+  {
+   "name": "Growth runway",
+   "scores": [
+    4,
+    4,
+    4,
+    3,
+    3,
+    3
+   ],
+   "why": "The subject is expanding from 245 to 450 KLPD, and the memorandum projects PAT rising from ₹13.0 Cr to ₹45.9 Cr in FY27E; the 450 KLPD status is still unconfirmed. TruAlt has CBG and a proposed SAF project. Globus has no near-term capacity additions, and Gulshan's ₹500 Cr project is awaiting board approval."
+  },
+  {
+   "name": "Feedstock security",
+   "scores": [
+    2,
+    3,
+    3,
+    3,
+    3,
+    4
+   ],
+   "why": "The deal file describes grain as seasonal, which keeps working capital heavy (₹195.6 Cr of loans against ₹90.8 Cr net worth), and gives no FCI-rice or contract coverage. Gulshan sources about 40% of feedstock as fixed-price FCI rice; TruAlt can switch between cane derivatives and grain."
+  },
+  {
+   "name": "OMC ethanol allocation / offtake",
+   "scores": [
+    3,
+    2,
+    2,
+    3,
+    3,
+    4
+   ],
+   "why": "The subject runs at full capacity, but the deal file does not give its ESY 2025-26 OMC allocation. Gulshan has an 18 crore-litre ESY 2025-26 allocation and long-term offtake to 2032. TruAlt called its allocation lower than anticipated at 60.6% utilisation, and AABL sold surplus ethanol to private OMCs below breakeven in Q1 FY27. CIAN does not disclose its allocation."
+  }
+ ],
+ "matrix": [
+  {
+   "aspect": "Core product",
+   "cells": [
+    "ENA and fuel ethanol, plus DDGS and food-grade CO₂",
+    "Merchant ENA, fuel ethanol, own IMIL/IMFL brands",
+    "Fuel ethanol; CBG units being built",
+    "Diversified: agro, edible oil, sugar, distillery, LPG, healthcare",
+    "Bulk alcohol (ENA/ethanol) plus IMIL/IMFL brands",
+    "Grain ethanol, grain processing, mineral chemicals"
+   ],
+   "edge": "behind",
+   "why": "The subject is a pure distillery with no consumer brand or second business to offset weak ethanol pricing. AABL and Globus earn consumer-liquor margins on part of their ENA."
+  },
+  {
+   "aspect": "Plant footprint",
+   "cells": [
+    "One site: Badami, Bagalkote (Karnataka)",
+    "Barwaha/Khodiyar, Madhya Pradesh",
+    "Five units in Karnataka (Mudhol, Jamkhandi, Badami etc.)",
+    "Umred and other Maharashtra units",
+    "Rajasthan, Haryana, West Bengal, Jharkhand, Bihar",
+    "Uttar Pradesh, Madhya Pradesh, Assam"
+   ],
+   "edge": "behind",
+   "why": "Everything is at one site, so any plant outage or state policy change hits the whole business. TruAlt also runs a 200 KLPD unit in Badami, which puts the two in competition for local grain."
+  },
+  {
+   "aspect": "Installed capacity",
+   "cells": [
+    "245 KLPD; expansion to 450 KLPD (status unconfirmed)",
+    "130 KLPD ethanol + ≈45 mn L/yr ENA (2024 disclosures)",
+    "2,000 KLPD (1,300 KLPD dual-feed)",
+    "Not disclosed",
+    "765 KLPD at FY23; +120 KLPD added Apr 2024",
+    "≈810 KLPD ethanol"
+   ],
+   "edge": "mixed",
+   "why": "The subject is larger than AABL's ethanol unit but far smaller than TruAlt, Gulshan or Globus. If the 450 KLPD expansion is complete, it would approach the mid-sized peers."
+  },
+  {
+   "aspect": "Utilisation",
+   "cells": [
+    "100% (deal file)",
+    "Ethanol run at max; quota cut, sold below breakeven",
+    "60.6% current (Jul 2026)",
+    "Not disclosed",
+    "89% manufacturing, Q1 FY27",
+    "≈18 cr L order vs ≈26 cr L capacity, ESY 25-26"
+   ],
+   "edge": "ahead",
+   "why": "Full utilisation puts the subject ahead of TruAlt's 60.6% and Gulshan's allocation-limited ethanol output in the ESY 2025-26 oversupply."
+  },
+  {
+   "aspect": "Feedstock",
+   "cells": [
+    "Grain (seasonal); sourcing terms not in deal file",
+    "Maize and FCI rice; grain ≈₹21,000/t in Q1 FY27",
+    "Cane derivatives and damaged grain, dual-feed",
+    "Group has a sugar unit; mix not disclosed",
+    "Broken rice, maize, FCI rice",
+    "≈40% FCI rice at fixed price; maize balance"
+   ],
+   "edge": "behind",
+   "why": "Peers disclose FCI-rice access or dual-feed flexibility. The deal file does not show what protects the subject from grain price swings."
+  },
+  {
+   "aspect": "OMC ethanol allocation",
+   "cells": [
+    "Not given in deal file",
+    "Reduced quota; +87.4 lakh L Q4 per SC order (unverified)",
+    "Allocation 'lower than anticipated'; HC/SC litigation",
+    "Not disclosed",
+    "Not disclosed for ESY 25-26",
+    "18 cr L ESY 25-26; LTOA ≈13 cr L/yr to 2032"
+   ],
+   "edge": "mixed",
+   "why": "Allocation is the main revenue swing factor for ESY 2025-26, and the subject's figure needs to come from diligence. Gulshan's long-term offtake is the strongest disclosed in this set."
+  },
+  {
+   "aspect": "By-products and power",
+   "cells": [
+    "DDGS, food-grade CO₂; 8.4 MW captive power; ZLD",
+    "DDGS; not detailed",
+    "CBG plants (10–20 TPD each) under build",
+    "Power business in group",
+    "DDGS; captive power at plants",
+    "Grain-processing co-products; RDF boiler"
+   ],
+   "edge": "par",
+   "why": "The subject's CO₂ sales and captive power are standard for a modern grain plant and are matched by most peers."
+  },
+  {
+   "aspect": "FY26 margins",
+   "cells": [
+    "EBITDA 7.4%, PAT 1.5%",
+    "EBITDA 14.0%, PAT 8.6%",
+    "EBITDA 16.8%, PAT 5.6%",
+    "EBITDA 21.5%, PAT 10.1%",
+    "EBITDA 9.4%, PAT 3.4%",
+    "EBITDA 10.1%, PAT 4.6%"
+   ],
+   "edge": "behind",
+   "why": "The subject has the lowest margins in the set. The 10x FY27E pricing assumes PAT margin rising to 4.5%."
+  },
+  {
+   "aspect": "Leverage",
+   "cells": [
+    "Debt/equity 2.2x (₹195.6 Cr loans)",
+    "Debt/equity 0.1x",
+    "Debt/equity 1.1x",
+    "Debt/equity 0.6x",
+    "Debt/equity 0.5x",
+    "Debt/equity 0.4x; debt-free target FY29"
+   ],
+   "edge": "behind",
+   "why": "The subject carries the highest leverage in the set; part of the ₹35 Cr round goes to working capital and capex."
+  },
+  {
+   "aspect": "Listing status",
+   "cells": [
+    "Unlisted; main-board IPO targeted Jul 2027",
+    "Listed (NSE/BSE)",
+    "Listed Sep 2025 (NSE/BSE)",
+    "Listed (BSE)",
+    "Listed (NSE/BSE)",
+    "Listed (NSE/BSE)"
+   ],
+   "edge": "behind",
+   "why": "Peers have daily price discovery and liquidity. Subject shares are illiquid until listing and then locked in for six months."
+  }
+ ],
+ "barriers": [
+  {
+   "name": "Distillery licences and environmental clearance",
+   "level": 3,
+   "note": "New grain distilleries need state excise licences, environmental clearance and pollution-board consent. The subject's Badami plant has operated since 2007 and runs zero liquid discharge."
+  },
+  {
+   "name": "Capital intensity and scale",
+   "level": 1,
+   "note": "At 245 KLPD the subject is well below TruAlt (2,000 KLPD) and Gulshan (≈810 KLPD), and a new 200+ KLPD grain plant can be built within about two years. TruAlt already runs 200 KLPD in Badami."
+  },
+  {
+   "name": "Feedstock access and working capital",
+   "level": 1,
+   "note": "Grain is bought seasonally and financed with debt (₹195.6 Cr loans vs ₹90.8 Cr net worth). Peers with FCI rice or dual-feed capacity have more flexibility."
+  },
+  {
+   "name": "OMC ethanol allocation",
+   "level": 1,
+   "note": "Ethanol volumes and prices are set through OMC tenders and government policy. ESY 2025-26 had industry oversupply and allocation litigation reaching the Supreme Court, so a supply contract gives the subject little protection."
+  },
+  {
+   "name": "ENA customer relationships",
+   "level": 2,
+   "note": "ENA sales to beverage, pharma and personal-care buyers rely on quality approvals and repeat supply. This gives the subject some diversification beyond OMCs, but it has no consumer brand."
+  },
+  {
+   "name": "Integrated by-products and captive power",
+   "level": 2,
+   "note": "DDGS, food-grade CO₂ and 8.4 MW captive power lower net cost per litre. Most scaled grain peers have similar set-ups."
+  }
+ ],
+ "stands": {
+  "ahead": [
+   "Running at 100% of 245 KLPD while TruAlt reports 60.6% utilisation and Gulshan's ESY 2025-26 allocation (18 cr L) covers about 69% of its ≈26 cr L ethanol capacity.",
+   "Revenue grew 20.7% in FY26 (₹714 Cr to ₹862 Cr), ahead of every peer except CIAN (+116%, acquisition-led); AABL fell 5.1% and TruAlt 9.4%.",
+   "ROE of 14.3% on March 2026 net worth is near the top of the set (Gulshan 14.9%, AABL 12.7%), against 6.4% for TruAlt.",
+   "Sells ENA to beverage, pharma and personal-care buyers as well as fuel ethanol, and has zero liquid discharge and 8.4 MW captive power at the plant."
+  ],
+  "behind": [
+   "Smallest margins in the set: FY26 EBITDA margin 7.4% and PAT margin 1.5%, against a peer median of 14.0% and 5.6%.",
+   "Highest leverage: debt/equity 2.2x (₹195.6 Cr loans on ₹90.8 Cr net worth) against a peer range of 0.1x–1.1x.",
+   "Scale: 245 KLPD is about one-eighth of TruAlt's 2,000 KLPD, and TruAlt also runs a 200 KLPD unit in Badami competing for local grain.",
+   "Credit history includes an NPA in 2014-15 resolved through an ARC (repaid FY21); peers have long listed disclosure records."
+  ],
+  "watch": [
+   "Confirmation of the 450 KLPD expansion (memorandum says done, teaser says planned) and its commissioning date.",
+   "ESY 2026-27 OMC allocation and tender prices: peers report ethanol realisations of ₹51–64/litre against breakeven of ₹57–60/litre.",
+   "H1 FY27 results tracking toward the ₹45.9 Cr FY27E PAT and the 10.6% EBITDA margin the projection implies.",
+   "Debt reduction from the round and IPO proceeds, and the outcome of the Supreme Court allocation litigation, which covers the whole industry."
+  ],
+  "valuation": [
+   "P/E on audited FY26 PAT at the round's pre-money is 35.3x against a peer median of 12.3x; EV/EBITDA is 10.3x against a peer median of 8.0x. The round is priced at 10x FY27E PAT, which depends on PAT rising 3.5x."
+  ]
+ },
+ "sources": [
+  {
+   "title": "Associated Alcohols & Breweries — screener.in (standalone FY26, market cap)",
+   "url": "https://www.screener.in/company/ASALCBR/"
+  },
+  {
+   "title": "TruAlt Bioenergy — screener.in consolidated (FY26, market cap)",
+   "url": "https://www.screener.in/company/TRUALT/consolidated/"
+  },
+  {
+   "title": "TruAlt Bioenergy — Q1 FY27 investor presentation (capacity, utilisation, CBG/SAF), Jul 2026",
+   "url": "https://nsearchives.nseindia.com/corporate/TRUALTNSE123_28072026204527_Investor_presentation_Sd.pdf"
+  },
+  {
+   "title": "TruAlt Q1 FY27 results and FY26 consolidated figures — Multibagg",
+   "url": "https://www.multibagg.ai/market-pulse/articles/trualt-bioenergy-q1fy27-profit-surge-cms4x5gs502x60zpcjj94qob0"
+  },
+  {
+   "title": "TruAlt secures High Court relief in ₹1,075 Cr ethanol supply dispute — iamrenew, Feb 2026",
+   "url": "https://www.iamrenew.com/green-energy/trualt-gets-high-court-relief-in-rs-1075-cr-ethanol-supply-dispute/"
+  },
+  {
+   "title": "CIAN Agro Industries & Infrastructure — screener.in consolidated",
+   "url": "https://www.screener.in/company/519477/consolidated"
+  },
+  {
+   "title": "CIAN Agro case study (FY26 figures, business mix, promoter) — Pocketful",
+   "url": "https://www.pocketful.in/blog/cian-agro-case-study/"
+  },
+  {
+   "title": "Globus Spirits — screener.in consolidated",
+   "url": "https://www.screener.in/company/GLOBUSSPR/consolidated/"
+  },
+  {
+   "title": "Globus Spirits Q4 FY23 investor presentation (765 KLPD) — BSE",
+   "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHIS/d06dcf6e-abf4-4956-a0f7-646bd78612f1.pdf"
+  },
+  {
+   "title": "Globus Spirits commissions additional capacity at two units — Business Standard, Apr 2024",
+   "url": "https://www.business-standard.com/markets/news/globus-spirits-zooms-11-as-co-commissions-additional-capacity-at-two-units-124040100284_1.html"
+  },
+  {
+   "title": "Globus Spirits Q1 FY27: 89% capacity utilisation — Sahi, Jul 2026",
+   "url": "https://www.sahi.com/news/globus-spirits-maintains-5-7-liter-manufacturing-margin-guidance-and-85-capacity-utilization-target-3498-PE1_COR"
+  },
+  {
+   "title": "Gulshan Polyols — screener.in standalone (FY26, market cap)",
+   "url": "https://www.screener.in/company/532457/"
+  },
+  {
+   "title": "Gulshan Polyols Q4 FY26 earnings call transcript, May 2026",
+   "url": "https://financialfilings.com/filings/gulshan-polyols-ltd/call-transcript/2026/47457962/"
+  },
+  {
+   "title": "Associated Alcohols Q1 FY27 earnings call transcript, Jul 2026",
+   "url": "https://financialfilings.com/filings/associated-alcohols-breweries-ltd/call-transcript/2026/49762676/"
+  },
+  {
+   "title": "AABL Q1 FY27: proprietary brands surge, ethanol drags margins — Multibagg",
+   "url": "https://www.multibagg.ai/market-pulse/articles/aabl-q1fy27-96549"
+  },
+  {
+   "title": "AABL commences 130 KLPD grain ethanol production in MP — Indian Chemical News, Jan 2024",
+   "url": "https://www.indianchemicalnews.com/general/lite/associated-alcohols-breweries-commences-ethanol-production-in-mp-20287"
+  },
+  {
+   "title": "Associated Alcohols gets extra Q4 ethanol supply under Supreme Court order — Sahi, Aug 2026",
+   "url": "https://www.sahi.com/news/associated-alcohols-gets-extra-q4-ethanol-supply-under-supreme-court-allocation-order-1807-PE1_COR"
+  },
+  {
+   "title": "Supreme Court stays Karnataka HC order on enhanced ethanol allocation — Deccan Herald, Jun 2026",
+   "url": "https://www.deccanherald.com/india/supreme-court-stays-karnataka-hc-order-on-enhanced-ethanol-allocation-4057083"
+  }
+ ]
+}

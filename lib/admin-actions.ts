@@ -21,7 +21,8 @@ import { requireAdmin, requireDesk, requirePerm, log, changes, signOutEverywhere
 import { can, isDesk, isSuper, ROLE_LABEL, type DeskRole } from "@/lib/perm";
 import { fromText } from "@/lib/pipes";
 import { investorWhere } from "@/lib/deal-guard";
-import type { RoomContent, IpoProgress } from "@/lib/types";
+import type { RoomContent, IpoProgress, PeerCompare } from "@/lib/types";
+import { checkCompare, peerCompareFor } from "@/lib/peers";
 import ART from "@/lib/deal-art.json";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -31,6 +32,17 @@ const back = (path: string, msg: string) => {
   const [p, hash] = path.split("#");
   redirect(`${p}${p.includes("?") ? "&" : "?"}msg=${encodeURIComponent(msg)}${hash ? `#${hash}` : ""}`);
 };
+
+/** The room's own peer comparison: kept only when it differs from the researched default for the slug. */
+function ownCompare(raw: string, slug: string, prev?: PeerCompare): PeerCompare | undefined {
+  if (!raw.trim()) return undefined;
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); } catch { throw new Error("Peer comparison: not valid JSON"); }
+  const c = checkCompare(parsed);
+  const def = peerCompareFor(slug, null);
+  if (!prev && def && JSON.stringify(def) === JSON.stringify(c)) return undefined;
+  return c;
+}
 
 function json<T>(raw: string, label: string): T | undefined {
   if (!raw) return undefined;
@@ -176,6 +188,7 @@ export async function saveDeal(f: FormData) {
       stake: json(s(f, "stake", 1000), "Stake"),
       interest: json(s(f, "interest", 2000), "Interest") ?? cur.room.interest,
       scenario: json(s(f, "scenario", 2000), "Scenario"),
+      compare: ownCompare(s(f, "compare", 120000), cur.slug, cur.room.compare),
     };
   } catch (e) {
     back(path, (e as Error).message);

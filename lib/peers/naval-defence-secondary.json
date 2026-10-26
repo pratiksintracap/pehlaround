@@ -1,0 +1,618 @@
+{
+ "asOf": "Market data as of 23 Oct 2026 close (INDmoney); results to 31 Mar 2026",
+ "basis": "Krasny figures FY26 from the information memorandum (unaudited, consolidated) with valuation at the ₹1,200 Cr round valuation (secondary, so pre- and post-money are the same); peers FY26 (year to Mar 2026) consolidated annual results and market capitalisation on 23 Oct 2026.",
+ "companies": [
+  {
+   "name": "Krasny Defence Technologies Ltd",
+   "short": "Krasny",
+   "subject": true,
+   "mcapCr": 1200,
+   "note": "Navi Mumbai Tier I MoD supplier: lifecycle support, refits and indigenous manufacturing for the Navy and Coast Guard; valuation at the round."
+  },
+  {
+   "name": "Mazagon Dock Shipbuilders Ltd",
+   "short": "Mazagon Dock",
+   "ticker": "NSE:MAZDOCK",
+   "mcapCr": 75029,
+   "note": "Mumbai defence PSU building submarines, destroyers and frigates for the Navy; the largest listed naval yard and the same customer."
+  },
+  {
+   "name": "Garden Reach Shipbuilders & Engineers Ltd",
+   "short": "GRSE",
+   "ticker": "NSE:GRSE",
+   "mcapCr": 21318,
+   "note": "Kolkata Navratna defence PSU building warships and patrol vessels for the Navy and Coast Guard; same customer base."
+  },
+  {
+   "name": "Cochin Shipyard Ltd",
+   "short": "Cochin Shipyard",
+   "ticker": "NSE:COCHINSHIP",
+   "mcapCr": 29989,
+   "note": "Kochi PSU yard (built INS Vikrant) with a large ship-repair and refit business; the closest listed match to Krasny's refit work."
+  },
+  {
+   "name": "Data Patterns (India) Ltd",
+   "short": "Data Patterns",
+   "ticker": "NSE:DATAPATTNS",
+   "mcapCr": 21230,
+   "note": "Chennai private defence electronics maker (radars, EW, avionics, naval systems); private-sector, high-margin defence supplier."
+  },
+  {
+   "name": "Apollo Micro Systems Ltd",
+   "short": "Apollo Micro",
+   "ticker": "NSE:APOLLO",
+   "mcapCr": 13926,
+   "note": "Hyderabad private defence electronics and weapons-systems supplier (incl. naval programmes); the smallest listed peer by revenue."
+  }
+ ],
+ "metrics": [
+  {
+   "group": "Scale",
+   "label": "Revenue FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    133,
+    13008,
+    7002.16,
+    5021.87,
+    924.77,
+    904.32
+   ],
+   "note": "Revenue from operations, consolidated. Krasny FY26 unaudited (memorandum); mandate holder's note quotes ₹145 Cr."
+  },
+  {
+   "group": "Scale",
+   "label": "Revenue FY25",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    107.2,
+    11432,
+    5075.69,
+    4819.96,
+    708.4,
+    562
+   ],
+   "note": "Krasny FY25 audited."
+  },
+  {
+   "group": "Scale",
+   "label": "PAT FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    34,
+    2578,
+    747.93,
+    716.74,
+    271.37,
+    107.38
+   ],
+   "note": "Consolidated. Krasny standalone PAT is ₹19.5 Cr."
+  },
+  {
+   "group": "Scale",
+   "label": "Market cap / valuation",
+   "unit": "₹ Cr",
+   "better": "none",
+   "vals": [
+    1200,
+    75029,
+    21318,
+    29989,
+    21230,
+    13926
+   ],
+   "note": "Peers: market cap at 23 Oct 2026 close. Krasny: ₹1,200 Cr implied by the ₹105/share secondary price."
+  },
+  {
+   "group": "Scale",
+   "label": "Order book",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    750,
+    18218,
+    15324,
+    22000,
+    2654,
+    1765
+   ],
+   "note": "Latest disclosed: Krasny ~₹750 Cr firm (deal file); Mazagon 30 Jun 2026; GRSE 31 Mar 2026; Cochin ~₹22,000 Cr and Data Patterns ₹2,654 Cr at Q1 FY27; Apollo 30 Sep 2026."
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    24.1,
+    13.8,
+    38,
+    4.2,
+    30.5,
+    60.9
+   ],
+   "note": "FY26 over FY25."
+  },
+  {
+   "group": "Growth",
+   "label": "PAT growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    25,
+    6.8,
+    41.8,
+    -13.4,
+    22.3,
+    90.5
+   ],
+   "note": "Apollo growth as reported (FY25 base not separately verified)."
+  },
+  {
+   "group": "Growth",
+   "label": "Order book / FY26 revenue",
+   "unit": "x",
+   "better": "high",
+   "vals": [
+    5.6,
+    1.4,
+    2.2,
+    4.4,
+    2.9,
+    2
+   ],
+   "note": "Years of FY26 revenue covered by the latest order book."
+  },
+  {
+   "group": "Profitability",
+   "label": "PAT margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    25.6,
+    19.8,
+    10.7,
+    14.3,
+    29.3,
+    11.9
+   ],
+   "note": "Consolidated PAT / revenue from operations. Krasny standalone margin is 14.7%."
+  },
+  {
+   "group": "Returns",
+   "label": "ROE",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    30.4,
+    31.8,
+    11.2,
+    16.7,
+    null
+   ],
+   "note": "As reported by INDmoney (Oct 2026). Krasny net worth not in the deal file; Apollo sources conflict (8.4% vs 12.5%), so left blank."
+  },
+  {
+   "group": "Valuation",
+   "label": "P/E FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    35.3,
+    29.1,
+    28.5,
+    41.8,
+    78.2,
+    129.7
+   ],
+   "note": "Market cap (Krasny: round valuation) / FY26 consolidated PAT. Krasny is 62x on standalone PAT and 18x on projected FY27E PAT."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / sales FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    9,
+    5.8,
+    3,
+    6,
+    23,
+    15.4
+   ],
+   "note": "Market cap (Krasny: round valuation) / FY26 revenue."
+  },
+  {
+   "group": "Valuation",
+   "label": "Valuation / order book",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    1.6,
+    4.12,
+    1.39,
+    1.36,
+    8,
+    7.89
+   ],
+   "note": "Market cap (Krasny: round valuation) / latest order book."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / book",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    null,
+    9.4,
+    8.6,
+    5.3,
+    9.8,
+    null
+   ],
+   "note": "As reported by INDmoney (Oct 2026). Krasny book value not in deal file; Apollo sources conflict (5.1x vs 10.4x)."
+  }
+ ],
+ "scatter": {
+  "x": "Revenue growth FY26",
+  "y": "P/E FY26"
+ },
+ "dims": [
+  {
+   "name": "Product / technology",
+   "scores": [
+    2,
+    5,
+    4,
+    4,
+    4,
+    3
+   ],
+   "why": "Krasny does refits, lifecycle support and indigenous manufacturing of sub-systems. Mazagon builds submarines and destroyers, Cochin built the INS Vikrant carrier, and Data Patterns designs its own radar and EW electronics."
+  },
+  {
+   "name": "Customers and concentration",
+   "scores": [
+    1,
+    2,
+    2,
+    3,
+    3,
+    3
+   ],
+   "why": "Krasny's revenue is almost entirely MoD, Navy and Coast Guard, at a much smaller revenue base. The shipyards also depend on the Navy, while Cochin adds commercial, export and repair customers and the electronics makers sell to DRDO, DPSUs and export buyers."
+  },
+  {
+   "name": "Entry barriers",
+   "scores": [
+    3,
+    5,
+    5,
+    5,
+    4,
+    3
+   ],
+   "why": "Krasny's Tier I MoD status and Navy track record are real barriers for a services vendor. Yard capacity (docks and slipways) and decades of warship programmes protect the three PSU yards far more strongly."
+  },
+  {
+   "name": "Distribution / reach",
+   "scores": [
+    1,
+    4,
+    4,
+    4,
+    3,
+    2
+   ],
+   "why": "Krasny works from Navi Mumbai for domestic naval and Coast Guard units. The PSU yards have nomination-level access to MoD programmes, and Cochin and GRSE also take export and commercial orders."
+  },
+  {
+   "name": "Scale of operations",
+   "scores": [
+    1,
+    5,
+    4,
+    4,
+    2,
+    2
+   ],
+   "why": "Krasny's FY26 revenue of ₹133 Cr is about 15% of Apollo's ₹904 Cr, the smallest peer, and about 1% of Mazagon's ₹13,008 Cr."
+  },
+  {
+   "name": "Management and governance",
+   "scores": [
+    2,
+    4,
+    4,
+    4,
+    4,
+    3
+   ],
+   "why": "Krasny's FY26 accounts are unaudited, two sources differ by about 9% on revenue, and consolidated PAT is well above standalone. The listed peers publish audited results, PSU accounts also face C&AG review, and all carry listed-company disclosure."
+  },
+  {
+   "name": "Growth runway",
+   "scores": [
+    4,
+    4,
+    4,
+    3,
+    4,
+    4
+   ],
+   "why": "Krasny projects FY27E revenue of ₹352 Cr (+165%) against a ~₹2,250 Cr pipeline. Peers grew 4–61% in FY26, and Cochin's profit fell 13%. The projection is the company's own and unverified."
+  },
+  {
+   "name": "Order book visibility",
+   "scores": [
+    4,
+    2,
+    3,
+    4,
+    3,
+    3
+   ],
+   "why": "Krasny's ~₹750 Cr firm orders cover 5.6x FY26 revenue, the highest cover in the set, against 1.4x at Mazagon and 4.4x at Cochin. The order book is as stated in the deal file, not independently verified."
+  },
+  {
+   "name": "Profitability",
+   "scores": [
+    4,
+    4,
+    3,
+    3,
+    5,
+    3
+   ],
+   "why": "Krasny's 25.6% consolidated PAT margin is second only to Data Patterns (29.3%) and above Mazagon (19.8%), but standalone margin is 14.7%, closer to GRSE (10.7%) and Apollo (11.9%)."
+  }
+ ],
+ "matrix": [
+  {
+   "aspect": "Core business",
+   "cells": [
+    "Naval lifecycle support, refits and indigenous manufacturing",
+    "Submarines, destroyers, frigates",
+    "Frigates, corvettes, patrol vessels, survey ships",
+    "Carriers, naval and commercial ships, ship repair",
+    "Defence electronics: radars, EW, avionics",
+    "Defence electronics, weapon sub-systems, explosives"
+   ],
+   "edge": "behind",
+   "why": "Krasny is a services and sub-systems supplier, not a prime warship builder or electronics designer. Its work is closest to Cochin's repair arm."
+  },
+  {
+   "aspect": "Ownership",
+   "cells": [
+    "Unlisted; shares held by promoters and preferential allottees",
+    "GoI-majority defence PSU",
+    "Navratna defence PSU, GoI 74.5%",
+    "GoI-majority PSU",
+    "Promoter-led, listed 2021",
+    "Promoter-led, listed 2018"
+   ],
+   "edge": "mixed",
+   "why": "Krasny has no listed-company disclosure. The PSU peers carry government ownership and oversight."
+  },
+  {
+   "aspect": "Main customers",
+   "cells": [
+    "MoD, Indian Navy, Coast Guard",
+    "Indian Navy",
+    "Indian Navy, Coast Guard, exports",
+    "Navy, commercial owners, exports, repair clients",
+    "DRDO, DPSUs, services, exports",
+    "DRDO, DPSUs, private primes"
+   ],
+   "edge": "behind",
+   "why": "Krasny has the narrowest customer base in the set."
+  },
+  {
+   "aspect": "FY26 revenue / PAT",
+   "cells": [
+    "₹133 Cr / ₹34 Cr (unaudited)",
+    "₹13,008 Cr / ₹2,578 Cr",
+    "₹7,002 Cr / ₹748 Cr",
+    "₹5,022 Cr / ₹717 Cr",
+    "₹925 Cr / ₹271 Cr",
+    "₹904 Cr / ₹107 Cr"
+   ],
+   "edge": "behind",
+   "why": "Krasny is the smallest company in the set by an order of magnitude."
+  },
+  {
+   "aspect": "Revenue growth FY26",
+   "cells": [
+    "+24%",
+    "+14%",
+    "+38%",
+    "+4%",
+    "+31%",
+    "+61%"
+   ],
+   "edge": "par",
+   "why": "Krasny's 24% growth is mid-pack. The step-up to +165% is only a company projection for FY27E."
+  },
+  {
+   "aspect": "Order book",
+   "cells": [
+    "~₹750 Cr firm + ~₹2,250 Cr pipeline",
+    "₹18,218 Cr (Jun 2026)",
+    "₹15,324 Cr (Mar 2026)",
+    "~₹22,000 Cr (Q1 FY27)",
+    "₹2,654 Cr (Q1 FY27)",
+    "₹1,765 Cr (Sep 2026)"
+   ],
+   "edge": "ahead",
+   "why": "Relative to revenue, Krasny's 5.6x cover is the highest in the set; in absolute terms it is the smallest."
+  },
+  {
+   "aspect": "Financial reporting",
+   "cells": [
+    "FY26 unaudited; consolidated well above standalone",
+    "Audited; C&AG review",
+    "Audited; C&AG review",
+    "Audited; C&AG review",
+    "Audited, quarterly",
+    "Audited, quarterly"
+   ],
+   "edge": "behind",
+   "why": "Investors are pricing Krasny on unaudited FY26 numbers, while every peer reports audited results."
+  },
+  {
+   "aspect": "Valuation basis",
+   "cells": [
+    "₹1,200 Cr at ₹105/share; P/E 35x FY26",
+    "₹75,029 Cr; P/E 29x",
+    "₹21,318 Cr; P/E 28x",
+    "₹29,989 Cr; P/E 42x",
+    "₹21,230 Cr; P/E 78x",
+    "₹13,926 Cr; P/E 130x"
+   ],
+   "edge": "mixed",
+   "why": "Krasny's 35x FY26 P/E sits below the 42x peer median and above both PSU warship builders. It rises to 62x on standalone PAT."
+  },
+  {
+   "aspect": "Liquidity / exit",
+   "cells": [
+    "Secondary; exit via IPO targeted Sep 2028, then 6-month lock-in",
+    "Listed, daily liquidity",
+    "Listed, daily liquidity",
+    "Listed, daily liquidity",
+    "Listed, daily liquidity",
+    "Listed, daily liquidity"
+   ],
+   "edge": "behind",
+   "why": "Krasny buyers hold until listing and through the post-IPO lock-in. Peer shares can be sold any trading day."
+  },
+  {
+   "aspect": "Use of money",
+   "cells": [
+    "None to company; proceeds go to selling shareholders",
+    "n/a",
+    "n/a",
+    "n/a",
+    "n/a",
+    "n/a"
+   ],
+   "edge": "behind",
+   "why": "The round does not fund Krasny's projected FY27 growth. That growth depends on operating cash and a planned debt raise."
+  }
+ ],
+ "barriers": [
+  {
+   "name": "MoD vendor status / Tier I supplier",
+   "level": 2,
+   "note": "Tier I standing with the Ministry of Defence lets Krasny bid for naval and Coast Guard work. Other qualified private firms and the PSU yards hold similar status."
+  },
+  {
+   "name": "Navy track record and references",
+   "level": 2,
+   "note": "A refit and lifecycle-support history with the Navy and Coast Guard counts in tenders. The deal file does not quantify how many platforms or contracts this covers."
+  },
+  {
+   "name": "Defence licensing and FDI limits",
+   "level": 2,
+   "note": "Defence is a licensed sector with FDI caps, which limits new and foreign entrants. The same limits apply to Krasny's own non-resident investors."
+  },
+  {
+   "name": "Infrastructure (docks, yards)",
+   "level": 1,
+   "note": "Krasny does not report dry-dock or yard capacity. Mazagon, GRSE and Cochin control most of the large naval docks, so Krasny competes on services rather than facilities."
+  },
+  {
+   "name": "Working capital and bank guarantees",
+   "level": 1,
+   "note": "Defence contracts need performance guarantees and long receivable cycles. A ₹133 Cr company has much less balance-sheet capacity than the listed peers, and the deal file mentions a planned debt raise."
+  }
+ ],
+ "stands": {
+  "ahead": [
+   "Order book cover: ~₹750 Cr firm orders equal 5.6x FY26 revenue, against 1.4x–4.4x at the listed peers.",
+   "Consolidated PAT margin of 25.6% is above Mazagon (19.8%), Cochin (14.3%), Apollo (11.9%) and GRSE (10.7%); only Data Patterns (29.3%) is higher."
+  ],
+  "behind": [
+   "Scale: FY26 revenue of ₹133 Cr is about 15% of Apollo's ₹904 Cr, the smallest peer, and about 1% of Mazagon's ₹13,008 Cr.",
+   "FY26 figures are unaudited. The memorandum (₹133 Cr) and the mandate holder's note (₹145 Cr) differ by about 9%; all peers report audited results.",
+   "Customer concentration: almost all revenue is MoD, Navy and Coast Guard, with no export or commercial business disclosed.",
+   "Liquidity: secondary shares with no exit until the targeted Sep 2028 IPO and a six-month post-listing lock-in."
+  ],
+  "watch": [
+   "Signed FY26 audit confirming ₹133–145 Cr revenue and ₹34 Cr consolidated PAT, and the split between consolidated and standalone PAT.",
+   "Delivery against the FY27E projection of ₹352 Cr revenue and ₹66 Cr PAT (2.6x FY26 revenue), starting with H1 FY27 numbers.",
+   "Conversion of the ~₹2,250 Cr pipeline into firm orders, and closing of the planned debt raise to fund working capital.",
+   "DRHP filing on a timeline consistent with the Sep 2028 main-board IPO target."
+  ],
+  "valuation": [
+   "Valuation per rupee of orders: 1.6x order book, close to GRSE (1.4x) and Cochin (1.4x) and below Mazagon (4.1x), Data Patterns (8.0x) and Apollo (7.9x).",
+   "P/E of 35x FY26 at the round sits below the 42x peer median, with peers ranging from 28x to 130x.",
+   "Standalone PAT of ₹19.5 Cr gives 62x P/E at the round, above every peer except Data Patterns (78x) and Apollo (130x)."
+  ]
+ },
+ "sources": [
+  {
+   "title": "Mazagon Dock Q4 FY26 consolidated results (PSU Connect)",
+   "url": "https://www.psuconnect.in/financial/mazagon-dock-q4-consolidated-net-profit-at-674-cr-full-year-pat-at-2-578-cr-recommends-4-62-final-dividend"
+  },
+  {
+   "title": "Mazagon Dock order book ₹18,218 Cr at 30 Jun 2026 (Whalesbook)",
+   "url": "https://www.whalesbook.com/corporate-news/English/aerospace-defense/Mazagon-Dock-Reports-Rs-18218-Crore-Order-Book-Net-Profit-Up/6ab3929af2017017ae7110aa"
+  },
+  {
+   "title": "Mazagon Dock share price and market cap (INDmoney)",
+   "url": "https://www.indmoney.com/stocks/mazagon-dock-shipbuilders-ltd-share-price"
+  },
+  {
+   "title": "GRSE FY26 results and order book at 110th AGM (Maritime Gateway)",
+   "url": "https://www.maritimegateway.com/grse-fy26-revenue-profit/"
+  },
+  {
+   "title": "GRSE share price and market cap (INDmoney)",
+   "url": "https://indmoney.com/stocks/garden-reach-shipbuilders-and-engineers-ltd-share-price"
+  },
+  {
+   "title": "Cochin Shipyard FY26 results (PSU Connect)",
+   "url": "https://www.psuconnect.in/financial/cochin-shipyard-reports-13-5-dip-in-fy26-net-profit-recommends-final-dividend"
+  },
+  {
+   "title": "Cochin Shipyard Q1 FY27 and ₹22,000 Cr order book (Whalesbook)",
+   "url": "https://www.whalesbook.com/corporate-news/English/industrial-goodsservices/Cochin-Shipyard-Q1-PAT-Falls-indian-rupee22000-Crore-Order-Book-Intact/6aacd01ff2017017ae6ce648"
+  },
+  {
+   "title": "Cochin Shipyard share price and market cap (INDmoney)",
+   "url": "https://www.indmoney.com/stocks/cochin-shipyard-ltd-share-price"
+  },
+  {
+   "title": "Data Patterns Q4 FY26 and FY26 results (Free Press Journal)",
+   "url": "https://www.freepressjournal.in/business/data-patterns-q4-profit-rises-21-to-138-crore-despite-revenue-decline-fy26-revenue-tops-924-crore"
+  },
+  {
+   "title": "Data Patterns Q1 FY27 earnings call, order book ₹2,654 Cr (Investywise)",
+   "url": "https://www.investywise.com/data-patterns-india-limited-q1-fy27-earnings-conference-call-transcript/"
+  },
+  {
+   "title": "Data Patterns share price and market cap (INDmoney)",
+   "url": "https://www.indmoney.com/stocks/data-patterns-india-ltd-share-price"
+  },
+  {
+   "title": "Apollo Micro Systems FY26 results press release (ThePrint/ANI)",
+   "url": "https://theprint.in/ani-press-releases/apollo-micro-systems-delivers-historic-performance-fy26-revenue-surged-to-inr-904-cr-up-61-yoy-as-against-inr-562-cr-in-fy25-q4fy26-revenue-up-81-yoy/2935106/"
+  },
+  {
+   "title": "Apollo Micro Systems FY26 PAT ₹107 Cr (Whalesbook)",
+   "url": "https://www.whalesbook.com/corporate-news/English/aerospace-defense/Apollo-Micro-Systems-FY26-PAT-indian-rupee107-Cr-IDL-Buyout-Drives-61percent-Revenue-Jump/6a0ae47a591776c1328ab246"
+  },
+  {
+   "title": "Apollo Micro Systems Q2 FY27 and ₹1,765 Cr order book (Business Today)",
+   "url": "https://www.businesstoday.in/markets/stocks/story/apollo-micro-systems-shares-jump-8-on-q2-earnings-order-book-hits-record-high-563540-2026-10-26"
+  },
+  {
+   "title": "Apollo Micro Systems share price and market cap (INDmoney)",
+   "url": "https://www.indmoney.com/stocks/apollo-micro-systems-ltd-share-price"
+  }
+ ]
+}

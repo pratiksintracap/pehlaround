@@ -1,0 +1,686 @@
+{
+ "asOf": "Market data as of 23 Oct 2026 close (Intellect Design Arena 26 Oct 2026 intraday), screener.in",
+ "basis": "Armsoftech figures FY26 provisional (FY24–FY25 audited) and valuation at the round's ₹150 Cr pre-money; peers FY26 (year to Mar 2026) consolidated annual results and market capitalisation on 23 Oct 2026. Peer multiples are market cap on FY26 figures, not EV.",
+ "companies": [
+  {
+   "name": "Armsoftech Private Limited",
+   "short": "Armsoftech",
+   "subject": true,
+   "mcapCr": 150,
+   "note": "Chennai collections platform for banks and NBFCs: AIR Collect stack, generative-AI voice agent in 13 languages, about 2,650 human-assisted seats, 35 lender customers. Value shown is the round's pre-money."
+  },
+  {
+   "name": "Firstsource Solutions Ltd",
+   "short": "Firstsource",
+   "ticker": "NSE:FSL",
+   "mcapCr": 20532,
+   "note": "RP-Sanjiv Goenka group BPM (US$1.08 bn FY26 revenue) with a third-party collections line for banks and fintechs and an agentic-AI operating layer; closest listed match for the human-assisted collections seats."
+  },
+  {
+   "name": "Hinduja Global Solutions Ltd",
+   "short": "HGS",
+   "ticker": "NSE:HGS",
+   "mcapCr": 1572,
+   "note": "Hinduja group voice and non-voice BPM (contact centres, back-office processing) plus a media and communications platform; peer for the seat-based, contact-centre side of the subject's model."
+  },
+  {
+   "name": "eClerx Services Ltd",
+   "short": "eClerx",
+   "ticker": "NSE:ECLERX",
+   "mcapCr": 17792,
+   "note": "Process management, automation and analytics services to Fortune 2000 clients with financial services as a core vertical; peer for an automation-led, high-margin services model."
+  },
+  {
+   "name": "Nucleus Software Exports Ltd",
+   "short": "Nucleus",
+   "ticker": "NSE:NUCLEUS",
+   "mcapCr": 1703,
+   "note": "Lending software (FinnOne Neo, including a Gen-AI enabled FinnOne Neo Collections module) for 200+ banks and financial institutions in 50 countries; the most direct product overlap with the subject's collections software."
+  },
+  {
+   "name": "Intellect Design Arena Ltd",
+   "short": "Intellect",
+   "ticker": "NSE:INTELLECT",
+   "mcapCr": 8327,
+   "note": "Chennai banking and insurance software house (core banking, lending, transaction banking, AI platform); peer for a lender-facing software product sold to banks."
+  },
+  {
+   "name": "Tanla Platforms Ltd",
+   "short": "Tanla",
+   "ticker": "NSE:TANLA",
+   "mcapCr": 7390,
+   "note": "Hyderabad A2P messaging / CPaaS platform with about 30% of India's CPaaS market; BFSI reminders and borrower communications are the digital channel the subject's voice agent and SMS/WhatsApp nudges sit alongside."
+  }
+ ],
+ "metrics": [
+  {
+   "group": "Scale",
+   "label": "Revenue FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    73.0,
+    9556,
+    4307,
+    4117,
+    876,
+    3038,
+    4418
+   ],
+   "note": "Armsoftech provisional; peers consolidated sales per screener.in."
+  },
+  {
+   "group": "Scale",
+   "label": "EBITDA FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    26.1,
+    1605,
+    102,
+    1053,
+    126,
+    584,
+    726
+   ],
+   "note": "Peers: screener.in operating profit (before other income)."
+  },
+  {
+   "group": "Scale",
+   "label": "PAT FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    10.6,
+    674,
+    5,
+    706,
+    117,
+    343,
+    509
+   ],
+   "note": "Armsoftech provisional (₹0.8 Cr audited in FY25). Firstsource reported PAT; ₹754 Cr adjusted for one-time labour-code items."
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue growth FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    20.1,
+    19.7,
+    -2.2,
+    22.3,
+    5.3,
+    21.5,
+    9.7
+   ],
+   "note": "FY26 over FY25."
+  },
+  {
+   "group": "Growth",
+   "label": "Revenue CAGR FY24–26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    19.5,
+    22.8,
+    -3.4,
+    18.6,
+    3.0,
+    10.1,
+    6.1
+   ],
+   "note": "Two-year compound growth; Armsoftech FY26 provisional."
+  },
+  {
+   "group": "Profitability",
+   "label": "EBITDA margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    35.8,
+    16.8,
+    2.4,
+    25.6,
+    14.4,
+    19.2,
+    16.4
+   ],
+   "note": "Armsoftech provisional; it capitalises about ₹12 Cr of voice-bot development, which lifts reported EBITDA relative to peers that expense more R&D."
+  },
+  {
+   "group": "Profitability",
+   "label": "PAT margin FY26",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    14.5,
+    7.1,
+    0.1,
+    17.1,
+    13.4,
+    11.3,
+    11.5
+   ]
+  },
+  {
+   "group": "Returns",
+   "label": "ROE",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    17.6,
+    0.4,
+    28.4,
+    13.1,
+    12.4,
+    21.4
+   ],
+   "note": "Peers per screener.in (latest year). Armsoftech FY26 net worth not disclosed in the deal file."
+  },
+  {
+   "group": "Returns",
+   "label": "ROCE",
+   "unit": "%",
+   "better": "high",
+   "vals": [
+    null,
+    16.8,
+    1.5,
+    34.4,
+    16.8,
+    16.0,
+    26.3
+   ],
+   "note": "Peers per screener.in (latest year)."
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Debt / equity FY26",
+   "unit": "x",
+   "better": "low",
+   "vals": [
+    null,
+    0.67,
+    0.24,
+    0.15,
+    0.01,
+    0.05,
+    0.02
+   ],
+   "note": "Borrowings per screener.in over shareholders' funds, Mar 2026."
+  },
+  {
+   "group": "Balance sheet",
+   "label": "Shareholders' funds FY26",
+   "unit": "₹ Cr",
+   "better": "high",
+   "vals": [
+    null,
+    4385,
+    8317,
+    2561,
+    907,
+    3170,
+    2488
+   ],
+   "note": "Armsoftech: ₹5.7 Cr at FY25 (audited), against ₹19.7 Cr of on-demand related-party loans; FY26 figure not given."
+  },
+  {
+   "group": "Efficiency",
+   "label": "Debtor days FY26",
+   "unit": "days",
+   "better": "low",
+   "vals": [
+    null,
+    79,
+    74,
+    90,
+    50,
+    82,
+    82
+   ],
+   "note": "Per screener.in. Not disclosed for Armsoftech."
+  },
+  {
+   "group": "Valuation",
+   "label": "Market cap / valuation",
+   "unit": "₹ Cr",
+   "better": "none",
+   "vals": [
+    150,
+    20532,
+    1572,
+    17792,
+    1703,
+    8327,
+    7390
+   ],
+   "note": "Armsoftech at ₹150 Cr pre-money (₹180 Cr post-money); peers market cap on 23 Oct 2026."
+  },
+  {
+   "group": "Valuation",
+   "label": "P/E FY26",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    14.2,
+    30.5,
+    null,
+    25.2,
+    14.6,
+    24.3,
+    14.5
+   ],
+   "note": "Armsoftech at pre-money on provisional PAT (10.2x on FY27E projection). Peers: market cap / FY26 PAT. HGS not meaningful (PAT ₹5 Cr). Peer median 24.3x."
+  },
+  {
+   "group": "Valuation",
+   "label": "Market cap / EBITDA FY26",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    5.7,
+    12.8,
+    15.4,
+    16.9,
+    13.5,
+    14.3,
+    10.2
+   ],
+   "note": "Armsoftech at pre-money on provisional EBITDA. Market cap, not EV, for all companies. Peer median 13.9x."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / sales FY26",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    2.05,
+    2.15,
+    0.36,
+    4.32,
+    1.94,
+    2.74,
+    1.67
+   ],
+   "note": "Armsoftech at pre-money (1.5x on FY27E projection). Peer median about 2.0x."
+  },
+  {
+   "group": "Valuation",
+   "label": "Price / book",
+   "unit": "x",
+   "better": "none",
+   "vals": [
+    null,
+    4.68,
+    0.19,
+    6.95,
+    1.88,
+    2.63,
+    2.97
+   ],
+   "note": "Market cap over Mar 2026 shareholders' funds. Not derivable for Armsoftech."
+  }
+ ],
+ "scatter": {
+  "x": "Revenue growth FY26",
+  "y": "P/E FY26"
+ },
+ "dims": [
+  {
+   "name": "Product / technology",
+   "scores": [
+    3,
+    3,
+    2,
+    3,
+    4,
+    5,
+    4
+   ],
+   "why": "Armsoftech runs its own AIR Collect stack with a generative-AI voice agent in 13 languages, but it is one product line built on about ₹12 Cr of capitalised development. Intellect and Nucleus have multi-product banking and lending suites sold in dozens of countries; Tanla runs national-scale messaging infrastructure; the BPM peers are services-led with AI layers."
+  },
+  {
+   "name": "Customers and concentration",
+   "scores": [
+    2,
+    4,
+    3,
+    4,
+    4,
+    4,
+    4
+   ],
+   "why": "Armsoftech has 35 lender customers with the top three banks at 36% of FY26 revenue. Nucleus serves 200+ banks and financial institutions across 50 countries; Firstsource added 47 new logos in FY26 alone."
+  },
+  {
+   "name": "Entry barriers",
+   "scores": [
+    2,
+    3,
+    2,
+    3,
+    4,
+    4,
+    4
+   ],
+   "why": "Collections software and seats can be replaced at contract renewal, and AI voice tools are being launched by many vendors including Nucleus (Gen-AI in FinnOne Neo Collections). Core lending and banking systems (Nucleus, Intellect) and telecom-integrated messaging (Tanla) are much harder to switch out."
+  },
+  {
+   "name": "Distribution / reach",
+   "scores": [
+    1,
+    5,
+    3,
+    4,
+    4,
+    4,
+    4
+   ],
+   "why": "Armsoftech sells in India only, to 35 lenders. Firstsource delivers from nine countries; Nucleus operates in 50 countries; Intellect, eClerx and Tanla sell to global or national enterprise client bases."
+  },
+  {
+   "name": "Scale of operations",
+   "scores": [
+    1,
+    5,
+    4,
+    4,
+    2,
+    3,
+    4
+   ],
+   "why": "Armsoftech's FY26 revenue of ₹73 Cr is about 8% of Nucleus (₹876 Cr), the smallest peer, and under 1% of Firstsource (₹9,556 Cr, 36,205 employees). Its roughly 2,650 seats compare with tens of thousands at the BPM peers."
+  },
+  {
+   "name": "Management and governance",
+   "scores": [
+    2,
+    4,
+    3,
+    4,
+    4,
+    4,
+    4
+   ],
+   "why": "Armsoftech's FY25 audited accounts show ₹19.7 Cr of on-demand related-party loans against ₹5.7 Cr net worth, and the desk has open questions on the financials. Listed peers carry SEBI disclosure and audit-committee oversight; HGS shows ₹2,810 Cr of contingent liabilities and a three-year ROE near 1%."
+  },
+  {
+   "name": "Growth runway",
+   "scores": [
+    4,
+    4,
+    2,
+    4,
+    2,
+    3,
+    3
+   ],
+   "why": "Armsoftech grew revenue 20.1% in FY26 and projects ₹101.8 Cr in FY27 (Q1 FY27 ₹19.6 Cr), with India retail and MSME credit expanding the collections pool. Firstsource (22.8% two-year CAGR) and eClerx (18.6%) are growing at a similar pace from far larger bases; HGS and Nucleus grew 5% or less."
+  },
+  {
+   "name": "Collections domain depth",
+   "scores": [
+    5,
+    4,
+    3,
+    2,
+    4,
+    2,
+    2
+   ],
+   "why": "Armsoftech is a pure-play collections business covering pre-due to write-off with both software and seats. Firstsource runs third-party collections for US lenders and Nucleus sells a dedicated collections module; for the other peers collections is one use case among many."
+  },
+  {
+   "name": "Regulatory exposure (higher = more insulated)",
+   "scores": [
+    2,
+    3,
+    3,
+    4,
+    4,
+    4,
+    3
+   ],
+   "why": "RBI recovery-conduct rules apply directly to lenders' collection agents, so all of Armsoftech's revenue sits in the regulated activity. Firstsource is exposed to US collection rules on part of its book; Tanla to TRAI commercial-communication rules; software vendors are one step removed."
+  }
+ ],
+ "matrix": [
+  {
+   "aspect": "Core business",
+   "cells": [
+    "AI collections stack + voice agent + ~2,650 assisted seats",
+    "Global BPM incl. third-party collections",
+    "Voice / non-voice BPM, contact centres",
+    "Ops, automation and analytics services",
+    "Lending and transaction-banking software",
+    "Banking and insurance software suites",
+    "A2P messaging / CPaaS platform"
+   ],
+   "edge": "mixed",
+   "why": "Armsoftech combines software and seats in one collections offer; each peer covers only one side or treats collections as a minor line."
+  },
+  {
+   "aspect": "Revenue FY26",
+   "cells": [
+    "₹73.0 Cr (provisional)",
+    "₹9,556 Cr",
+    "₹4,307 Cr",
+    "₹4,117 Cr",
+    "₹876 Cr",
+    "₹3,038 Cr",
+    "₹4,418 Cr"
+   ],
+   "edge": "behind",
+   "why": "Armsoftech is about one-twelfth the size of the smallest listed peer."
+  },
+  {
+   "aspect": "Revenue growth FY26",
+   "cells": [
+    "20.1%",
+    "19.7%",
+    "-2.2%",
+    "22.3%",
+    "5.3%",
+    "21.5%",
+    "9.7%"
+   ],
+   "edge": "par",
+   "why": "In line with the fastest-growing peers (Firstsource, Intellect, eClerx), ahead of HGS, Nucleus and Tanla."
+  },
+  {
+   "aspect": "EBITDA margin FY26",
+   "cells": [
+    "35.8% (provisional)",
+    "16.8%",
+    "2.4%",
+    "25.6%",
+    "14.4%",
+    "19.2%",
+    "16.4%"
+   ],
+   "edge": "ahead",
+   "why": "Highest reported margin in the set, but it is provisional and partly reflects capitalised development spend."
+  },
+  {
+   "aspect": "Customers",
+   "cells": [
+    "35 lenders; top 3 banks 36%",
+    "47 new logos in FY26",
+    "Global enterprise clients",
+    "Fortune 2000 clients",
+    "200+ banks and FIs",
+    "Banks and insurers globally",
+    "Enterprises and telcos in India"
+   ],
+   "edge": "behind",
+   "why": "Smaller and more concentrated customer base than any peer."
+  },
+  {
+   "aspect": "Geography",
+   "cells": [
+    "India",
+    "9 countries (US, UK, India, Philippines and others)",
+    "India, US, UK and others",
+    "Global clients, India delivery",
+    "50 countries",
+    "Global",
+    "India-led"
+   ],
+   "edge": "behind",
+   "why": "Single-market exposure; peers diversify currency and regulatory risk."
+  },
+  {
+   "aspect": "AI positioning",
+   "cells": [
+    "Gen-AI voice agent in 13 languages",
+    "Kairos agentic-AI operating layer",
+    "Automation within BPM delivery",
+    "Automation and analytics-led",
+    "Gen-AI in FinnOne Neo Collections",
+    "AI platform across banking suites",
+    "AI-based messaging and anti-spam"
+   ],
+   "edge": "par",
+   "why": "Voice AI in Indian languages is a specific strength, but every peer now markets an AI layer."
+  },
+  {
+   "aspect": "Balance sheet",
+   "cells": [
+    "₹19.7 Cr RPT loans vs ₹5.7 Cr NW (FY25)",
+    "D/E 0.67x",
+    "D/E 0.24x; ₹2,810 Cr contingent liab.",
+    "D/E 0.15x",
+    "Almost debt-free (D/E 0.01x)",
+    "D/E 0.05x",
+    "Almost debt-free (D/E 0.02x)"
+   ],
+   "edge": "behind",
+   "why": "Related-party loans of more than three times FY25 net worth are an open diligence item; most peers are near debt-free."
+  },
+  {
+   "aspect": "Valuation basis",
+   "cells": [
+    "14.2x P/E FY26 at pre-money",
+    "30.5x P/E FY26",
+    "P/E not meaningful",
+    "25.2x P/E FY26",
+    "14.6x P/E FY26",
+    "24.3x P/E FY26",
+    "14.5x P/E FY26"
+   ],
+   "edge": "mixed",
+   "why": "The round's P/E sits at the low end of the set, close to Nucleus and Tanla, against a peer median of 24.3x; the subject's multiple rests on provisional PAT and is unlisted."
+  },
+  {
+   "aspect": "Listing status",
+   "cells": [
+    "Unlisted; listing targeted late 2028",
+    "NSE / BSE",
+    "NSE / BSE",
+    "NSE / BSE",
+    "NSE / BSE",
+    "NSE / BSE",
+    "NSE / BSE"
+   ],
+   "edge": "behind",
+   "why": "No public market for the shares until a listing; six-month post-listing lock-in applies under SEBI ICDR."
+  }
+ ],
+ "barriers": [
+  {
+   "name": "Lender integration and onboarding",
+   "level": 2,
+   "note": "Plugging into a bank's loan system, allocation rules and audit trails takes months, which slows switching; but with the top three banks at 36% of revenue, losing one contract would be material."
+  },
+  {
+   "name": "Indian-language voice AI",
+   "level": 2,
+   "note": "A generative-AI voice agent in 13 languages trained on collections calls is hard to copy quickly, but large software vendors (Nucleus, Intellect) and CPaaS players are adding similar features."
+  },
+  {
+   "name": "Regulatory compliance track record",
+   "level": 2,
+   "note": "RBI recovery-conduct rules make lenders favour vendors with clean call recording, consent and complaint records; the same rules can tighten and hit the whole sector."
+  },
+  {
+   "name": "Collections data and scoring models",
+   "level": 2,
+   "note": "Repayment-behaviour data from 35 lenders feeds scoring and call prioritisation; peers with 200+ lender clients (Nucleus) or global collections books (Firstsource) have larger data sets."
+  },
+  {
+   "name": "Seat capacity and trained workforce",
+   "level": 1,
+   "note": "About 2,650 human-assisted seats can be replicated by BPM firms with tens of thousands of seats; this is a capacity advantage only against smaller agencies."
+  },
+  {
+   "name": "Capital and scale",
+   "level": 1,
+   "note": "With ₹73 Cr revenue and a ₹30 Cr round, Armsoftech has far less to spend on product and sales than listed peers generating ₹117–1,214 Cr of operating cash flow."
+  }
+ ],
+ "stands": {
+  "ahead": [
+   "EBITDA margin of 35.8% (FY26 provisional) against a peer median of 16.6% and a peer high of 25.6% (eClerx).",
+   "Revenue growth of 20.1% in FY26 matches the fastest-growing peers (Firstsource 19.7%, Intellect 21.5%, eClerx 22.3%) and is well ahead of Nucleus (5.3%), Tanla (9.7%) and HGS (-2.2%).",
+   "A pure-play collections offer from pre-due to write-off, combining software, a 13-language voice agent and about 2,650 seats; no listed peer offers both software and seats focused on collections."
+  ],
+  "behind": [
+   "Scale: FY26 revenue of ₹73.0 Cr is about 8% of Nucleus (₹876 Cr), the smallest peer, and under 1% of Firstsource (₹9,556 Cr).",
+   "Concentration: 35 lender customers with the top three banks at 36% of FY26 revenue, against 200+ banks and FIs at Nucleus.",
+   "Earnings quality: PAT steps up from ₹0.8 Cr (FY25 audited) to ₹10.6 Cr (FY26 provisional), about ₹12 Cr of development is capitalised, and the desk has open questions on the financials.",
+   "Governance and balance sheet: ₹19.7 Cr of on-demand related-party loans against ₹5.7 Cr net worth at FY25, while Nucleus, Intellect and Tanla are almost debt-free.",
+   "Single-country, single-regulator exposure to RBI recovery-conduct rules; listed peers spread revenue across 9 to 50 countries."
+  ],
+  "watch": [
+   "Audited FY26 accounts confirming the ₹10.6 Cr PAT and ₹26.1 Cr EBITDA, and the desk's answers on the open financial questions.",
+   "Repayment or settlement of the ₹19.7 Cr related-party loans.",
+   "Delivery against the FY27 projection of ₹101.8 Cr revenue and ₹14.7 Cr PAT (Q1 FY27: ₹19.6 Cr revenue).",
+   "Any change in RBI recovery-conduct rules, and customer additions that bring the top-three share below 36%."
+  ],
+  "valuation": [
+   "At the round, P/E FY26 is 14.2x and market cap / EBITDA 5.7x, against peer medians of 24.3x and 13.9x; price / sales of 2.05x is in line with the peer median of about 2.0x."
+  ]
+ },
+ "sources": [
+  {
+   "title": "Firstsource Solutions consolidated financials and market cap, screener.in",
+   "url": "https://www.screener.in/company/FSL/consolidated"
+  },
+  {
+   "title": "Firstsource Solutions Q4 and FY26 results press release (6 May 2026)",
+   "url": "https://www.firstsource.com/newsroom/press-releases/firstsource-solutions-reports-fourth-quarter-and-fiscal-2026-results"
+  },
+  {
+   "title": "Hinduja Global Solutions consolidated financials and market cap, screener.in",
+   "url": "https://www.screener.in/company/HGS/consolidated"
+  },
+  {
+   "title": "eClerx Services consolidated financials and market cap, screener.in",
+   "url": "https://www.screener.in/company/ECLERX/consolidated"
+  },
+  {
+   "title": "Nucleus Software Exports consolidated financials and market cap, screener.in",
+   "url": "https://www.screener.in/company/NUCLEUS/consolidated/"
+  },
+  {
+   "title": "Nucleus Software FY 2025-26 results announcement",
+   "url": "https://www.nucleussoftware.com/our-news/nucleus-software-announces-strong-fy-2025-26-results/?lang=ar"
+  },
+  {
+   "title": "Nucleus Software FinnOne Neo Collections product page",
+   "url": "https://www.nucleussoftware.com/finnone-neo/collections/"
+  },
+  {
+   "title": "Intellect Design Arena consolidated financials and market cap, screener.in",
+   "url": "https://www.screener.in/company/INTELLECT/consolidated/"
+  },
+  {
+   "title": "Tanla Platforms consolidated financials and market cap, screener.in",
+   "url": "https://www.screener.in/company/TANLA/consolidated/"
+  }
+ ]
+}

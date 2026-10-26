@@ -17,6 +17,7 @@ export type RoomContent = {
   pe?: { label: string; sub: string; value: number }[];
   multiples: Cell[];
   peers?: string;
+  compare?: PeerCompare;              // the full peer comparison; when absent, the desk's researched default for the slug (lib/peers) is shown
   terms: { k: string; v: string }[];
   path: { status: Status; title: string; note: string }[];
   checks: { status: Status; title: string; note?: string; date?: string }[];
@@ -39,4 +40,18 @@ export type IpoProgress = {
   lastPrice?: number;   // ₹ per share, latest
   lastAt?: string;      // date of the latest price
   note?: string;        // one line from the desk
+};
+
+/** A listed-peer comparison for a deal room. companies[0] is the company in the room; every row carries one value per company, in that order. */
+export type PeerCompare = {
+  asOf: string;                       // "Market data as of 23 Oct 2026"
+  basis: string;                      // what the figures are: periods, the round price, consolidation
+  companies: { name: string; short: string; ticker?: string; subject?: boolean; mcapCr?: number | null; note?: string }[];
+  metrics: { group: string; label: string; unit: string; better: "high" | "low" | "none"; vals: (number | null)[]; note?: string }[];
+  scatter?: { x: string; y: string }; // labels of two metric rows for the positioning map
+  dims: { name: string; scores: number[]; why: string }[];          // 1–5, relative within the set
+  matrix: { aspect: string; cells: string[]; edge: "ahead" | "par" | "behind" | "mixed"; why: string }[];
+  barriers: { name: string; level: number; note: string }[];        // 1 weak, 2 moderate, 3 strong
+  stands: { ahead: string[]; behind: string[]; watch: string[]; valuation?: string[] }; // valuation: neutral facts on the multiple at the round
+  sources: { title: string; url?: string }[];
 };
