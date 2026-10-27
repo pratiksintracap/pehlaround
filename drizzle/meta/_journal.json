@@ -253,6 +253,13 @@
       "when": 1792152000000,
       "tag": "0035_transfer_kyc",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792153000000,
+      "tag": "0036_armsoftech_round_35",
+      "breakpoints": true
     }
   ]
 }

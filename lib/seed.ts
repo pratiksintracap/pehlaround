@@ -273,7 +273,7 @@ export const SEED_DEALS: SeedDeal[] = [
     category: "Growth round", stage: "Room open", status: "Room open to registered offices",
     headline: "Collections platform for banks and NBFCs: AI voice agents, scoring and human-assisted centres. RBI recovery-conduct rules are a listed risk.",
     listingLabel: "Late 2028", listingMonth: "2028-12", listingNote: "main board, on FY28 numbers",
-    roundLabel: "₹30 Cr", preMoney: "₹150 Cr", peLabel: "14.2x · 10.2x", minTicket: "₹50 L",
+    roundLabel: "₹35 Cr", preMoney: "₹150 Cr", peLabel: "14.2x · 10.2x", minTicket: "₹50 L",
     open: true, published: true, sort: 30, art: art["ai-collections-software"], asOf: "12 Oct 2026",
     publicRisks: [
       "Open questions on the financial statements must be answered before diligence closes.",
@@ -285,7 +285,7 @@ export const SEED_DEALS: SeedDeal[] = [
     room: {
       lede: "Chennai collections platform for lenders: the AIR Collect stack runs the cycle from pre-due to write-off, with a generative-AI voice agent in 13 languages and about 2,650 human-assisted seats. 35 lenders as customers.",
       why: "A growth round placed directly with the promoters. An institutional investor is leading and is running its own diligence; the desk has the balance of the round.",
-      round: "₹30 Cr · Primary growth round", ticket: "₹50 L", committed: "₹12 Cr of ₹30 Cr committed, subject to diligence",
+      round: "₹35 Cr · Primary growth round", ticket: "₹50 L", committed: "₹12 Cr of ₹35 Cr committed, subject to diligence",
       snapshot: [
         { k: "Revenue FY26", v: "₹73.0 Cr", s: "provisional · ₹60.8 Cr in FY25, audited" },
         { k: "PAT FY26", v: "₹10.6 Cr", s: "provisional · ₹0.8 Cr in FY25" },
@@ -294,7 +294,7 @@ export const SEED_DEALS: SeedDeal[] = [
         { k: "PAT FY27E", v: "₹14.7 Cr", s: "company projection" },
         { k: "Customers", v: "35 lenders", s: "top three banks 36% of FY26 revenue" },
       ],
-      stake: { sizeCr: 30, postCr: 180 },
+      stake: { sizeCr: 35, postCr: 185 },
       risks: [
         { t: "Open questions on the financials", d: "The desk has raised questions on the company's reported financials. Its diligence does not close until they are answered; the answers will be posted in this room." },
         { t: "Related-party loans", d: "The FY25 audited accounts show ₹19.7 Cr of loans to related parties, repayable on demand, against a net worth of ₹5.7 Cr." },
@@ -329,8 +329,8 @@ export const SEED_DEALS: SeedDeal[] = [
       peers: "Listed BPM and fintech-services companies; the desk does not publish a view on whether the multiple is fair",
       terms: [
         { k: "Instrument", v: "Primary issue of equity shares by private placement" },
-        { k: "Round size", v: "₹30 Cr" },
-        { k: "Pre-money valuation", v: "₹150 Cr (₹180 Cr post-money)" },
+        { k: "Round size", v: "₹35 Cr" },
+        { k: "Pre-money valuation", v: "₹150 Cr (₹185 Cr post-money)" },
         { k: "Committed", v: "₹12 Cr, including the institutional lead, subject to its diligence; about ₹18 Cr open" },
         { k: "Use of funds", v: "₹13.35 Cr capex and ₹9.65 Cr working capital for new business lines; ₹7.00 Cr working capital for the existing business" },
         { k: "Documentation", v: "Diligence, then the subscription and shareholders' agreement; PAS-4 offer letter and PAS-3 on allotment" },
@@ -356,9 +356,9 @@ export const SEED_DEALS: SeedDeal[] = [
         { status: "pending", title: "Promoter and director background, litigation and credit search" },
       ],
       mine: MINE,
-      interest: { min: 0.5, max: 10, step: 0.5, def: 1, postCr: 180,
+      interest: { min: 0.5, max: 10, step: 0.5, def: 1, postCr: 185,
         note: "Non-binding indication. A commitment is made only on signed documents after KYC, with a summary of terms and the risks to confirm first." },
-      scenario: { pat: 45, patLabel: "FY28E PAT (company projection)", months: 32, monthsNote: "listing late 2028 plus the 6-month lock-in", postCr: 180, peDefault: 20 },
+      scenario: { pat: 45, patLabel: "FY28E PAT (company projection)", months: 32, monthsNote: "listing late 2028 plus the 6-month lock-in", postCr: 185, peDefault: 20 },
       alerts: ALERTS, passReasons: PASS,
     },
     documents: [
