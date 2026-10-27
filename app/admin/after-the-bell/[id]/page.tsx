@@ -1,4 +1,5 @@
 // One listed-company deal (After the Bell): its details and the desk workspace. Desk only.
+import { Field } from "@/components/ui";
 import { notFound, redirect } from "next/navigation";
 import { requireDesk } from "@/lib/auth";
 import { can } from "@/lib/perm";
@@ -9,9 +10,7 @@ import { DeskWorkspace } from "@/components/DeskWorkspace";
 
 export const dynamic = "force-dynamic";
 
-const IN = ({ name, label, value, ph, mode }: { name: string; label: string; value?: string | number | null; ph?: string; mode?: "decimal" }) => (
-  <label>{label}<input name={name} defaultValue={value ?? ""} placeholder={ph} inputMode={mode} maxLength={200} /></label>
-);
+const IN = (p: { name: string; label: string; value?: string | number | null; ph?: string; mode?: "decimal" }) => <Field {...p} max={200} />;
 
 export default async function ListedDeal({ params }: { params: Promise<{ id: string }> }) {
   const me = await requireDesk();

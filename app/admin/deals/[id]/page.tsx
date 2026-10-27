@@ -12,17 +12,11 @@ import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { peerCompareFor } from "@/lib/peers";
 import { PHASES, phaseInfo, isPublic } from "@/lib/phase";
+import { Field as IN, Area as TA } from "@/components/ui";
+import { RUBRIC, rubricTotal, DESK_BAR } from "@/lib/score";
 import ART from "@/lib/deal-art.json";
 import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
 
-const TA = ({ name, label, value, rows = 5, hint }: { name: string; label: string; value: string; rows?: number; hint?: string }) => (
-  <label>{label}<textarea name={name} rows={rows} defaultValue={value} />{hint && <span className="hint">{hint}</span>}</label>
-);
-import { RUBRIC, rubricTotal, DESK_BAR } from "@/lib/score";
-
-const IN = ({ name, label, value, hint, ph }: { name: string; label: string; value?: string | number | null; hint?: string; ph?: string }) => (
-  <label>{label}<input name={name} defaultValue={value ?? ""} placeholder={ph} />{hint && <span className="hint">{hint}</span>}</label>
-);
 
 export default async function EditDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ link?: string }> }) {
   const me = await requireDesk();

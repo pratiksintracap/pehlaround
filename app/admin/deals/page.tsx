@@ -3,7 +3,8 @@ import { requireDesk } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { listDeals } from "@/lib/deals";
 import { createDeal, setDealPhase } from "@/lib/admin-actions";
-import { PHASES, phaseInfo } from "@/lib/phase";
+import { PHASES } from "@/lib/phase";
+import { PhaseTag } from "@/components/ui";
 import { can } from "@/lib/perm";
 import { offereeCounts, offereeLevel } from "@/lib/offerees";
 import { OFFEREE_LIMIT } from "@/lib/investor";
@@ -28,7 +29,7 @@ export default async function AdminDeals() {
       <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Desk Score</th><th title="Last 30 days">Overview views</th><th title="Offices, last 30 days">Rooms opened</th><th>NDAs</th><th title={`Offices shown the company this financial year, excluding SEBI-registered AIFs. Companies Act limit: ${OFFEREE_LIMIT} per year.`}>Offerees {off.fy}</th><th>Allocation requests</th><th>Phase</th><th /></tr></thead><tbody>
         {deals.map((d) => { return (
           <tr key={d.id}><th scope="row">{d.company}</th><td>{d.title}</td><td>{d.category}</td><td>{d.listingLabel}</td><td>{d.score != null ? d.score.toFixed(1) : "—"}</td><td>{views.get(d.id) ?? 0}</td><td>{rooms.get(d.id) ?? 0}</td><td>{ndaN.get(d.id) ?? 0}</td><td>{(() => { const n = off.counts.get(d.id) ?? 0, l = offereeLevel(n); return <span className={l === "ok" ? "" : "pill " + (l === "over" ? "bad" : "mid")}>{n} / {OFFEREE_LIMIT}</span>; })()}</td><td>{asks.get(d.id) ?? 0}</td>
-            <td><span className={`pill ph-${d.phase}`} title={phaseInfo(d.phase).desk}>{phaseInfo(d.phase).label}</span></td>
+            <td><PhaseTag phase={d.phase} /></td>
             <td><div style={{ display: "flex", gap: 6 }}><a className="btn sm primary" href={`/admin/deals/${d.id}`}>Edit</a><a className="btn sm" href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a><a className="btn sm" href={`/room/${d.slug}`}>Room</a>
               {can(me, "deals.publish") && <form action={setDealPhase} className="ph-move"><input type="hidden" name="id" value={d.id} />
                 <select name="phase" defaultValue={d.phase} aria-label={`Phase of ${d.company}`}>{PHASES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}</select>

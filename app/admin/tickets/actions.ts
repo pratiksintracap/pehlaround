@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { requireDesk, log } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { tickets } from "@/db/schema";
+import { done, fail } from "@/lib/form";
 import { addMessage, idFromNo, tellOffice, ticketNo } from "@/lib/tickets";
 
 const s = (f: FormData, k: string, max = 5000) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -17,7 +18,7 @@ export async function deskReply(f: FormData) {
   const [t] = await db.select().from(tickets).where(eq(tickets.id, idFromNo(no) || -1));
   if (!t) redirect("/admin/tickets");
   const back = `/admin/tickets/${no}`;
-  if (body.length < 2 && !next) redirect(`${back}?msg=${encodeURIComponent("Write a reply first.")}`);
+  if (body.length < 2 && !next) fail(back, "Write a reply first.");
   const now = new Date();
   if (body.length >= 2) await addMessage(t.id, "desk", admin.name, admin.id, body, internal);
   const status = internal ? (next || t.status) : (next || "answered");
@@ -31,5 +32,5 @@ export async function deskReply(f: FormData) {
   else if (status !== t.status && (status === "resolved" || status === "closed")) await tellOffice(t, `${ticketNo(t.id)} ${status}: ${t.subject}`, `The desk marked your ticket ${status}. Reply on the ticket if you still need help.`);
   await log(admin, `${internal ? "Noted on" : "Replied to"} ticket ${ticketNo(t.id)}${status !== t.status ? ` (${status})` : ""}`);
   revalidatePath("/admin", "layout");
-  redirect(`${back}?msg=${encodeURIComponent(internal ? "Note saved." : body.length >= 2 ? "Reply sent." : "Status updated.")}`);
+  done(back, internal ? "Note saved." : body.length >= 2 ? "Reply sent." : "Status updated.");
 }
