@@ -65,6 +65,9 @@ export default function IpoCalendar() {
           <p>Before the Bell brings profitable Indian companies to family offices and serious investors a year or two before they list: diligence done, data room under NDA, the desk&apos;s own capital in every deal.</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><a className="btn primary" href="/deals">See the companies before they list</a><a className="btn ghost" href="/pre-ipo-investing">How pre-IPO investing works</a></div>
         </div>
+        <div className="chart ipo-cta" style={{ marginTop: 12 }}><span className="k">Planning your own listing?</span>
+          <p>The year before filing is when a pre-IPO round does the most for a company: it funds the growth the IPO is priced on, and the investors who come in early become part of the story. <a href="/raise/pre-ipo-funding">How to raise a pre-IPO round</a> · <a href="/raise/sme-ipo-vs-main-board">SME IPO or main board</a> · <a href="/founders">Tell the desk about your company</a></p>
+        </div>
       </section>
 
       <section className="sec tight"><h2>Questions</h2>

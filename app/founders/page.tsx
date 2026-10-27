@@ -3,6 +3,7 @@ import { pageMeta } from "@/lib/seo";
 import { content } from "@/lib/content";
 import { Html } from "@/components/Chrome";
 import { Readiness } from "@/components/Readiness";
+import { GUIDES } from "@/lib/promoter-guides";
 
 const D = "Put your pre-IPO round or secondary in front of registered family offices, funds and investors. The desk approves the company and commits its own capital before the round opens. Tell the desk in a minute, or take the free IPO readiness check.";
 export const metadata: Metadata = pageMeta({ path: "/founders", title: "List your company", description: D });
@@ -24,6 +25,11 @@ export default function Page() {
         </>}
         form={<Html as="div" html={content("founders")} />}
       />
+      <section className="wrap sec tight">
+        <span className="eyebrow">Before you raise</span>
+        <h2 style={{ fontSize: 24 }}>Guides for promoters</h2>
+        <ul className="raise-more">{GUIDES.map((g) => <li key={g.slug}><a href={`/raise/${g.slug}`}>{g.title}</a></li>)}</ul>
+      </section>
     </main>
   );
 }
