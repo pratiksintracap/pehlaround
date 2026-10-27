@@ -651,3 +651,32 @@ export async function createDealLink(f: FormData) {
   revalidatePath(`/admin/deals/${dealId}`);
   redirect(`/admin/deals/${dealId}?link=${token}#share`);
 }
+
+/**
+ * Removes a deal that was added by mistake or twice. Super admin only, and only while nothing hangs off it: no NDA,
+ * document, question, call, allocation request, pass, task, desk note or file, link, view, broadcast, ticket, AI
+ * chat or promoter login. Anything with history is kept; move or close it instead. The removal is logged.
+ */
+export async function removeEmptyDeal(f: FormData) {
+  const admin = await requireAdmin();
+  const id = n(f, "id");
+  const page = `/admin/deals/${id}`;
+  if (!id || f.get("sure") !== "on") return back(page + "#remove", "Tick the box to confirm the removal.");
+  const db = await getDb();
+  const [d] = await db.select({ id: deals.id, company: deals.company, published: deals.published }).from(deals).where(eq(deals.id, id));
+  if (!d) return back("/admin/deals", "That deal no longer exists.");
+  if (d.published) return back(page + "#remove", "Unpublish the deal before removing it.");
+  const tables = ["ndas", "sign_codes", "documents", "questions", "calls", "interests", "passes", "deal_prefs", "desk_notes", "desk_files", "tasks", "deal_links", "deal_views", "broadcasts", "tickets", "ai_chats", "events"];
+  const counts = await Promise.all(tables.map(async (t) => {
+    const r = await db.execute(sql.raw(`select count(*)::int as n from "${t}" where deal_id = ${Number(id)}`)) as unknown as { rows: { n: number }[] };
+    return [t, Number(r.rows[0]?.n ?? 0)] as const;
+  }));
+  const [{ p }] = (await db.execute(sql`select count(*)::int as p from users where promoter_deal_id = ${id}`) as unknown as { rows: { p: number }[] }).rows;
+  const busy = counts.filter(([, c]) => c > 0).map(([t, c]) => `${t.replace(/_/g, " ")} (${c})`);
+  if (Number(p)) busy.push(`${p} promoter login${Number(p) === 1 ? "" : "s"}`);
+  if (busy.length) return back(page + "#remove", `Not removed: this deal still has ${busy.join(", ")}. Move or close those first.`);
+  await db.delete(deals).where(eq(deals.id, id));
+  await log(admin, `Desk removed the empty deal #${id}: ${d.company}`, null, { entity: "deal", entityId: id });
+  revalidatePath("/admin/deals");
+  back("/admin/deals", `Removed deal #${id} (${d.company}).`);
+}

@@ -1,11 +1,12 @@
 import { requireDesk } from "@/lib/auth";
+import { isSuper } from "@/lib/perm";
 import { notFound, redirect } from "next/navigation";
 import { DeskWorkspace } from "@/components/DeskWorkspace";
 import { officeScope } from "@/lib/desk";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { calls, dealLinks, deals, documents, ndas, offices, questions, users } from "@/db/schema";
-import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish, addPromoter, removePromoter, createDealLink } from "@/lib/admin-actions";
+import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish, addPromoter, removePromoter, createDealLink, removeEmptyDeal } from "@/lib/admin-actions";
 import { SITE_URL } from "@/lib/site";
 import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
@@ -169,6 +170,14 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
             <td><div className="dl-acts"><input readOnly value={url} aria-label={`Link for ${who}`} /><button type="button" className="btn sm" data-copy={url}>Copy</button>
               <a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener">WhatsApp</a></div></td></tr>; })}
       </tbody></table></div>}
+
+      {isSuper(me) && !d.published && (
+        <details className="adm-card" id="remove" style={{ marginBottom: 24 }}><summary><b>Remove this deal</b> <span className="fine">· only for a deal added by mistake or twice</span></summary>
+          <form action={removeEmptyDeal} className="form" style={{ marginTop: 10 }}><input type="hidden" name="id" value={d.id} />
+            <p className="fine">Works only while the deal is unpublished and has no history: no NDA, document, question, call, allocation request, task, desk note or file, link or view. Otherwise it tells you what is still attached. This cannot be undone.</p>
+            <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" name="sure" required /> Remove {d.company} (deal #{d.id}) for good</label>
+            <div><button className="btn sm" type="submit">Remove deal</button></div></form>
+        </details>)}
 
       <h2 id="promoters">Promoter access (founder portal)</h2>
       <p className="fine">The company&apos;s promoters sign in to see how the round is going: overview views, NDAs, room activity and questions, never which offices. They draft answers and suggest documents; nothing reaches offices until the desk posts it.{d.promoterDemand ? " They also see the total amount indicated." : " They do not see amounts (tick the box under Road to listing to show the total)."}</p>
