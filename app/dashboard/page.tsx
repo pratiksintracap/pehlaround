@@ -21,6 +21,7 @@ import { SITE_URL } from "@/lib/site";
 import { officeRefCode } from "@/lib/track";
 import { investorWhere } from "@/lib/deal-guard";
 import { DeckPanel } from "@/components/DeckPanel";
+import { officeTransfer, readiness, KYC_KINDS, fmtSize, needsAuthority, type KycKind } from "@/lib/transfer";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
 type P = { searchParams: Promise<{ msg?: string; error?: string; deal?: string; cat?: string; show?: string }> };
@@ -121,6 +122,10 @@ export default async function Dashboard({ searchParams }: P) {
   const profileGaps = [!office.category && "category", !office.residency && "residency", !office.ticket && "ticket"].filter(Boolean) as string[];
   const welcome = names && !signed.size; // approved but no room yet: the welcome pop-up guides the first step
   const canCommit = /commit/i.test(user.rights);
+  // Transfer readiness: demat, CML, cheque and (for entities) the authority to invest, given once for every deal.
+  const tr = names ? await officeTransfer(office.id) : null;
+  const ready = tr ? readiness(office, tr.kyc, tr.files) : null;
+  const trGap = ready && indicated.length && !ready.ready ? ready.total - ready.done : 0;
   const prof = completeness(office);
   const fits = new Map(deals.map((d) => [d.id, fit(office, d)]));
   // Deals whose pitch deck, IM or teaser is open before the NDA: the shelf leads with it.
@@ -139,7 +144,7 @@ export default async function Dashboard({ searchParams }: P) {
     const qs = q ? ` · ${q.n} question${q.n === 1 ? "" : "s"}${q.open ? `, ${q.open} awaiting` : ""}` : "";
     if (ask?.status === "Allotted") return { d, key: "rooms", label: "Allotted", tone: "ok", detail: `₹${Number(ask.amountCr)} Cr allotted`, primary: { href: "#Portfolio", text: "See holding" } };
     if (ps) return { d, key: "passed", label: "Passed", tone: "off", detail: `“${ps.reason}”`, primary: signed.has(d.id) ? { href: `/room/${d.slug}`, text: "Open room" } : undefined };
-    if (ask) return { d, key: "requested", label: `Requested ₹${Number(ask.amountCr)} Cr`, tone: "ok", detail: `${ask.status}${qs}`, primary: { href: `/room/${d.slug}`, text: "Open room" } };
+    if (ask) return { d, key: "requested", label: `Requested ₹${Number(ask.amountCr)} Cr`, tone: "ok", detail: `${ask.status}${qs}${ready && !ready.ready ? ` · transfer details ${ready.done} of ${ready.total}` : ""}`, primary: ready && !ready.ready ? { href: "#Transfer", text: "Transfer details" } : { href: `/room/${d.slug}`, text: "Open room" } };
     if (signed.has(d.id)) return { d, key: "rooms", label: "Room open", tone: "ok", detail: `NDA signed${qs}`, primary: { href: `/room/${d.slug}`, text: "Open room" } };
     if (!names) return { d, key: "new", label: "After approval", tone: "", detail: "Company names open once the desk approves your office", primary: { href: `/deals/${d.slug}`, text: "Overview" } };
     if (d.open) return { d, key: "new", label: "Not opened yet", tone: "mid", detail: deck ? "Read the deck, then sign the NDA to open the room" : "Sign the NDA to open the room", primary: deck ? { href: `/api/docs/${deck.id}?embed=1`, text: "Pitch deck", deck: true } : { href: `/deals/${d.slug}#sign`, text: "Sign NDA" } };
@@ -154,6 +159,7 @@ export default async function Dashboard({ searchParams }: P) {
     ["Calls", "Calls", "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2", null],
     ["Documents", "Documents", "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6", null],
     ...(isBroker ? [["Clients", "Your clients", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", clients.length || null] as [string, string, string, number | null]] : []),
+    ...(ready ? [["Transfer", "Ready to transfer", "M7 17l-4-4 4-4M3 13h13M17 7l4 4-4 4", trGap || null] as [string, string, string, number | null]] : []),
     ["Portfolio", "Portfolio", "M4 19V9M10 19V5M16 19v-7M22 19H2", allotted.length || null],
     ["Profile", "Investment profile", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", null],
     ["Team", "Team", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", team.length > 1 ? team.length : null],
@@ -346,6 +352,46 @@ export default async function Dashboard({ searchParams }: P) {
         </>
           : <div className="chart"><span className="k">Holdings</span><p>Nothing allotted yet. Once shares are credited to your demat, each holding appears here with its road to listing, lock-in date and value.</p></div>}
       </section>
+
+      {ready && tr && <section className="panel" data-panel="Transfer" hidden>
+        <div className="chart tr-head">
+          <span className="k">Ready to transfer · {ready.done} of {ready.total}</span>
+          <p>When an allocation is confirmed, the seller&apos;s broker moves the shares to your demat against these. Give them once; they are used for every company. Only your office and the desk see them, never the company or another investor.</p>
+          <ol className="tr-list">{ready.items.map((it) => (
+            <li key={it.key} className={it.state}><i aria-hidden="true">{it.state === "checked" ? "✓" : it.state === "done" ? "•" : it.state === "redo" ? "!" : ""}</i>
+              <div><b>{it.label}</b><small>{it.state === "checked" ? "Checked by the desk" : it.state === "done" ? "Received; the desk checks it" : it.state === "redo" ? `Please upload again: ${it.note ?? ""}` : it.key === "pan" ? "Add it with the demat details below" : "Still needed"}</small></div></li>))}</ol>
+        </div>
+        <form className="form chart" method="post" action="/api/office/transfer" encType="multipart/form-data">
+          <input type="hidden" name="what" value="details" />
+          <span className="k">Demat and bank details</span>
+          <fieldset disabled={!canCommit}>
+            <div className="row"><label>First holder&apos;s name<input name="holderName" maxLength={160} defaultValue={tr.kyc?.holderName ?? office.entityName ?? ""} placeholder="As on the demat account" /></label>
+              <label>Depository<select name="depository" defaultValue={tr.kyc?.depository ?? "NSDL"}><option>NSDL</option><option>CDSL</option></select></label></div>
+            <div className="row"><label>PAN of the investing entity<input name="pan" maxLength={12} defaultValue={office.pan ?? ""} placeholder="ABCDE1234F" style={{ textTransform: "uppercase" }} /></label><span /></div>
+            <div className="row3"><label>Broker or DP<input name="dpName" maxLength={120} defaultValue={tr.kyc?.dpName ?? ""} placeholder="Zerodha, HDFC Bank…" /></label>
+              <label>DP ID<input name="dpId" required maxLength={30} defaultValue={tr.kyc?.dpId ?? ""} placeholder="IN301234" /><span className="hint">CDSL: first 8 digits of the BO ID</span></label>
+              <label>Client ID<input name="clientId" required maxLength={30} inputMode="numeric" defaultValue={tr.kyc?.clientId ?? ""} placeholder="8 digits" /><span className="hint">CDSL: last 8 digits of the BO ID</span></label></div>
+            <div className="row3"><label>Bank<input name="bankName" maxLength={120} defaultValue={tr.kyc?.bankName ?? ""} /></label>
+              <label>IFSC<input name="ifsc" maxLength={20} defaultValue={tr.kyc?.ifsc ?? ""} placeholder="HDFC0000060" /></label>
+              <label>Account, last 4 digits<input name="accountLast4" maxLength={4} inputMode="numeric" defaultValue={tr.kyc?.accountLast4 ?? ""} /><span className="hint">Only the last four; the cheque carries the rest</span></label></div>
+            {canCommit ? <div><button className="btn primary" type="submit">Save details</button>{tr.kyc?.updatedAt && <span className="fine" style={{ marginLeft: 10 }}>Saved {fmtD(tr.kyc.updatedAt)} by {tr.kyc.updatedBy}</span>}</div>
+              : <p className="fine">Only people with commit rights can change these.</p>}
+          </fieldset>
+        </form>
+        <div className="tr-docs">{(["cml", "cheque", ...(needsAuthority(office.category) ? ["authority"] : [])] as KycKind[]).map((kind) => {
+          const fl = tr.files.find((x) => x.kind === kind);
+          return (
+            <form key={kind} className="form chart tr-doc" method="post" action="/api/office/transfer" encType="multipart/form-data">
+              <input type="hidden" name="kind" value={kind} />
+              <span className="k">{KYC_KINDS[kind].label}</span>
+              <p className="fine">{KYC_KINDS[kind].hint}</p>
+              {fl && <p className={`tr-file ${fl.status}`}><a href={`/api/office/transfer/file/${fl.id}`} target="_blank" rel="noopener">{fl.name}</a> · {fmtSize(fl.size)} · {fl.status === "accepted" ? "checked by the desk" : fl.status === "redo" ? `please upload again: ${fl.deskNote ?? ""}` : "received"}</p>}
+              {canCommit && <><label className="sr-only" htmlFor={`f-${kind}`}>{KYC_KINDS[kind].label}</label>
+                <input id={`f-${kind}`} type="file" name="file" required accept="application/pdf,image/jpeg,image/png,image/webp,image/heic" />
+                <div><button className="btn sm" type="submit">{fl ? "Replace" : "Upload"}</button><span className="fine" style={{ marginLeft: 8 }}>PDF or photo, up to 4 MB</span></div></>}
+            </form>);
+        })}</div>
+      </section>}
 
       <section className="panel" data-panel="Profile" hidden>
         <div className="panel-head"><div><h2>Investment profile</h2><p className="fine">What your office looks for. The desk uses it to bring you the right companies, and the shelf marks the deals that fit. Seen only by your office and the desk.</p></div>

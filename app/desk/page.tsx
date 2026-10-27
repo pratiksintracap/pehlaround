@@ -5,6 +5,10 @@ import { audit } from "@/db/schema";
 import { isSuper, ROLE_LABEL, type DeskRole } from "@/lib/perm";
 import { myDesk, names } from "@/lib/desk";
 import { stageLabel, istDay } from "@/lib/stages";
+import { callList } from "@/lib/call-list";
+import { CallListRows } from "@/components/CallList";
+import { can } from "@/lib/perm";
+import { getSettings } from "@/lib/settings";
 import { DkHead, DkToast, DkTask, DkEmpty, Ico, ICONS, ago } from "@/components/DeskApp";
 
 type P = { searchParams: Promise<{ msg?: string }> };
@@ -15,10 +19,12 @@ export default async function Today({ searchParams }: P) {
   const db = await getDb();
   // An analyst sees office activity and their own desk actions; a super admin sees everything (as in the Log).
   const scope = isSuper(me) ? sql`true` : sql`(${audit.officeId} is not null or ${audit.userId} = ${me.id})`;
-  const [d, nm, feed] = await Promise.all([
+  const [d, nm, feed, toCall, st] = await Promise.all([
     myDesk(me),
     names(me),
     db.select().from(audit).where(and(scope, sql`(${audit.entity} is not null or ${audit.officeId} is not null) and ${audit.action} <> 'Signed in'`)).orderBy(desc(audit.at)).limit(12),
+    callList(me, { limit: 5 }),
+    getSettings(),
   ]);
   const today = istDay();
   const open = d.myTasks.filter((t) => t.status === "open");
@@ -49,6 +55,13 @@ export default async function Today({ searchParams }: P) {
           <ul className="dk-list">{later.map((t) => <DkTask key={t.id} t={t} back="/desk" about={about(t)} />)}</ul>
         </>}
         <a className="dk-more" href="/desk/tasks">All tasks <Ico d={ICONS.chevron} size={16} /></a>
+      </section>
+
+      <section className="dk-sec">
+        <h2>Who to call today <span className="dk-count">{toCall.length}</span></h2>
+        {toCall.length ? <CallListRows rows={toCall} contacts={can(me, "contacts.view", { analystContacts: st.analystContacts })} />
+          : <DkEmpty>Nobody stands out today.</DkEmpty>}
+        <a className="dk-more" href="/desk/call">Full list and why <Ico d={ICONS.chevron} size={16} /></a>
       </section>
 
       {d.pending.length > 0 && (

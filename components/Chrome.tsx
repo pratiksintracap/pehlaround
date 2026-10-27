@@ -90,6 +90,7 @@ export function Footer({ user = null }: { user?: SessionUser | null }) {
             {NAV.map(([h, t]) => <li key={h}><a href={h}>{t}</a></li>)}
             <li><a href="/articles">Articles</a></li>
             <li><a href="/pre-ipo-investing">Pre-IPO investing guide</a></li>
+            <li><a href="/ipo-calendar">IPO calendar</a></li>
             <li><a href="/app">Get the app</a></li>
           </ul></div>
           <div className="ft-col"><h4>Operated by</h4><ul>

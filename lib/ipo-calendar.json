@@ -1,0 +1,217 @@
+{
+  "asOf": "2026-10-27",
+  "entries": [
+    {
+      "name": "Core4 Engineers",
+      "board": "SME",
+      "exchange": "BSE SME",
+      "open": "2026-10-23",
+      "close": "2026-10-27",
+      "allotment": "2026-10-28",
+      "listing": "2026-10-30",
+      "band": "₹88–93",
+      "sizeCr": 55,
+      "lot": 1200
+    },
+    {
+      "name": "EAAA India Alternatives",
+      "board": "Mainboard",
+      "exchange": "BSE, NSE",
+      "open": "2026-10-26",
+      "close": "2026-10-28",
+      "allotment": "2026-10-29",
+      "listing": "2026-11-02",
+      "band": "₹1,585–1,665",
+      "sizeCr": 1200
+    },
+    {
+      "name": "BLS Polymers",
+      "board": "Mainboard",
+      "exchange": "BSE, NSE",
+      "open": "2026-10-27",
+      "close": "2026-10-29",
+      "allotment": "2026-10-30",
+      "listing": "2026-11-03",
+      "band": "₹142–150",
+      "sizeCr": 255
+    },
+    {
+      "name": "SFC Environmental Technologies",
+      "board": "Mainboard",
+      "exchange": "BSE, NSE",
+      "open": "2026-10-27",
+      "close": "2026-10-29",
+      "allotment": "2026-10-30",
+      "listing": "2026-11-03",
+      "band": "₹313–330",
+      "sizeCr": 667.53
+    },
+    {
+      "name": "Wiscon Industries",
+      "board": "SME",
+      "exchange": "BSE SME",
+      "open": "2026-10-27",
+      "close": "2026-10-29",
+      "allotment": "2026-10-30",
+      "listing": "2026-11-03",
+      "band": "₹194–204",
+      "sizeCr": 110
+    },
+    {
+      "name": "M.K.Sons Fine Jewels",
+      "board": "Mainboard",
+      "exchange": "BSE, NSE",
+      "open": "2026-10-28",
+      "close": "2026-10-30",
+      "allotment": "2026-11-02",
+      "listing": "2026-11-04",
+      "band": "₹153–162",
+      "sizeCr": 275.4
+    },
+    {
+      "name": "Ajwa Projects",
+      "board": "SME",
+      "exchange": "BSE SME",
+      "open": "2026-10-28",
+      "close": "2026-10-30",
+      "allotment": "2026-11-02",
+      "listing": "2026-11-04",
+      "band": "₹203 (fixed)",
+      "sizeCr": 38.05
+    },
+    {
+      "name": "Carver Roboweld",
+      "board": "SME",
+      "exchange": "BSE SME",
+      "open": "2026-10-28",
+      "close": "2026-10-30",
+      "allotment": "2026-11-02",
+      "listing": "2026-11-04",
+      "band": "₹76–80",
+      "sizeCr": 28.29
+    },
+    {
+      "name": "Bombay Coated & Special Steels",
+      "board": "Mainboard",
+      "exchange": "BSE, NSE",
+      "open": "2026-10-29",
+      "close": "2026-11-02",
+      "band": "₹78–82",
+      "sizeCr": 183.06
+    },
+    {
+      "name": "Antala Industries",
+      "board": "SME",
+      "exchange": "BSE SME",
+      "open": "2026-10-29",
+      "close": "2026-11-02",
+      "band": "₹63–67",
+      "sizeCr": 23.33
+    },
+    {
+      "name": "Jio Platforms",
+      "board": "Mainboard",
+      "open": "2026-10-21",
+      "close": "2026-10-23",
+      "allotment": "2026-10-26",
+      "listing": "2026-10-28"
+    },
+    {
+      "name": "Paras Healthcare",
+      "board": "Mainboard",
+      "open": "2026-10-21",
+      "close": "2026-10-23",
+      "allotment": "2026-10-26",
+      "listing": "2026-10-28"
+    },
+    {
+      "name": "Shellz India",
+      "board": "SME",
+      "exchange": "BSE SME",
+      "open": "2026-10-15",
+      "close": "2026-10-19",
+      "allotment": "2026-10-21",
+      "listing": "2026-10-23"
+    },
+    {
+      "name": "Tonbo Imaging India",
+      "board": "Mainboard",
+      "open": "2026-10-15",
+      "close": "2026-10-19",
+      "allotment": "2026-10-21",
+      "listing": "2026-10-23"
+    },
+    {
+      "name": "Zetwerk",
+      "board": "Mainboard",
+      "open": "2026-10-15",
+      "close": "2026-10-19",
+      "allotment": "2026-10-21",
+      "listing": "2026-10-23"
+    },
+    {
+      "name": "Bonfiglioli Transmission",
+      "board": "Mainboard",
+      "open": "2026-10-15",
+      "close": "2026-10-19",
+      "allotment": "2026-10-21",
+      "listing": "2026-10-23"
+    },
+    {
+      "name": "Sahajanand Medical Technologies",
+      "board": "Mainboard",
+      "open": "2026-10-15",
+      "close": "2026-10-19",
+      "allotment": "2026-10-21",
+      "listing": "2026-10-23"
+    },
+    {
+      "name": "Fusion CX",
+      "board": "Mainboard",
+      "open": "2026-10-14",
+      "close": "2026-10-16",
+      "allotment": "2026-10-19",
+      "listing": "2026-10-22"
+    },
+    {
+      "name": "Ravita Engineering Services",
+      "board": "SME",
+      "exchange": "NSE Emerge",
+      "open": "2026-10-14",
+      "close": "2026-10-16",
+      "allotment": "2026-10-19",
+      "listing": "2026-10-22"
+    },
+    {
+      "name": "HD Fire Protect",
+      "board": "Mainboard",
+      "open": "2026-10-13",
+      "close": "2026-10-15",
+      "allotment": "2026-10-16",
+      "listing": "2026-10-21"
+    },
+    {
+      "name": "Vaibhav Vyapaar",
+      "board": "SME",
+      "exchange": "NSE Emerge",
+      "open": "2026-10-13",
+      "close": "2026-10-15",
+      "allotment": "2026-10-16",
+      "listing": "2026-10-21"
+    }
+  ],
+  "sources": [
+    {
+      "title": "Angel One: upcoming IPOs, 26–30 October 2026",
+      "url": "https://www.angelone.in/news/ipos/upcoming-ipos-this-week-october-26-october-30-2026-in-india-eaaa-india-alternatives-bls-polymers-and-others"
+    },
+    {
+      "title": "IPOKey IPO calendar",
+      "url": "https://ipokey.com/ipo-calendar/"
+    },
+    {
+      "title": "Chittorgarh: Core4 Engineers IPO",
+      "url": "https://www.chittorgarh.com/ipo_faqs/core4-engineers-ipo/2969/"
+    }
+  ]
+}

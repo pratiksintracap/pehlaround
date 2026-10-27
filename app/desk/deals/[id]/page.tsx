@@ -7,6 +7,7 @@ import { can } from "@/lib/perm";
 import { deskDeal, deskMembers, hiddenOffices, names, workspace } from "@/lib/desk";
 import { DEAL_STAGES, stageLabel } from "@/lib/stages";
 import { saveDeskNote, setDealOwner, setDealStage, logCall } from "@/lib/desk-actions";
+import { readinessFor } from "@/lib/transfer";
 import { DkToast, DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
 
 type P = { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> };
@@ -35,6 +36,7 @@ export default async function DeskDeal({ params, searchParams }: P) {
   const who = (uid: number | null) => members.find((m) => m.id === uid)?.name.split(" ")[0];
   const office = (oid: number) => (hidden.has(oid) ? null : nm.office.get(oid) ?? null);
   const live = book.filter((b) => b.status !== "Withdrawn");
+  const readyBy = await readinessFor([...new Set(live.map((b) => b.officeId))]);
   const indicated = live.reduce((s, b) => s + (Number(b.amountCr) || 0), 0);
   const open = ws.tasks.filter((t) => t.status === "open");
   const L = d.listedInfo ?? {};
@@ -77,7 +79,7 @@ export default async function DeskDeal({ params, searchParams }: P) {
           </div>
           {live.length > 0 && <ul className="dk-list">{live.map((b, i) => { const n = office(b.officeId); return (
             <li key={i}><a className="dk-row" href={n ? `/desk/investors/${b.officeId}` : undefined}>
-              <span className="dk-row-main"><b>{n ?? "An investor"}</b><small>{b.status}</small></span>
+              <span className="dk-row-main"><b>{n ?? "An investor"}</b><small>{b.status}{(() => { const r = readyBy.get(b.officeId); return r ? ` · transfer ${r.ready ? (r.checked ? "checked ✓" : "ready, to check") : `${r.done}/${r.total}`}` : ""; })()}</small></span>
               <span className="dk-stage">₹{Number(b.amountCr).toLocaleString("en-IN")} Cr</span>
             </a></li>); })}</ul>}
           {signed.length > 0 && <details className="dk-done"><summary>Who signed ({signed.length})</summary>

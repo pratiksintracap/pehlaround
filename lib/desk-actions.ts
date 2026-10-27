@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { deals, deskFiles, deskNotes, offices, tasks, users, type ListedInfo } from "@/db/schema";
+import { deals, deskFiles, deskNotes, kycFiles, offices, tasks, users, type ListedInfo } from "@/db/schema";
 import { requirePerm, log, changes } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { asStage, stageLabel } from "@/lib/stages";
@@ -333,3 +333,27 @@ export async function logCall(f: FormData) {
   }
   back(f, fallback, next ? "Call logged, follow-up added to your tasks." : "Call logged.");
 }
+
+/** The desk accepts a transfer document, or asks the office to redo it (the office is told why, under the bell and by email). */
+export async function checkKycFile(f: FormData) {
+  const me = await requirePerm("offices.approve");
+  const db = await getDb();
+  const id = n(f, "id"), status = s(f, "status", 20), note = s(f, "note", 400);
+  const [k] = await db.select({ id: kycFiles.id, officeId: kycFiles.officeId, kind: kycFiles.kind }).from(kycFiles).where(eq(kycFiles.id, id));
+  const fallback = k ? `/desk/investors/${k.officeId}` : "/desk";
+  if (!k || !["accepted", "redo"].includes(status)) return back(f, fallback, "Not found.");
+  const [o] = await db.select().from(offices).where(eq(offices.id, k.officeId));
+  if (!o || !canSeeOffice(me, o)) return back(f, "/desk", "Not found.");
+  if (status === "redo" && !note) return back(f, fallback, "Say what needs redoing, in a line the office will read.");
+  await db.update(kycFiles).set({ status, deskNote: status === "redo" ? note : null, checkedBy: me.name, checkedAt: new Date() }).where(eq(kycFiles.id, id));
+  const { KYC_KINDS, isKycKind } = await import("@/lib/transfer");
+  const label = isKycKind(k.kind) ? KYC_KINDS[k.kind].label : k.kind;
+  await log(me, `Desk ${status === "accepted" ? "accepted" : "asked to redo"} the ${label.toLowerCase()}`, null, { entity: "office", entityId: o.id, officeId: o.id, detail: status === "redo" ? { note } : null });
+  if (status === "redo") {
+    const { notifyOffices } = await import("@/lib/notify");
+    await notifyOffices([o.id], { title: `Please upload your ${label.toLowerCase()} again`, body: note, link: "/dashboard#Transfer" }).catch(() => {});
+  }
+  revalidatePath(fallback);
+  back(f, fallback, status === "accepted" ? `${label} accepted.` : "The office has been asked to redo it.");
+}
+

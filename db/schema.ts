@@ -551,3 +551,39 @@ export const appDevices = pgTable("app_devices", {
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
 }, (t) => [uniqueIndex("app_devices_push_uq").on(t.pushToken), index("app_devices_user_idx").on(t.userId)]);
+
+// ---------------------------------------------------------------- transfer readiness (an office and the desk only)
+// What a share transfer needs from the buying office: demat details and copies of its client master list (CML),
+// a cancelled cheque and, for a company, LLP or trust, the authority to invest. Kept once per office, used for every deal.
+// Only the office's own people and the desk can read these; the files never reach any other office or the promoter.
+export const transferKyc = pgTable("transfer_kyc", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id").notNull(),
+  holderName: text("holder_name"),              // first holder, as on the demat account
+  depository: text("depository"),               // NSDL | CDSL
+  dpName: text("dp_name"),                      // the broker or bank that holds the demat
+  dpId: text("dp_id"),                          // NSDL "IN301234"; CDSL the first 8 digits of the BO ID
+  clientId: text("client_id"),                  // 8 digits (CDSL: the last 8 of the BO ID)
+  bankName: text("bank_name"),
+  ifsc: text("ifsc"),
+  accountLast4: text("account_last4"),          // only the last four digits; the cheque copy carries the rest
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  updatedBy: text("updated_by"),
+}, (t) => [uniqueIndex("transfer_kyc_office_uq").on(t.officeId)]);
+
+export const kycFiles = pgTable("kyc_files", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id").notNull(),
+  kind: text("kind").notNull(),                 // cml | cheque | authority
+  name: text("name").notNull(),
+  mime: text("mime").notNull(),
+  size: integer("size").notNull(),
+  data: text("data").notNull(),                 // base64; at most 4 MB a file
+  userId: integer("user_id"),
+  status: text("status").notNull().default("received"), // received | accepted | redo (set by the desk)
+  deskNote: text("desk_note"),                  // why it needs redoing; shown to the office
+  checkedBy: text("checked_by"),
+  checkedAt: timestamp("checked_at", { withTimezone: true }),
+  replacedAt: timestamp("replaced_at", { withTimezone: true }), // a newer file of the same kind took its place
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("kyc_files_office_idx").on(t.officeId)]);

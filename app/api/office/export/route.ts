@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { audit, calls, interests, ndas, passes, questions, users } from "@/db/schema";
+import { audit, calls, interests, ndas, passes, questions, users, kycFiles, transferKyc } from "@/db/schema";
 import { getUser, log } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
     questions: await db.select().from(questions).where(eq(questions.officeId, id)),
     calls: await db.select().from(calls).where(eq(calls.officeId, id)),
     log: await db.select().from(audit).where(eq(audit.officeId, id)),
+    transferDetails: (await db.select().from(transferKyc).where(eq(transferKyc.officeId, id)))[0] ?? null,
+    transferDocuments: await db.select({ id: kycFiles.id, kind: kycFiles.kind, name: kycFiles.name, size: kycFiles.size, status: kycFiles.status, at: kycFiles.at, replacedAt: kycFiles.replacedAt }).from(kycFiles).where(eq(kycFiles.officeId, id)),
   };
   await log(user, "Downloaded the office's data");
   return new NextResponse(JSON.stringify(out, null, 2), { headers: { "content-type": "application/json", "content-disposition": `attachment; filename="off-market-desk-${id}.json"` } });

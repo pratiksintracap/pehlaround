@@ -246,6 +246,13 @@
       "when": 1792151000000,
       "tag": "0034_investor_owner",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792152000000,
+      "tag": "0035_transfer_kyc",
+      "breakpoints": true
     }
   ]
 }

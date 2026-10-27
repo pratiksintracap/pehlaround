@@ -1,3 +1,4 @@
+import { readinessFor } from "@/lib/transfer";
 import { requireDesk } from "@/lib/auth";
 import { can, mask } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
@@ -22,6 +23,7 @@ export default async function Activity({ searchParams }: { searchParams: Promise
     db.select().from(questions).where(and(isNull(questions.answer), eq(questions.hidden, false))).orderBy(desc(questions.askedAt)),
     db.select().from(calls).where(eq(calls.kind, "request")).orderBy(desc(calls.createdAt)), db.select().from(leads).orderBy(desc(leads.createdAt)),
   ]);
+  const readyBy = await readinessFor([...new Set(ins.filter((i) => i.status !== "Withdrawn").map((i) => i.officeId))]);
   const deal = new Map(ds.map((x) => [x.id, x.company])), office = new Map(os.map((x) => [x.id, x.name])), user = new Map(us.map((x) => [x.id, x]));
   return (
     <>
@@ -29,14 +31,15 @@ export default async function Activity({ searchParams }: { searchParams: Promise
       <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>Requests and Q&amp;A</h1>
 
       <h2>Allocation requests</h2>
-      <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>When</th><th>Office · person</th><th>Deal</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+      <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>When</th><th>Office · person</th><th>Deal</th><th>Amount</th><th>Transfer</th><th>Status</th></tr></thead><tbody>
         {ins.length ? ins.map((i) => { const u = user.get(i.userId); return (
           <tr key={i.id}><td>{fmtD(i.createdAt)}</td><td>{office.get(i.officeId)}<br /><small className="fine">{u?.name} · {em(u?.email)} · {em(u?.phone)}</small></td><td>{deal.get(i.dealId)}</td>
             <td>₹{Number(i.amountCr)} Cr{i.colead ? " · co-lead" : ""}</td>
+            <td>{(() => { const r = readyBy.get(i.officeId); return r && i.status !== "Withdrawn" ? <a className={`pill ${r.checked ? "ok" : r.ready ? "" : "mid"}`} href={`/desk/investors/${i.officeId}#transfer`}>{r.checked ? "Checked" : r.ready ? "To check" : `${r.done}/${r.total}`}</a> : "—"; })()}</td>
             <td>{!confirm ? <><span className="pill">{i.status}</span>{i.note ? <><br /><small className="fine">{i.note}</small></> : null}<br /><small className="fine">A super admin confirms allocations.</small></> : <form action={saveInterest} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}><input type="hidden" name="id" value={i.id} />
               <select name="status" defaultValue={i.status}>{["Indicated", "Term sheet", "Documents", "Allotted", "Withdrawn"].map((s) => <option key={s}>{s}</option>)}</select>
               <input name="note" defaultValue={i.note ?? ""} placeholder="Note" style={{ maxWidth: 160 }} /><button className="btn sm" type="submit">Save</button></form>}</td></tr>); })
-          : <tr><td colSpan={5} className="fine">None yet.</td></tr>}
+          : <tr><td colSpan={6} className="fine">None yet.</td></tr>}
       </tbody></table></div>
 
       <h2 id="qs">Questions waiting for an answer</h2>
@@ -70,7 +73,7 @@ export default async function Activity({ searchParams }: { searchParams: Promise
             <td><small>{Object.entries(l.data || {}).filter(([k, v]) => v && !["nda", "risk", "officeId", "report"].includes(k)).map(([k, v]) => `${k}: ${v}`).join(" · ")}</small>
               {(l.data as Record<string, string> | null)?.report && <details className="lead-rep"><summary>Readiness report</summary><pre>{(l.data as Record<string, string>).report}</pre></details>}</td>
             <td><form action={saveLead} style={{ display: "flex", gap: 6 }}><input type="hidden" name="id" value={l.id} /><select name="status" defaultValue={l.status}>{["New", "Contacted", "In diligence", "Closed"].map((s) => <option key={s}>{s}</option>)}</select><button className="btn sm" type="submit">Save</button></form></td></tr>))
-          : <tr><td colSpan={5} className="fine">None yet.</td></tr>}
+          : <tr><td colSpan={6} className="fine">None yet.</td></tr>}
       </tbody></table></div>
     </>
   );

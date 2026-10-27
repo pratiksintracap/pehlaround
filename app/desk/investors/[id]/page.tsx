@@ -6,7 +6,8 @@ import { deals, deskNotes, ndas, offices, users } from "@/db/schema";
 import { can, mask } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
 import { canSeeOffice, deskMembers, listTasks } from "@/lib/desk";
-import { saveDeskNote, logCall } from "@/lib/desk-actions";
+import { saveDeskNote, logCall, checkKycFile } from "@/lib/desk-actions";
+import { officeTransfer, readiness, KYC_KINDS, isKycKind, fmtSize } from "@/lib/transfer";
 import { setApproval } from "@/lib/admin-actions";
 import { DkToast, DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
 
@@ -36,6 +37,8 @@ export default async function Investor({ params, searchParams }: P) {
     deskMembers(),
     getSettings(),
   ]);
+  const tr = await officeTransfer(o.id);
+  const ready = readiness(o, tr.kyc, tr.files);
   // Office people's contact details follow the console's rule: analysts see them only if Settings allows.
   // The contact on an investor the desk added belongs to whoever added it, so it is always shown to them.
   const seeContacts = can(me, "contacts.view", { analystContacts: st.analystContacts });
@@ -86,6 +89,25 @@ export default async function Investor({ params, searchParams }: P) {
           : <DkEmpty>No contact on file. {o.origin === "desk" ? <a href={`/admin/offices?show=desk#o${o.id}`}>Add one</a> : null}</DkEmpty>}
       </section>
 
+      <section className="dk-sec" id="transfer">
+        <h2>Ready to transfer <span className="dk-count">{ready.done}/{ready.total}</span></h2>
+        <ul className="dk-list">{ready.items.map((it) => (
+          <li key={it.key} className="dk-row plain"><span className="dk-row-main"><b>{it.label}</b>
+            <small>{it.state === "checked" ? "Checked by the desk" : it.state === "done" ? "Given, not checked yet" : it.state === "redo" ? `Asked to redo: ${it.note ?? ""}` : "Not given yet"}</small></span>
+            <span className={`dk-pill ${it.state === "checked" ? "ok" : it.state === "done" ? "" : it.state === "redo" ? "bad" : "mid"}`}>{it.state === "checked" ? "✓" : it.state === "done" ? "To check" : it.state === "redo" ? "Redo" : "Missing"}</span></li>))}</ul>
+        {tr.kyc?.dpId && <p className="fine">{tr.kyc.depository} · {seeContacts ? `${tr.kyc.dpId} ${tr.kyc.clientId}` : `${tr.kyc.dpId} ••••${tr.kyc.clientId?.slice(-2)}`}{tr.kyc.dpName ? ` · ${tr.kyc.dpName}` : ""}{tr.kyc.holderName ? ` · ${tr.kyc.holderName}` : ""}
+          {tr.kyc.bankName || tr.kyc.ifsc ? <><br />{[tr.kyc.bankName, tr.kyc.ifsc, tr.kyc.accountLast4 ? `a/c ••${tr.kyc.accountLast4}` : ""].filter(Boolean).join(" · ")}</> : null}</p>}
+        {tr.files.length > 0 && <ul className="dk-list">{tr.files.map((fl) => (
+          <li key={fl.id} className="dk-row plain"><span className="dk-row-main">
+            <b>{isKycKind(fl.kind) ? KYC_KINDS[fl.kind].label : fl.kind}</b>
+            <small>{seeContacts ? <a href={`/api/office/transfer/file/${fl.id}`} target="_blank" rel="noopener">{fl.name}</a> : fl.name} · {fmtSize(fl.size)} · {ago(fl.at)}{fl.checkedBy ? ` · ${fl.status === "accepted" ? "accepted" : "redo asked"} by ${fl.checkedBy}` : ""}</small></span>
+            {can(me, "offices.approve") && fl.status !== "accepted" && <form action={checkKycFile}><input type="hidden" name="id" value={fl.id} /><input type="hidden" name="status" value="accepted" /><input type="hidden" name="back" value={`${back}#transfer`} /><button className="dk-btn sm" type="submit">Accept</button></form>}
+            {can(me, "offices.approve") && fl.status !== "redo" && <details className="dk-redo"><summary>Redo</summary><form action={checkKycFile}><input type="hidden" name="id" value={fl.id} /><input type="hidden" name="status" value="redo" /><input type="hidden" name="back" value={`${back}#transfer`} />
+              <input name="note" required maxLength={400} placeholder="What is wrong (the office reads this)" /><button className="dk-btn sm" type="submit">Ask to redo</button></form></details>}
+          </li>))}</ul>}
+        {!seeContacts && tr.files.length > 0 && <p className="fine">Opening the documents needs contact access (Settings).</p>}
+      </section>
+
       <section className="dk-sec">
         <h2>Tasks <span className="dk-count">{open.length}</span></h2>
         {open.length ? <ul className="dk-list">{open.map((t) => <DkTask key={t.id} t={t} back={back} who={who(t.assigneeId)} />)}</ul> : <DkEmpty>No open tasks.</DkEmpty>}
@@ -96,8 +118,6 @@ export default async function Investor({ params, searchParams }: P) {
 
       <section className="dk-sec">
         <h2>Notes <span className="dk-count">{notes.length}</span></h2>
-        {work && <DkLogCall action={logCall} officeId={o.id} back={back} />}
-
         {work && <DkLogCall action={logCall} officeId={o.id} back={back} />}
         {work && (
           <form action={saveDeskNote} className="dk-note-form">

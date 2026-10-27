@@ -1,4 +1,5 @@
 import { requireDesk } from "@/lib/auth";
+import { callList } from "@/lib/call-list";
 import { can, isSuper, mask, ROLE_LABEL, type DeskRole } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
 import { desc, sql } from "drizzle-orm";
@@ -32,17 +33,8 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
   const [desk, members, nm, added] = await Promise.all([myDesk(me), deskMembers(), names(me), count(offices, isSuper(me) ? sql`origin = 'desk'` : sql`origin = 'desk' and added_by_id = ${me.id}`)]);
   const opts = { members: members.map((m) => ({ id: m.id, name: m.name })), deals: [...nm.deal.values()].map((x) => ({ id: x.id, name: x.company })), offices: [...nm.office.entries()].map(([id, name]) => ({ id, name })) };
   const myOver = desk.myTasks.filter((t) => t.dueOn && t.dueOn < new Date(Date.now() + 5.5 * 36e5).toISOString().slice(0, 10)).length;
-  // Offices active in a room this week that have neither requested an allocation nor passed: the desk's call list.
-  type Lead = { office: string; company: string; n: number; last: string; contact: string | null; phone: string | null };
-  const toCall = ((await db.execute(sql`
-    select o.name as office, d.company, count(*)::int as n, max(a.at) as last,
-      (select u.name from users u where u.office_id = a.office_id order by u.id limit 1) as contact,
-      (select u.phone from users u where u.office_id = a.office_id order by u.id limit 1) as phone
-    from audit a join offices o on o.id = a.office_id join deals d on d.id = a.deal_id
-    where a.at > now() - interval '7 days' and a.deal_id is not null
-      and not exists (select 1 from interests i where i.office_id = a.office_id and i.deal_id = a.deal_id)
-      and not exists (select 1 from passes p where p.office_id = a.office_id and p.deal_id = a.deal_id)
-    group by a.office_id, a.deal_id, o.name, d.company order by n desc, last desc limit 12`)) as unknown as { rows: Lead[] }).rows;
+  // Who to call today: offices ranked by what they did lately (lib/call-list), the same list as the phone desk.
+  const toCall = await callList(me, { limit: 10 });
   const tiles: [string, number, string][] = [
     ["Offices awaiting approval", appr, "/admin/offices?show=pending"], ["Investors registered", o, "/admin/offices?show=registered"], ["Added by the desk", added, "/admin/offices?show=desk"], ["NDAs signed", nd, "/admin/offices"],
     ["New allocation requests", intr, "/admin/activity"], ["Questions to answer", q, "/admin/activity#qs"], ["Calls requested", c, "/admin/activity#calls"], ["New founder leads", l, "/admin/activity#leads"],
@@ -72,10 +64,12 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
         <ul className="feed">{alerts.length ? alerts.map((a) => <li key={a.id} className={a.readAt ? "" : "new"}><span className="mono">{fmtT(a.createdAt)}</span>{a.link ? <a href={a.link}><b>{a.title}</b></a> : <b>{a.title}</b>}{a.body ? <> · <span className="fine">{a.body.slice(0, 160)}</span></> : null}</li>) : <li className="empty-li">No alerts yet.</li>}</ul>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><a className="btn sm" href="/notifications">All alerts</a>{unread > 0 && <form action={markDeskRead}><button className="btn sm ghost" type="submit">Mark all read</button></form>}<a className="btn sm" href="/admin/notify">Notify offices</a></div></div>
       <div className="chart" style={{ marginTop: 24 }}><span className="k">Who to call today</span>
-        <p className="fine" style={{ margin: "4px 0 8px" }}>Offices that opened a room, read documents or asked a question in the last seven days, and have not yet indicated an amount or passed.</p>
-        {toCall.length ? <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Office</th><th>Company</th><th>Actions this week</th><th>Last seen</th><th>Contact</th></tr></thead><tbody>
-          {toCall.map((r, i) => <tr key={i}><th scope="row">{r.office}</th><td>{r.company}</td><td>{r.n}</td><td>{fmtT(new Date(r.last))}</td><td>{r.contact || "—"}{r.phone ? (seeContacts ? <> · <a href={`tel:${r.phone.replace(/\s/g, "")}`}>{r.phone}</a></> : <> · <span className="mono">{mask(r.phone)}</span></>) : null}</td></tr>)}
-        </tbody></table></div> : <p className="fine">Nobody to chase this week.</p>}</div>
+        <p className="fine" style={{ margin: "4px 0 8px" }}>Ranked by what each office did on the site in the last two weeks: allocation requests, call requests, decks read more than once, NDAs signed without opening the room, questions. Anyone the desk noted in the last two days drops down.</p>
+        {toCall.length ? <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Office</th><th>Why now</th><th>Score</th></tr></thead><tbody>
+          {toCall.map((r) => <tr key={r.officeId}><th scope="row"><a href={`/desk/investors/${r.officeId}`}>{r.name}</a>{r.contacted ? <><br /><small className="fine">noted {fmtT(r.contacted)}</small></> : null}</th>
+            <td>{r.reasons[0].text}{r.reasons.length > 1 ? <><br /><small className="fine">{r.reasons.slice(1, 3).map((x) => x.text).join(" · ")}</small></> : null}</td><td>{r.score}</td></tr>)}
+        </tbody></table></div> : <p className="fine">Nobody stands out today.</p>}
+        <a className="btn sm" href="/desk/call">With call and WhatsApp buttons</a></div>
       <div className="two" style={{ marginTop: 24 }}>
         <div className="chart"><span className="k">Recent activity</span>
           <ul className="feed">{recent.map((a) => <li key={a.id}><span className="mono">{fmtT(a.at)}</span>{a.who ? `${a.who}: ` : ""}{a.action}</li>)}</ul>

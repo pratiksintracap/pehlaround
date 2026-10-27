@@ -16,6 +16,8 @@ import { emailReady } from "@/lib/email";
 import { trustedDevice } from "@/lib/trust";
 import { getSettings } from "@/lib/settings";
 import { DeckPanel } from "@/components/DeckPanel";
+import { teaser } from "@/lib/teaser";
+import { officeRefCode } from "@/lib/track";
 
 type P = { params: Promise<{ slug: string }> };
 
@@ -42,6 +44,9 @@ export default async function Overview({ params }: P) {
   const stages = ["Overview", "Room open", "Closing"];
   const now = d.open ? "Room open" : "Overview";
   const others = all.filter((x) => x.id !== d.id);
+  // Approved investors (and the desk) can forward a blind teaser; an office's link carries its invite code.
+  const share = d.published && user && (isDesk(user) || registered)
+    ? teaser(d, !isDesk(user) && user.office?.approval === "approved" ? await officeRefCode(user.office.id, user.office.refCode) : null) : null;
 
   return (
     <main><div className="wrap">
@@ -100,6 +105,14 @@ export default async function Overview({ params }: P) {
               {user ? <p className="notice pend-note"><b>Your office is being approved</b>, {approvalTime}. We bring you back to this company the moment it is, to sign its NDA here.</p>
                 : <a className="btn primary" href={`/register?next=${encodeURIComponent(`/deals/${d.slug}#sign`)}`}>Register to see the company</a>}
             </>
+          )}
+          {share && (
+            <details className="share-teaser">
+              <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13" /></svg>Share a teaser</summary>
+              <p className="fine">Without the company&apos;s name, round or price: only what this page shows anyone.{!isDesk(user) ? " Whoever registers through it is noted as introduced by your office." : ""}</p>
+              <pre className="st-text">{share.text}</pre>
+              <div className="dl-acts"><a className="btn sm primary" href={share.wa} target="_blank" rel="noopener">WhatsApp</a><button type="button" className="btn sm" data-copy={share.text}>Copy text</button><button type="button" className="btn sm ghost" data-copy={share.url}>Copy link</button></div>
+            </details>
           )}
           {!registered && !user && <p className="fine">Register once. After the desk approves you, every company opens by name with its pitch deck; its data room opens when you sign that company&apos;s NDA, right on this page.</p>}
         </aside>

@@ -1547,3 +1547,31 @@ dialog.deckpanel::backdrop{background:rgba(8,14,30,.45)}
 .pl-table .deal-move{display:flex;gap:6px}
 .dk-task-t{color:inherit;text-decoration:none}.dk-task-t:hover b{text-decoration:underline}
 .adm-aidraft{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+
+/* Ready to transfer (dashboard) */
+.tr-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.tr-list li{display:flex;gap:10px;align-items:flex-start}
+.tr-list li>i{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;color:var(--ink3)}
+.tr-list li.checked>i{background:var(--live);border-color:var(--live);color:#fff}
+.tr-list li.done>i{border-color:var(--live);color:var(--live)}
+.tr-list li.redo>i{border-color:var(--bad);color:var(--bad)}
+.tr-list li div{display:grid;gap:2px}.tr-list li small{color:var(--ink3);font-size:12.5px}
+.tr-list li.redo small{color:var(--bad)}
+.tr-docs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+.tr-doc input[type=file]{width:100%;font-size:13px}
+.tr-file{font-size:13px;margin:4px 0 8px;overflow-wrap:anywhere}.tr-file.redo{color:var(--bad)}.tr-file.accepted{color:var(--live)}
+.panel[data-panel=Transfer] .chart+.chart,.panel[data-panel=Transfer] form.chart{margin-top:12px}
+.dk-redo summary{cursor:pointer;font-size:13px;color:var(--ink3)}.dk-redo form{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.dk-redo input{flex:1;min-width:140px}
+.share-teaser{margin-top:14px;border:1px solid var(--line2);border-radius:var(--r);padding:10px 12px;background:var(--bg2)}
+.share-teaser summary{cursor:pointer;font-weight:600;font-size:14px;display:flex;gap:8px;align-items:center;list-style:none}
+.share-teaser summary::-webkit-details-marker{display:none}
+.share-teaser summary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.share-teaser .st-text{white-space:pre-wrap;font-family:var(--sans);font-size:13px;background:var(--bg3);border-radius:8px;padding:10px;margin:8px 0;color:var(--ink2)}
+.dk-call-row .dk-acts{display:flex;gap:8px;padding:0 12px 10px 58px}
+.dk-calls .dk-more-why{display:block;color:var(--ink3);font-size:12px;margin-top:2px}
+.dk-calls .dk-spoke{display:block;color:var(--amber);font-size:12px}
+.panel[data-panel=Transfer]{grid-template-columns:1fr}
+.panel[data-panel=Transfer] fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:12px}
+.ipo-t th[scope=row]{font-family:var(--sans);text-transform:none;letter-spacing:0;font-size:14px;font-weight:600;color:var(--ink)}
+.sec.ipo-sec{padding-top:8px;padding-bottom:8px}.ipo-sec h2{font-size:22px}
+.dk-calls .dk-row-main small{white-space:normal;overflow:visible;text-overflow:clip}
