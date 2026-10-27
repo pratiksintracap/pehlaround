@@ -6,7 +6,6 @@ import { getDb } from "@/lib/db";
 import { broadcasts, deals, offices } from "@/db/schema";
 import { sendBroadcast } from "@/lib/admin-actions";
 import { emailReady, ALERT_TOPICS } from "@/lib/notify";
-import { Msg } from "@/components/AdminBits";
 import { notListed } from "@/lib/deal-guard";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
@@ -14,9 +13,9 @@ const AUD: Record<string, string> = { approved: "All approved offices", all: "Ev
 
 type Draft = { title?: string; body?: string; link?: string; audience?: string; dealId?: string; officeId?: string; topic?: string; email?: boolean; by?: string };
 
-export default async function Notify({ searchParams }: { searchParams: Promise<{ msg?: string; draft?: string }> }) {
+export default async function Notify({ searchParams }: { searchParams: Promise<{ draft?: string }> }) {
   const me = await requireDesk();
-  const { msg, draft: raw } = await searchParams;
+  const { draft: raw } = await searchParams;
   const send = can(me, "broadcast.send");
   // An analyst's draft comes back to a super admin as a prefilled form to review and send.
   let dr: Draft = {};
@@ -31,7 +30,6 @@ export default async function Notify({ searchParams }: { searchParams: Promise<{
   const mail = emailReady();
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Notify offices</h1>
       <p className="fine" style={{ marginBottom: 16 }}>Messages appear under the bell in each office&apos;s dashboard and in the app. {mail ? "Offices that allow email also get it by email." : "Email is not set up yet, so messages go in-app only (see Settings)."}
         {" "}Offices are also told automatically when you approve them, answer a question in a room they signed, add a document to that room, schedule a call or change an allocation request.</p>

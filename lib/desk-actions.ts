@@ -11,17 +11,14 @@ import { requirePerm, log, changes } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { asStage, stageLabel } from "@/lib/stages";
 import { investorRows, investorType } from "@/lib/csv";
+import { done, fail, deskBack, resultUrl } from "@/lib/form";
 import { deskMembers, canSeeOffice, officeScope } from "@/lib/desk";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const n = (f: FormData, k: string) => Number(f.get(k)) || 0;
 /** Back to a desk page (only same-site admin or app-desk paths), with a message. */
-const back = (f: FormData | null, fallback: string, msg: string): never => {
-  const want = f ? s(f, "back", 500) : "";
-  const path = /^\/(admin|desk)(\/|$|\?)/.test(want) ? want : fallback;
-  const [p, hash] = path.split("#");
-  redirect(`${p}${p.includes("?") ? "&" : "?"}msg=${encodeURIComponent(msg)}${hash ? `#${hash}` : ""}`);
-};
+const back = (f: FormData | null, fallback: string, msg: string): never => done(deskBack(f, fallback), msg);
+const refuse = (f: FormData | null, fallback: string, msg: string): never => fail(deskBack(f, fallback), msg);
 const day = (v: string) => (/^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
 const url = (v: string) => (/^https:\/\/\S+$/.test(v) ? v : null);
 
@@ -36,8 +33,8 @@ export async function setDealStage(f: FormData) {
   const me = await requirePerm("workflow");
   const d = await dealRow(n(f, "id"));
   const stage = asStage(s(f, "stage", 20));
-  if (!d || !stage) return back(f, "/admin/board", "Pick a stage.");
-  if (d.pipelineStage === stage) return back(f, dealPage(d), "No change.");
+  if (!d || !stage) return refuse(f, "/admin/board", "Pick a stage.");
+  if (d.pipelineStage === stage) return refuse(f, dealPage(d), "No change.");
   const db = await getDb();
   await db.update(deals).set({ pipelineStage: stage, stageAt: new Date() }).where(eq(deals.id, d.id));
   await log(me, `Desk moved ${d.company} to ${stageLabel(stage)}`, d.id, { entity: "deal", entityId: d.id, detail: { changes: { pipelineStage: [stageLabel(d.pipelineStage), stageLabel(stage)] } } });
@@ -47,11 +44,11 @@ export async function setDealStage(f: FormData) {
 export async function setDealOwner(f: FormData) {
   const me = await requirePerm("workflow");
   const d = await dealRow(n(f, "id"));
-  if (!d) return back(f, "/admin/board", "Deal not found.");
+  if (!d) return refuse(f, "/admin/board", "Deal not found.");
   const ownerId = n(f, "ownerId") || null;
   const members = await deskMembers();
-  if (ownerId && !members.some((m) => m.id === ownerId)) return back(f, dealPage(d), "Owners are desk members.");
-  if (ownerId === d.ownerId) return back(f, dealPage(d), "No change.");
+  if (ownerId && !members.some((m) => m.id === ownerId)) return refuse(f, dealPage(d), "Owners are desk members.");
+  if (ownerId === d.ownerId) return refuse(f, dealPage(d), "No change.");
   const db = await getDb();
   await db.update(deals).set({ ownerId }).where(eq(deals.id, d.id));
   const nm = (id: number | null) => (id ? members.find((m) => m.id === id)?.name ?? `#${id}` : "nobody");
@@ -66,25 +63,25 @@ export async function saveDeskNote(f: FormData) {
   const id = n(f, "id"), body = s(f, "body", 8000), dealId = n(f, "dealId") || null, officeId = n(f, "officeId") || null;
   const fallback = dealId ? `/admin/deals/${dealId}#desk` : "/admin/tasks";
   if (f.get("delete") === "on") {
-    if (!can(me, "delete")) return back(f, fallback, "Only a super admin can delete a note.");
+    if (!can(me, "delete")) return refuse(f, fallback, "Only a super admin can delete a note.");
     const [prev] = await db.select().from(deskNotes).where(eq(deskNotes.id, id));
-    if (!prev) return back(f, fallback, "Note not found.");
+    if (!prev) return refuse(f, fallback, "Note not found.");
     await db.delete(deskNotes).where(eq(deskNotes.id, id));
     await log(me, "Desk deleted a note", prev.dealId, { entity: "note", entityId: id, officeId: prev.officeId, detail: { changes: { body: [prev.body, null] } } });
     return back(f, fallback, "Note deleted.");
   }
-  if (!body) return back(f, fallback, "Write the note first.");
+  if (!body) return refuse(f, fallback, "Write the note first.");
   if (id) {
     const [prev] = await db.select().from(deskNotes).where(eq(deskNotes.id, id));
-    if (!prev) return back(f, fallback, "Note not found.");
+    if (!prev) return refuse(f, fallback, "Note not found.");
     // Analysts edit their own notes; a super admin edits any.
-    if (prev.userId !== me.id && !can(me, "delete")) return back(f, fallback, "You can edit your own notes. Add a new note instead.");
+    if (prev.userId !== me.id && !can(me, "delete")) return refuse(f, fallback, "You can edit your own notes. Add a new note instead.");
     await db.update(deskNotes).set({ body, editedAt: new Date() }).where(eq(deskNotes.id, id));
     await log(me, "Desk edited a note", prev.dealId, { entity: "note", entityId: id, officeId: prev.officeId, detail: { changes: changes(prev, { body }, ["body"]) } });
     return back(f, fallback, "Note saved.");
   }
-  if (dealId && !(await dealRow(dealId))) return back(f, fallback, "Deal not found.");
-  if (officeId) { const [o] = await db.select({ origin: offices.origin, addedById: offices.addedById }).from(offices).where(eq(offices.id, officeId)); if (!o || !canSeeOffice(me, o)) return back(f, fallback, "Investor not found."); }
+  if (dealId && !(await dealRow(dealId))) return refuse(f, fallback, "Deal not found.");
+  if (officeId) { const [o] = await db.select({ origin: offices.origin, addedById: offices.addedById }).from(offices).where(eq(offices.id, officeId)); if (!o || !canSeeOffice(me, o)) return refuse(f, fallback, "Investor not found."); }
   const [row] = await db.insert(deskNotes).values({ dealId, officeId, body, userId: me.id, who: me.name }).returning({ id: deskNotes.id });
   await log(me, "Desk added a note", dealId, { entity: "note", entityId: row.id, officeId, detail: { note: body.slice(0, 300) } });
   back(f, fallback, "Note added.");
@@ -96,23 +93,23 @@ export async function saveDeskFile(f: FormData) {
   const db = await getDb();
   const dealId = n(f, "dealId"), id = n(f, "id");
   const d = await dealRow(dealId);
-  if (!d) return back(f, "/admin/board", "Deal not found.");
+  if (!d) return refuse(f, "/admin/board", "Deal not found.");
   const fallback = `${dealPage(d)}#files`;
   if (f.get("delete") === "on") {
-    if (!can(me, "delete")) return back(f, fallback, "Only a super admin can delete a file.");
+    if (!can(me, "delete")) return refuse(f, fallback, "Only a super admin can delete a file.");
     const [prev] = await db.select().from(deskFiles).where(and(eq(deskFiles.id, id), eq(deskFiles.dealId, dealId)));
-    if (!prev) return back(f, fallback, "File not found.");
+    if (!prev) return refuse(f, fallback, "File not found.");
     await db.delete(deskFiles).where(eq(deskFiles.id, id));
     await log(me, `Desk deleted the file "${prev.title}" from ${d.company}`, dealId, { entity: "file", entityId: id, detail: { changes: { title: [prev.title, null], url: [prev.url, null] } } });
     return back(f, fallback, "File deleted.");
   }
   const title = s(f, "title", 300), link = s(f, "url", 2000);
-  if (!title) return back(f, fallback, "Give the file a title.");
-  if (link && !url(link)) return back(f, fallback, "Links start with https:// (a Google Drive or other secure link).");
+  if (!title) return refuse(f, fallback, "Give the file a title.");
+  if (link && !url(link)) return refuse(f, fallback, "Links start with https:// (a Google Drive or other secure link).");
   const vals = { title, url: url(link), kind: s(f, "kind", 80) || null, note: s(f, "note", 2000) || null };
   if (id) {
     const [prev] = await db.select().from(deskFiles).where(and(eq(deskFiles.id, id), eq(deskFiles.dealId, dealId)));
-    if (!prev) return back(f, fallback, "File not found.");
+    if (!prev) return refuse(f, fallback, "File not found.");
     await db.update(deskFiles).set(vals).where(eq(deskFiles.id, id));
     await log(me, `Desk edited the file "${title}" on ${d.company}`, dealId, { entity: "file", entityId: id, detail: { changes: changes(prev, vals) } });
     return back(f, fallback, "File saved.");
@@ -130,31 +127,31 @@ export async function saveTask(f: FormData) {
   const fallback = "/admin/tasks";
   const members = await deskMembers();
   if (f.get("delete") === "on") {
-    if (!can(me, "delete")) return back(f, fallback, "Only a super admin can delete a task. Mark it done instead.");
+    if (!can(me, "delete")) return refuse(f, fallback, "Only a super admin can delete a task. Mark it done instead.");
     const [prev] = await db.select().from(tasks).where(eq(tasks.id, id));
-    if (!prev) return back(f, fallback, "Task not found.");
+    if (!prev) return refuse(f, fallback, "Task not found.");
     await db.delete(tasks).where(eq(tasks.id, id));
     await log(me, `Desk deleted the task "${prev.title}"`, prev.dealId, { entity: "task", entityId: id, officeId: prev.officeId, detail: { changes: { title: [prev.title, null] } } });
     return back(f, fallback, "Task deleted.");
   }
   const title = s(f, "title", 300);
-  if (!title) return back(f, fallback, "Say what needs doing.");
+  if (!title) return refuse(f, fallback, "Say what needs doing.");
   const assigneeId = n(f, "assigneeId") || me.id;
-  if (!members.some((m) => m.id === assigneeId)) return back(f, fallback, "Tasks go to a desk member.");
+  if (!members.some((m) => m.id === assigneeId)) return refuse(f, fallback, "Tasks go to a desk member.");
   const dealId = n(f, "dealId") || null, officeId = n(f, "officeId") || null;
-  if (dealId && !(await dealRow(dealId))) return back(f, fallback, "Deal not found.");
+  if (dealId && !(await dealRow(dealId))) return refuse(f, fallback, "Deal not found.");
   if (officeId) {
     const [o] = await db.select({ origin: offices.origin, addedById: offices.addedById }).from(offices).where(eq(offices.id, officeId));
-    if (!o || !canSeeOffice(me, o)) return back(f, fallback, "Investor not found.");
+    if (!o || !canSeeOffice(me, o)) return refuse(f, fallback, "Investor not found.");
     // An investor added privately stays private: its tasks go only to someone who can see it.
     const to = members.find((m) => m.id === assigneeId);
-    if (!to || !canSeeOffice(to, o)) return back(f, fallback, "Only the person who added this investor (or the super admin) can take tasks about it.");
+    if (!to || !canSeeOffice(to, o)) return refuse(f, fallback, "Only the person who added this investor (or the super admin) can take tasks about it.");
   }
   const vals = { title, notes: s(f, "notes", 4000) || null, dealId, officeId, assigneeId, dueOn: day(s(f, "dueOn", 10)) };
   const who = (uid: number | null) => members.find((m) => m.id === uid)?.name ?? (uid ? `#${uid}` : "—");
   if (id) {
     const [prev] = await db.select().from(tasks).where(eq(tasks.id, id));
-    if (!prev) return back(f, fallback, "Task not found.");
+    if (!prev) return refuse(f, fallback, "Task not found.");
     await db.update(tasks).set({ ...vals, remindedOn: prev.dueOn !== vals.dueOn ? null : prev.remindedOn }).where(eq(tasks.id, id));
     const diff = changes(prev, vals, ["title", "notes", "dealId", "officeId", "dueOn"]);
     if (prev.assigneeId !== assigneeId) diff.assignee = [who(prev.assigneeId), who(assigneeId)];
@@ -173,8 +170,8 @@ export async function setTaskDone(f: FormData) {
   const db = await getDb();
   const id = n(f, "id"), done = f.get("done") === "1";
   const [prev] = await db.select().from(tasks).where(eq(tasks.id, id));
-  if (!prev) return back(f, "/admin/tasks", "Task not found.");
-  if ((prev.status === "done") === done) return back(f, "/admin/tasks", "No change.");
+  if (!prev) return refuse(f, "/admin/tasks", "Task not found.");
+  if ((prev.status === "done") === done) return refuse(f, "/admin/tasks", "No change.");
   await db.update(tasks).set(done ? { status: "done", doneAt: new Date(), doneBy: me.name } : { status: "open", doneAt: null, doneBy: null, remindedOn: null }).where(eq(tasks.id, id));
   await log(me, `Desk ${done ? "finished" : "reopened"} the task "${prev.title}"`, prev.dealId, { entity: "task", entityId: id, officeId: prev.officeId,
     detail: { changes: { status: [prev.status, done ? "done" : "open"] } } });
@@ -194,7 +191,7 @@ function listedFrom(f: FormData): ListedInfo {
 export async function createListedDeal(f: FormData) {
   const me = await requirePerm("deals.edit");
   const company = s(f, "company", 200);
-  if (!company) return back(f, "/admin/after-the-bell", "Give the company's name.");
+  if (!company) return refuse(f, "/admin/after-the-bell", "Give the company's name.");
   const info = listedFrom(f);
   const db = await getDb();
   // A unique, meaningless slug: listed deals have no public page, so nothing should be guessable from it.
@@ -207,13 +204,13 @@ export async function createListedDeal(f: FormData) {
     room: { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [], interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] },
   }).returning({ id: deals.id });
   await log(me, `Desk added the listed company ${company} (After the Bell)`, row.id, { entity: "deal", entityId: row.id, detail: { changes: changes(null, { company, ...info } as Record<string, unknown>) } });
-  redirect(`/admin/after-the-bell/${row.id}?msg=${encodeURIComponent("Added to After the Bell. It is desk-only and never appears on the site.")}`);
+  redirect(resultUrl(`/admin/after-the-bell/${row.id}`, "Added to After the Bell. It is desk-only and never appears on the site."));
 }
 
 export async function saveListedDeal(f: FormData) {
   const me = await requirePerm("deals.edit");
   const d = await dealRow(n(f, "id"));
-  if (!d || !d.listed) return back(f, "/admin/after-the-bell", "Not a listed-company deal.");
+  if (!d || !d.listed) return refuse(f, "/admin/after-the-bell", "Not a listed-company deal.");
   const info = listedFrom(f);
   const vals = { company: s(f, "company", 200) || d.company, headline: s(f, "summary", 2000), status: s(f, "status", 200) || d.status,
     title: info.sector || "Listed company", category: info.dealType || "Listed company", listingLabel: [info.exchange, info.ticker].filter(Boolean).join(": ") || "Listed" };
@@ -295,7 +292,7 @@ export async function saveInvestorContact(f: FormData) {
   const db = await getDb();
   const id = n(f, "id");
   const [o] = await db.select().from(offices).where(eq(offices.id, id));
-  if (!o || !canSeeOffice(me, o)) return back(f, "/admin/offices", "Investor not found.");
+  if (!o || !canSeeOffice(me, o)) return refuse(f, "/admin/offices", "Investor not found.");
   const vals = { contactName: s(f, "contactName", 160) || null, contactEmail: s(f, "contactEmail", 200).toLowerCase() || null, contactPhone: s(f, "contactPhone", 40) || null };
   await db.update(offices).set(vals).where(eq(offices.id, id));
   await log(me, `Desk updated the contact for ${o.name}`, null, { entity: "office", entityId: id, officeId: id, detail: { changes: changes(o, vals) } });
@@ -309,7 +306,7 @@ export async function snoozeTask(f: FormData) {
   const db = await getDb();
   const id = n(f, "id"), days = Math.min(30, Math.max(1, n(f, "days") || 1));
   const [prev] = await db.select().from(tasks).where(eq(tasks.id, id));
-  if (!prev) return back(f, "/desk/tasks", "Task not found.");
+  if (!prev) return refuse(f, "/desk/tasks", "Task not found.");
   const ist = new Date(Date.now() + 5.5 * 3600e3 + days * 86400e3).toISOString().slice(0, 10);
   await db.update(tasks).set({ dueOn: ist, remindedOn: null }).where(eq(tasks.id, id));
   await log(me, `Desk moved the task "${prev.title}" to ${ist}`, prev.dealId, { entity: "task", entityId: id, officeId: prev.officeId, detail: { changes: { dueOn: [prev.dueOn, ist] } } });
@@ -323,8 +320,8 @@ export async function logCall(f: FormData) {
   const dealId = n(f, "dealId") || null, officeId = n(f, "officeId") || null;
   const fallback = dealId ? `/desk/deals/${dealId}` : officeId ? `/desk/investors/${officeId}` : "/desk";
   const what = s(f, "outcome", 2000), next = s(f, "next", 200), due = day(s(f, "due", 10));
-  if (!what) return back(f, fallback, "Say how the call went in a line.");
-  if (officeId) { const [o] = await db.select().from(offices).where(eq(offices.id, officeId)); if (!o || !canSeeOffice(me, o)) return back(f, "/desk", "Not found."); }
+  if (!what) return refuse(f, fallback, "Say how the call went in a line.");
+  if (officeId) { const [o] = await db.select().from(offices).where(eq(offices.id, officeId)); if (!o || !canSeeOffice(me, o)) return refuse(f, "/desk", "Not found."); }
   const [note] = await db.insert(deskNotes).values({ dealId, officeId, body: `Call: ${what}${next ? `\nNext: ${next}${due ? ` (by ${due})` : ""}` : ""}`, userId: me.id, who: me.name }).returning({ id: deskNotes.id });
   await log(me, "Desk logged a call", dealId, { entity: "note", entityId: note.id, officeId });
   if (next) {
@@ -341,10 +338,10 @@ export async function checkKycFile(f: FormData) {
   const id = n(f, "id"), status = s(f, "status", 20), note = s(f, "note", 400);
   const [k] = await db.select({ id: kycFiles.id, officeId: kycFiles.officeId, kind: kycFiles.kind }).from(kycFiles).where(eq(kycFiles.id, id));
   const fallback = k ? `/desk/investors/${k.officeId}` : "/desk";
-  if (!k || !["accepted", "redo"].includes(status)) return back(f, fallback, "Not found.");
+  if (!k || !["accepted", "redo"].includes(status)) return refuse(f, fallback, "Not found.");
   const [o] = await db.select().from(offices).where(eq(offices.id, k.officeId));
-  if (!o || !canSeeOffice(me, o)) return back(f, "/desk", "Not found.");
-  if (status === "redo" && !note) return back(f, fallback, "Say what needs redoing, in a line the office will read.");
+  if (!o || !canSeeOffice(me, o)) return refuse(f, "/desk", "Not found.");
+  if (status === "redo" && !note) return refuse(f, fallback, "Say what needs redoing, in a line the office will read.");
   await db.update(kycFiles).set({ status, deskNote: status === "redo" ? note : null, checkedBy: me.name, checkedAt: new Date() }).where(eq(kycFiles.id, id));
   const { KYC_KINDS, isKycKind } = await import("@/lib/transfer");
   const label = isKycKind(k.kind) ? KYC_KINDS[k.kind].label : k.kind;

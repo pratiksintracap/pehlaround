@@ -4,7 +4,6 @@ import { getDb } from "@/lib/db";
 import { users } from "@/db/schema";
 import { addDeskMember, setDeskRole, removeDeskMember } from "@/lib/admin-actions";
 import { DESK_ROLES, ROLE_LABEL, type DeskRole } from "@/lib/perm";
-import { Msg } from "@/components/AdminBits";
 
 const fmtD = (d: Date | null) => (d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "never");
 
@@ -25,14 +24,12 @@ const CAN: [string, boolean, boolean][] = [
   ["Manage the desk team; see every desk member's actions", true, false],
 ];
 
-export default async function Team({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function Team() {
   const me = await requireAdmin();
-  const { msg } = await searchParams;
   const db = await getDb();
   const desk = await db.select().from(users).where(sql`role in ('admin', 'analyst') and disabled = false`).orderBy(desc(sql`role = 'admin'`), users.name);
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Desk team</h1>
       <p className="fine" style={{ marginBottom: 16 }}>Super admins can do everything. Analysts run the day-to-day work; anything that reaches every investor, or can&apos;t be undone, comes to a super admin. Every desk action is in the <a href="/admin/log">audit log</a> with a name.</p>
       <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Name</th><th>Email</th><th>Last sign-in</th><th>Role</th><th /></tr></thead><tbody>

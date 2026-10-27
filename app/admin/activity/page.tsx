@@ -6,13 +6,11 @@ import { desc, eq, isNull, and } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { calls, deals, interests, leads, offices, passes, questions, users } from "@/db/schema";
 import { answerQuestion, saveCall, saveInterest, saveLead } from "@/lib/admin-actions";
-import { Msg } from "@/components/AdminBits";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
-export default async function Activity({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function Activity() {
   const me = await requireDesk();
-  const { msg } = await searchParams;
   const confirm = can(me, "allocations.confirm"), seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const em = (v?: string | null) => (seeContacts ? v : mask(v));
   const db = await getDb();
@@ -27,7 +25,6 @@ export default async function Activity({ searchParams }: { searchParams: Promise
   const deal = new Map(ds.map((x) => [x.id, x.company])), office = new Map(os.map((x) => [x.id, x.name])), user = new Map(us.map((x) => [x.id, x]));
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>Requests and Q&amp;A</h1>
 
       <h2>Allocation requests</h2>

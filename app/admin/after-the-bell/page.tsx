@@ -5,14 +5,13 @@ import { can } from "@/lib/perm";
 import { deskDeals, deskMembers, listTasks } from "@/lib/desk";
 import { createListedDeal } from "@/lib/desk-actions";
 import { DEAL_STAGES, LISTED_TYPES, stageLabel } from "@/lib/stages";
-import { Msg } from "@/components/AdminBits";
 import { fmtT } from "@/components/DeskBits";
 
 export const dynamic = "force-dynamic";
 
-export default async function AfterTheBell({ searchParams }: { searchParams: Promise<{ msg?: string; stage?: string }> }) {
+export default async function AfterTheBell({ searchParams }: { searchParams: Promise<{ stage?: string }> }) {
   const me = await requireDesk();
-  const { msg, stage } = await searchParams;
+  const { stage } = await searchParams;
   const [all, members, open] = await Promise.all([deskDeals({ listed: true }), deskMembers(), listTasks({ status: "open", me })]);
   const list = all.filter((d) => !stage || (stage === "active" ? d.pipelineStage !== "closed" : d.pipelineStage === stage));
   const who = new Map(members.map((m) => [m.id, m.name]));
@@ -20,7 +19,6 @@ export default async function AfterTheBell({ searchParams }: { searchParams: Pro
   const edit = can(me, "deals.edit");
   return (
     <>
-      <Msg msg={msg} />
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 6px" }}>
         <h1 style={{ fontSize: 30, margin: 0 }}>After the Bell</h1><span className="pill">Desk only</span>
         {edit && <a className="btn sm primary" href="#add">+ Add a listed company</a>}</div>

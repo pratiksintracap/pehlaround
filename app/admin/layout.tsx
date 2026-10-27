@@ -6,6 +6,8 @@ import { dbKind, getDb } from "@/lib/db";
 import { offices, questions, interests, tickets } from "@/db/schema";
 import { AdminNav } from "@/components/AdminNav";
 import { openTaskCount } from "@/lib/desk";
+import { Suspense } from "react";
+import { FormResult } from "@/components/Form";
 
 export const metadata: Metadata = { title: "Desk admin", robots: { index: false } };
 
@@ -36,6 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {kind !== "postgres" && (
           <p className="notice" style={{ borderColor: "#c0392b", marginBottom: 16 }}><b>No database connected.</b> The site is running on a temporary built-in database: registrations and edits are lost when the server restarts. In Vercel, open the project → Storage → create a Neon Postgres database and connect it to this project (it sets DATABASE_URL), then redeploy.</p>
         )}
+        <Suspense fallback={null}><FormResult /></Suspense>
         {children}
       </div>
     </div></div></main>

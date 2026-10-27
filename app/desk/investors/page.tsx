@@ -4,14 +4,14 @@ import { getDb } from "@/lib/db";
 import { offices } from "@/db/schema";
 import { can, isSuper } from "@/lib/perm";
 import { officeScope } from "@/lib/desk";
-import { DkHead, DkToast, DkEmpty, Ico, ICONS } from "@/components/DeskApp";
+import { DkHead, DkEmpty, Ico, ICONS } from "@/components/DeskApp";
 
-type P = { searchParams: Promise<{ msg?: string; q?: string; show?: string }> };
+type P = { searchParams: Promise<{ q?: string; show?: string }> };
 const TYPE: Record<string, string> = { family_office: "Family office", fund: "Fund", individual: "Individual" };
 
 export default async function Investors({ searchParams }: P) {
   const me = await requireDesk();
-  const { msg, q = "", show = "" } = await searchParams;
+  const { q = "", show = "" } = await searchParams;
   const FILTERS: [string, string][] = [["", "All"], ["pending", "To approve"], ["desk", isSuper(me) ? "Added by desk" : "Added by me"], ["registered", "Registered"]];
   const db = await getDb();
   const term = q.trim().slice(0, 80);
@@ -27,7 +27,6 @@ export default async function Investors({ searchParams }: P) {
   const href = (k: string) => { const p = new URLSearchParams(); if (term) p.set("q", term); if (k) p.set("show", k); const s = p.toString(); return `/desk/investors${s ? `?${s}` : ""}`; };
   return (
     <>
-      <DkToast msg={msg} />
       <DkHead title="Investors" sub={`${rows.length}${rows.length === 300 ? "+" : ""} ${show ? FILTERS.find(([k]) => k === show)?.[1].toLowerCase() : "on the desk"}`}
         action={can(me, "investors.add") ? <a className="dk-iconbtn" href="/admin/offices?show=desk#add" aria-label="Add investors"><Ico d={ICONS.plus} /></a> : undefined} />
       <form className="dk-search" role="search" action="/desk/investors">

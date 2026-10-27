@@ -6,7 +6,6 @@ import { desc, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { audit, calls, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
 import { markDeskRead } from "@/lib/admin-actions";
-import { Msg } from "@/components/AdminBits";
 import { myDesk, deskMembers, names } from "@/lib/desk";
 import { stageLabel } from "@/lib/stages";
 import { TYPE_LABEL, type InvestorType } from "@/lib/investor";
@@ -14,9 +13,8 @@ import { TaskRow } from "@/components/DeskBits";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
 
-export default async function AdminHome({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function AdminHome() {
   const me = await requireDesk();
-  const { msg } = await searchParams;
   const seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const db = await getDb();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +39,6 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
   ];
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 18px" }}>The desk today</h1>
       <section className="chart my-desk" aria-label="Your desk" style={{ marginBottom: 22 }}>
         <span className="k">Your desk · {me.name} · {ROLE_LABEL[me.role as DeskRole]}</span>

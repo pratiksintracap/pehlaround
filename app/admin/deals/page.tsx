@@ -5,13 +5,11 @@ import { listDeals } from "@/lib/deals";
 import { createDeal, setDealPhase } from "@/lib/admin-actions";
 import { PHASES, phaseInfo } from "@/lib/phase";
 import { can } from "@/lib/perm";
-import { Msg } from "@/components/AdminBits";
 import { offereeCounts, offereeLevel } from "@/lib/offerees";
 import { OFFEREE_LIMIT } from "@/lib/investor";
 
-export default async function AdminDeals({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function AdminDeals() {
   const me = await requireDesk();
-  const { msg } = await searchParams;
   const deals = await listDeals(true);
   const db = await getDb();
   const off = await offereeCounts();
@@ -26,7 +24,6 @@ export default async function AdminDeals({ searchParams }: { searchParams: Promi
   ]);
   return (
     <>
-      <Msg msg={msg} />
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 16px" }}><h1 style={{ fontSize: 30, margin: 0 }}>Deals</h1><a className="btn sm primary" href="#add">+ Add a deal</a><span className="fine">Every deal has one phase: in preparation → coming to the desk → announced → room open → round closed. Changing it here sends no announcement; use the deal page for that.</span></div>
       <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Company</th><th>Public title</th><th>Structure</th><th>Listing</th><th>Desk Score</th><th title="Last 30 days">Overview views</th><th title="Offices, last 30 days">Rooms opened</th><th>NDAs</th><th title={`Offices shown the company this financial year, excluding SEBI-registered AIFs. Companies Act limit: ${OFFEREE_LIMIT} per year.`}>Offerees {off.fy}</th><th>Allocation requests</th><th>Phase</th><th /></tr></thead><tbody>
         {deals.map((d) => { return (

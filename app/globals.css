@@ -1281,8 +1281,6 @@ html.is-app body:has(main.dk) .hdr{display:none}
 .dk-head p{color:var(--ink3);font-size:14px;margin-top:4px}
 .dk-iconbtn{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--bg2);border:1px solid var(--line);color:var(--ink)}
 .dk-ico{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
-.dk-toast{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:20;margin:0 0 12px;padding:11px 14px;border-radius:12px;background:var(--ink);color:var(--bg2);font-size:14px;box-shadow:0 6px 20px #0b173033;animation:dktoast 4.5s forwards}
-@keyframes dktoast{0%{opacity:0;transform:translateY(-8px)}6%,85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-8px);visibility:hidden}}
 .dk-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 22px}
 .dk-stats a{display:flex;flex-direction:column;gap:2px;padding:14px 12px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);text-decoration:none}
 .dk-stats b{font-size:26px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums}
@@ -1384,7 +1382,7 @@ html.is-app body:has(main.dk) .hdr{display:none}
 .sk-title{height:30px;width:62%;margin:8px 0 10px}.sk-line{height:14px;width:40%;margin-bottom:20px}
 .sk-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}.sk-card{height:72px;border-radius:14px}
 .sk-row{height:56px;margin-bottom:8px;border-radius:12px}
-@media (prefers-reduced-motion:reduce){.sk,.dk-toast,.ptr.go svg{animation:none}::view-transition-old(root),::view-transition-new(root){animation:none}}
+@media (prefers-reduced-motion:reduce){.sk,.ptr.go svg{animation:none}::view-transition-old(root),::view-transition-new(root){animation:none}}
 .dk-add{margin-bottom:22px}
 .dk-add:has(input[name=title]:placeholder-shown):not(:focus-within) .dk-add-row{display:none}
 .dk-chips a.dim{opacity:.55}
@@ -1591,3 +1589,14 @@ dialog.deckpanel::backdrop{background:rgba(8,14,30,.45)}
 .raise-more{padding-left:18px;display:grid;gap:6px}
 .art-body table.cmp{width:100%;margin:12px 0;font-size:14px}
 @media (min-width:900px){.raise-grid{grid-template-columns:repeat(3,1fr)}.raise-grid .raise-card:first-child{grid-column:span 2}.raise-grid .raise-card:first-child b{font-size:22px}}
+
+/* Form results (components/Form.tsx): one toast for the console and the phone desk, red when refused. */
+.fr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);z-index:90;display:flex;gap:12px;align-items:flex-start;max-width:min(560px,calc(100vw - 32px));padding:12px 14px 12px 16px;border-radius:12px;background:var(--ink);color:var(--bg2);font-size:14px;line-height:1.45;box-shadow:0 10px 30px #0b173040;animation:frin .22s var(--ease)}
+.fr-toast.err{background:var(--bad);color:#fff}
+.fr-toast button{background:none;border:0;color:inherit;font-size:20px;line-height:1;cursor:pointer;opacity:.75;padding:0 2px}
+.fr-toast button:hover{opacity:1}
+@keyframes frin{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+.fr-hit{animation:frhit 2.4s var(--ease)}
+@keyframes frhit{0%,40%{box-shadow:0 0 0 3px var(--accent-soft),0 0 0 1px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+button[data-busy]{opacity:.6;cursor:progress}
+@media (prefers-reduced-motion:reduce){.fr-toast,.fr-hit{animation:none}}

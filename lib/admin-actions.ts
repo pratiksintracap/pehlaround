@@ -25,14 +25,13 @@ import type { RoomContent, IpoProgress, PeerCompare } from "@/lib/types";
 import { checkCompare, peerCompareFor } from "@/lib/peers";
 import { isPhase, isPublic, roomOpen, phaseInfo, type Phase } from "@/lib/phase";
 import ART from "@/lib/deal-art.json";
+import { done, fail, resultUrl } from "@/lib/form";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const n = (f: FormData, k: string) => Number(f.get(k));
-const back = (path: string, msg: string) => {
-  revalidateTag(PUBLIC_TAG); // every desk change refreshes the public cache
-  const [p, hash] = path.split("#");
-  redirect(`${p}${p.includes("?") ? "&" : "?"}msg=${encodeURIComponent(msg)}${hash ? `#${hash}` : ""}`);
-};
+// Every desk change refreshes the public cache, then goes back to the form with its result (lib/form.ts).
+const back = (path: string, msg: string): never => { revalidateTag(PUBLIC_TAG); return done(path, msg); };
+const refuse = (path: string, msg: string): never => fail(path, msg);
 
 /** The room's own peer comparison: kept only when it differs from the researched default for the slug. */
 function ownCompare(raw: string, slug: string, prev?: PeerCompare): PeerCompare | undefined {
@@ -66,7 +65,7 @@ export async function setOfficeStatus(f: FormData) {
 export async function setOfficeType(f: FormData) {
   const admin = await requirePerm("offices.approve");
   const id = n(f, "id"), t = s(f, "investorType", 20);
-  if (!["family_office", "fund", "individual", "broker"].includes(t)) return back("/admin/offices", "Choose a type.");
+  if (!["family_office", "fund", "individual", "broker"].includes(t)) return refuse("/admin/offices", "Choose a type.");
   const db = await getDb();
   await db.update(offices).set({ investorType: t }).where(eq(offices.id, id));
   await log(admin, `Desk set office #${id} as ${t.replace("_", " ")}`);
@@ -94,7 +93,7 @@ export async function saveOfficeNotes(f: FormData) {
 export async function resetPassword(f: FormData) {
   const admin = await requireAdmin();
   const pw = s(f, "password", 200);
-  if (pw.length < 8) back("/admin/offices", "Password must be at least 8 characters.");
+  if (pw.length < 8) refuse("/admin/offices", "Password must be at least 8 characters.");
   const db = await getDb();
   await db.update(users).set({ passwordHash: await bcrypt.hash(pw, 10) }).where(eq(users.id, n(f, "id")));
   await signOutEverywhere(n(f, "id"));
@@ -129,13 +128,13 @@ async function superCount() {
 export async function addDeskMember(f: FormData) {
   const admin = await requireAdmin();
   const email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), pw = s(f, "password", 200), role = asRole(s(f, "role", 20));
-  if (!email || !name) back("/admin/team", "Name and email are needed.");
+  if (!email || !name) refuse("/admin/team", "Name and email are needed.");
   const db = await getDb();
   const [u] = await db.select().from(users).where(eq(users.email, email));
-  if (u?.officeId) back("/admin/team", `${email} belongs to a family office. Desk members need their own email.`);
+  if (u?.officeId) refuse("/admin/team", `${email} belongs to a family office. Desk members need their own email.`);
   if (u) await db.update(users).set({ role, disabled: false, ...(pw.length >= 8 ? { passwordHash: await bcrypt.hash(pw, 10) } : {}) }).where(eq(users.id, u.id));
   else {
-    if (pw.length < 8) back("/admin/team", "Set a temporary password of at least 8 characters for a new desk member.");
+    if (pw.length < 8) refuse("/admin/team", "Set a temporary password of at least 8 characters for a new desk member.");
     await db.insert(users).values({ email, name, role, passwordHash: await bcrypt.hash(pw, 10) });
   }
   await log(admin, `Desk added ${email} as ${ROLE_LABEL[role]}`);
@@ -147,9 +146,9 @@ export async function setDeskRole(f: FormData) {
   const id = n(f, "id"), role = asRole(s(f, "role", 20));
   const db = await getDb();
   const [u] = await db.select().from(users).where(eq(users.id, id));
-  if (!u || !isDesk(u)) back("/admin/team", "That person is not on the desk.");
-  if (u.id === admin.id) back("/admin/team", "You cannot change your own role.");
-  if (isSuper(u) && role !== "admin" && (await superCount()) <= 1) back("/admin/team", "The desk needs at least one super admin.");
+  if (!u || !isDesk(u)) refuse("/admin/team", "That person is not on the desk.");
+  if (u.id === admin.id) refuse("/admin/team", "You cannot change your own role.");
+  if (isSuper(u) && role !== "admin" && (await superCount()) <= 1) refuse("/admin/team", "The desk needs at least one super admin.");
   await db.update(users).set({ role }).where(eq(users.id, id));
   await signOutEverywhere(id);
   await log(admin, `Desk made ${u.email} ${ROLE_LABEL[role]}`);
@@ -161,9 +160,9 @@ export async function removeDeskMember(f: FormData) {
   const id = n(f, "id");
   const db = await getDb();
   const [u] = await db.select().from(users).where(eq(users.id, id));
-  if (!u || !isDesk(u)) back("/admin/team", "That person is not on the desk.");
-  if (u.id === admin.id) back("/admin/team", "You cannot remove yourself.");
-  if (isSuper(u) && (await superCount()) <= 1) back("/admin/team", "The desk needs at least one super admin.");
+  if (!u || !isDesk(u)) refuse("/admin/team", "That person is not on the desk.");
+  if (u.id === admin.id) refuse("/admin/team", "You cannot remove yourself.");
+  if (isSuper(u) && (await superCount()) <= 1) refuse("/admin/team", "The desk needs at least one super admin.");
   await db.update(users).set({ disabled: true }).where(eq(users.id, id));
   await signOutEverywhere(id);
   await log(admin, `Desk removed ${u.email} from the desk`);
@@ -262,10 +261,10 @@ export async function saveDeal(f: FormData) {
 export async function setDealPhase(f: FormData) {
   const admin = await requirePerm("deals.publish");
   const id = n(f, "id"), to = f.get("phase");
-  if (!isPhase(to)) return back("/admin/deals", "Choose a phase.");
+  if (!isPhase(to)) return refuse("/admin/deals", "Choose a phase.");
   const db = await getDb();
   const [d] = await db.select({ company: deals.company, phase: deals.phase }).from(deals).where(investorWhere(eq(deals.id, id)));
-  if (!d || d.phase === to) return back("/admin/deals", "Nothing to change.");
+  if (!d || d.phase === to) return refuse("/admin/deals", "Nothing to change.");
   await db.update(deals).set({ phase: to, updatedAt: new Date() }).where(eq(deals.id, id));
   await log(admin, `Desk moved ${d.company} to ${phaseInfo(to).label.toLowerCase()}`, id, { entity: "deal", entityId: id, detail: { changes: { phase: [d.phase, to] } } });
   revalidatePath("/", "layout");
@@ -276,10 +275,10 @@ export async function createDeal(f: FormData) {
   const admin = await requirePerm("deals.edit");
   const slug = s(f, "slug", 80).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
   const company = s(f, "company", 200), title = s(f, "title", 200);
-  if (!slug || !company || !title) back("/admin/deals", "Slug, company and public title are needed.");
+  if (!slug || !company || !title) refuse("/admin/deals", "Slug, company and public title are needed.");
   const db = await getDb();
   const [dup] = await db.select({ id: deals.id }).from(deals).where(eq(deals.slug, slug));
-  if (dup) back("/admin/deals", "That slug is taken.");
+  if (dup) refuse("/admin/deals", "That slug is taken.");
   const room: RoomContent = { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [],
     interest: { min: 0.5, max: 10, step: 0.5, def: 1, note: "Non-binding indication. A commitment is made only on signed documents after KYC, with a summary of terms and the risks to confirm first." },
     alerts: ["A new document is added", "The promoter answers a question", "Terms or price change"], passReasons: ["Valuation too rich for us", "Sector outside our mandate", "Other"] };
@@ -287,7 +286,7 @@ export async function createDeal(f: FormData) {
     listingLabel: "To be set", phase: "preparing", sort: 200, art: Object.values(ART as Record<string, string>)[0], room }).returning({ id: deals.id });
   await log(admin, `Desk created the deal: ${company}`, row.id, { entity: "deal", entityId: row.id, detail: { note: "created in preparation" } });
   revalidateTag(PUBLIC_TAG); // the console's deal list reads the cached list: show the new deal straight away
-  redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent(can(admin, "deals.publish") ? "Created, in preparation: the desk alone sees it. Fill it in, then tick Published." : "Created, in preparation. Fill it in, then ask a super admin to publish it.")}`);
+  redirect(resultUrl(`/admin/deals/${row.id}`, can(admin, "deals.publish") ? "Created, in preparation: the desk alone sees it. Fill it in, then move it to Coming to the desk or Announced." : "Created, in preparation. Fill it in, then ask a super admin to announce it."));
 }
 
 /** An analyst asks a super admin to publish (or open) a deal. */
@@ -310,12 +309,12 @@ export async function saveDocument(f: FormData) {
   const dealId = n(f, "dealId"), id = n(f, "id");
   const db = await getDb();
   // Investor documents belong to private-market deals only; a listed company's files are desk files (After the Bell).
-  if (!(await db.select({ id: deals.id }).from(deals).where(investorWhere(eq(deals.id, dealId)))).length) back("/admin/after-the-bell", "Listed companies keep desk files only; they have no investor documents.");
+  if (!(await db.select({ id: deals.id }).from(deals).where(investorWhere(eq(deals.id, dealId)))).length) refuse("/admin/after-the-bell", "Listed companies keep desk files only; they have no investor documents.");
   const audience = ["approved", "nda", "allocation", "offices"].includes(s(f, "audience", 20)) ? s(f, "audience", 20) : "nda";
   const officeIds = f.getAll("officeIds").map(Number).filter((x) => x > 0);
   const vals = { title: s(f, "title", 300), kind: s(f, "kind", 80) || null, status: s(f, "status", 20) || "available", url: s(f, "url", 2000) || null, sort: n(f, "sort") || 100, audience, officeIds };
   const [prev] = id ? await db.select().from(documents).where(eq(documents.id, id)) : [];
-  if (f.get("delete") === "on" && id && !can(admin, "delete")) back(`/admin/deals/${dealId}#docs`, "Only a super admin can delete a document. Set it to Hidden instead.");
+  if (f.get("delete") === "on" && id && !can(admin, "delete")) refuse(`/admin/deals/${dealId}#docs`, "Only a super admin can delete a document. Set it to Hidden instead.");
   if (f.get("delete") === "on" && id) await db.delete(documents).where(eq(documents.id, id));
   else if (id) await db.update(documents).set(vals).where(eq(documents.id, id));
   else if (vals.title) await db.insert(documents).values({ ...vals, dealId });
@@ -423,8 +422,8 @@ export async function saveArticle(f: FormData) {
   const id = n(f, "id");
   const pub = can(admin, "articles.publish");
   const [cur] = id ? await db.select({ published: articles.published }).from(articles).where(eq(articles.id, id)) : [];
-  if (!pub && cur?.published) back(`/admin/articles/${id}`, "This article is live. Only a super admin can change it.");
-  if (!pub && f.get("delete") === "on") back(`/admin/articles/${id}`, "Only a super admin can delete an article.");
+  if (!pub && cur?.published) refuse(`/admin/articles/${id}`, "This article is live. Only a super admin can change it.");
+  if (!pub && f.get("delete") === "on") refuse(`/admin/articles/${id}`, "Only a super admin can delete an article.");
   const slug = s(f, "slug", 120).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
   const title = s(f, "title", 300);
   if (!slug || !title) back(id ? `/admin/articles/${id}` : "/admin/articles/new", "A title and a web address slug are needed.");
@@ -451,7 +450,7 @@ export async function saveArticle(f: FormData) {
 export async function sendBroadcast(f: FormData) {
   const admin = await requireDesk();
   const title = s(f, "title", 200), body = s(f, "body", 4000), link = s(f, "link", 500), audience = s(f, "audience", 40);
-  if (!title) back("/admin/notify", "A title is needed.");
+  if (!title) refuse("/admin/notify", "A title is needed.");
   if (!can(admin, "broadcast.send")) {
     // Analysts draft; a super admin reviews the same form, prefilled, and sends it.
     const draft = Buffer.from(JSON.stringify({ title, body, link, audience, dealId: s(f, "dealId", 12), officeId: s(f, "officeId", 12), topic: s(f, "topic", 20), email: f.get("email") === "on", by: admin.name })).toString("base64url");
@@ -467,11 +466,11 @@ export async function sendBroadcast(f: FormData) {
   else if (audience === "pending") ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "pending"))).map((r) => r.id);
   else if (audience === "deal") {
     dealId = n(f, "dealId");
-    if (!(await db.select({ id: deals.id }).from(deals).where(investorWhere(eq(deals.id, dealId)))).length) back("/admin/notify", "That deal is not one offices can hear about.");
+    if (!(await db.select({ id: deals.id }).from(deals).where(investorWhere(eq(deals.id, dealId)))).length) refuse("/admin/notify", "That deal is not one offices can hear about.");
     ids = await ndaOffices(dealId);
   }
   else if (audience === "office") ids = [n(f, "officeId")].filter(Boolean);
-  if (!ids.length) back("/admin/notify", "Nobody is in that audience yet.");
+  if (!ids.length) refuse("/admin/notify", "Nobody is in that audience yet.");
   const [b] = await db.insert(broadcasts).values({ title, body: body || null, link: link || null, audience, dealId, sentBy: admin.name }).returning({ id: broadcasts.id });
   const topic = s(f, "topic", 20);
   const alert = dealId && topic && topic in ALERT_TOPICS ? { dealId, topic: topic as keyof typeof ALERT_TOPICS } : undefined;
@@ -539,7 +538,7 @@ export async function createInvites(f: FormData) {
 /** Emails every invitation that was created but whose email never went out (and that nobody has used yet). */
 export async function emailPendingInvites() {
   const admin = await requireAdmin();
-  if (!emailReady()) back("/admin/invites", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
+  if (!emailReady()) refuse("/admin/invites", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
   const db = await getDb();
   const rows = await db.select().from(deskInvites).where(and(isNull(deskInvites.emailedAt), isNull(deskInvites.usedAt)));
   let mailed = 0;
@@ -565,7 +564,7 @@ async function signer(adminId: number) {
 /** Emails the admin a sample of the invitation, exactly as an investor would get it. */
 export async function sendSampleInvite(f: FormData) {
   const admin = await requireAdmin();
-  if (!emailReady()) back("/admin/invites", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
+  if (!emailReady()) refuse("/admin/invites", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
   const from = await signer(admin.id);
   const name = s(f, "name", 120) || "Sample Investor", officeName = s(f, "officeName", 160) || "Sample Family Office";
   const m = inviteEmail({ name, officeName, token: "sample", from });
@@ -584,9 +583,9 @@ export async function setOnboardingEmails(f: FormData) {
 
 export async function sendTestOnboarding(f: FormData) {
   const admin = await requireAdmin();
-  if (!emailReady()) back("/admin/emails", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
+  if (!emailReady()) refuse("/admin/emails", "Email is not set up yet: add RESEND_API_KEY in Vercel first.");
   const p = await preview(s(f, "key"));
-  if (!p) back("/admin/emails", "No such email.");
+  if (!p) refuse("/admin/emails", "No such email.");
   const db = await getDb();
   const [me] = await db.select({ email: users.email }).from(users).where(eq(users.id, admin.id));
   const ok = await sendRaw([me?.email || process.env.ADMIN_EMAIL || ""], "[Test] " + p!.subject, p!.html, [], undefined, { kind: "test", step: p!.step.key });
@@ -605,15 +604,15 @@ export async function addPromoter(f: FormData) {
   const admin = await requirePerm("deals.edit");
   const dealId = n(f, "dealId"), email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), pw = s(f, "password", 200);
   const path = `/admin/deals/${dealId}#promoters`;
-  if (!email || !name) back(path, "Name and email are needed.");
+  if (!email || !name) refuse(path, "Name and email are needed.");
   const db = await getDb();
   const [d] = await db.select({ company: deals.company }).from(deals).where(investorWhere(eq(deals.id, dealId)));
   if (!d) return;
   const [u] = await db.select().from(users).where(eq(users.email, email));
-  if (u && (u.officeId || isDesk(u))) back(path, `${email} is already a family office or desk account. Use the promoter's own email.`);
+  if (u && (u.officeId || isDesk(u))) refuse(path, `${email} is already a family office or desk account. Use the promoter's own email.`);
   if (u) await db.update(users).set({ role: "promoter", promoterDealId: dealId, disabled: false, ...(pw.length >= 8 ? { passwordHash: await bcrypt.hash(pw, 10) } : {}) }).where(eq(users.id, u.id));
   else {
-    if (pw.length < 8) back(path, "Set a temporary password of at least 8 characters.");
+    if (pw.length < 8) refuse(path, "Set a temporary password of at least 8 characters.");
     await db.insert(users).values({ email, name, role: "promoter", promoterDealId: dealId, passwordHash: await bcrypt.hash(pw, 10) });
   }
   await log(admin, `Desk gave ${email} founder portal access for ${d.company}`, dealId);
@@ -643,9 +642,9 @@ export async function createDealLink(f: FormData) {
   let officeId = n(f, "officeId") || null;
   const email = s(f, "email", 200).toLowerCase(), name = s(f, "name", 120), officeName = s(f, "officeName", 160);
   if (!officeId) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name) back(path, "Pick an office on the desk, or give a name and email for someone new.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name) refuse(path, "Pick an office on the desk, or give a name and email for someone new.");
     const [u] = await db.select({ officeId: users.officeId, role: users.role }).from(users).where(eq(users.email, email));
-    if (u && !u.officeId) back(path, `${email} is a desk or promoter account.`);
+    if (u && !u.officeId) refuse(path, `${email} is a desk or promoter account.`);
     if (u?.officeId) officeId = u.officeId; // already registered: link to their office
   }
   const token = randomBytes(12).toString("base64url");
@@ -664,11 +663,11 @@ export async function removeEmptyDeal(f: FormData) {
   const admin = await requireAdmin();
   const id = n(f, "id");
   const page = `/admin/deals/${id}`;
-  if (!id || f.get("sure") !== "on") return back(page + "#remove", "Tick the box to confirm the removal.");
+  if (!id || f.get("sure") !== "on") return refuse(page + "#remove", "Tick the box to confirm the removal.");
   const db = await getDb();
   const [d] = await db.select({ id: deals.id, company: deals.company, published: deals.published }).from(deals).where(eq(deals.id, id));
-  if (!d) return back("/admin/deals", "That deal no longer exists.");
-  if (d.published) return back(page + "#remove", "Move the deal back to In preparation before removing it.");
+  if (!d) return refuse("/admin/deals", "That deal no longer exists.");
+  if (d.published) return refuse(page + "#remove", "Move the deal back to In preparation before removing it.");
   const tables = ["ndas", "sign_codes", "documents", "questions", "calls", "interests", "passes", "deal_prefs", "desk_notes", "desk_files", "tasks", "deal_links", "deal_views", "broadcasts", "tickets", "ai_chats", "events"];
   const counts = await Promise.all(tables.map(async (t) => {
     const r = await db.execute(sql.raw(`select count(*)::int as n from "${t}" where deal_id = ${Number(id)}`)) as unknown as { rows: { n: number }[] };
@@ -677,7 +676,7 @@ export async function removeEmptyDeal(f: FormData) {
   const [{ p }] = (await db.execute(sql`select count(*)::int as p from users where promoter_deal_id = ${id}`) as unknown as { rows: { p: number }[] }).rows;
   const busy = counts.filter(([, c]) => c > 0).map(([t, c]) => `${t.replace(/_/g, " ")} (${c})`);
   if (Number(p)) busy.push(`${p} promoter login${Number(p) === 1 ? "" : "s"}`);
-  if (busy.length) return back(page + "#remove", `Not removed: this deal still has ${busy.join(", ")}. Move or close those first.`);
+  if (busy.length) return refuse(page + "#remove", `Not removed: this deal still has ${busy.join(", ")}. Move or close those first.`);
   await db.delete(deals).where(eq(deals.id, id));
   await log(admin, `Desk removed the empty deal #${id}: ${d.company}`, null, { entity: "deal", entityId: id });
   revalidatePath("/admin/deals");

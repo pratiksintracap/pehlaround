@@ -3,14 +3,13 @@
 import { requireDesk } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { deskMembers, listTasks, names } from "@/lib/desk";
-import { Msg } from "@/components/AdminBits";
 import { TaskRow, TaskForm } from "@/components/DeskBits";
 
 export const dynamic = "force-dynamic";
 
-export default async function Tasks({ searchParams }: { searchParams: Promise<{ msg?: string; who?: string; status?: string; deal?: string; office?: string }> }) {
+export default async function Tasks({ searchParams }: { searchParams: Promise<{ who?: string; status?: string; deal?: string; office?: string }> }) {
   const me = await requireDesk();
-  const { msg, who = "me", status = "open", deal, office } = await searchParams;
+  const { who = "me", status = "open", deal, office } = await searchParams;
   const assigneeId = who === "all" ? undefined : who === "me" ? me.id : Number(who) || undefined;
   const st = status === "done" ? "done" : status === "all" ? "all" : "open";
   const [list, members, nm] = await Promise.all([
@@ -22,7 +21,6 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
   const work = can(me, "workflow"), del = can(me, "delete");
   return (
     <>
-      <Msg msg={msg} />
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 6px" }}><h1 style={{ fontSize: 30, margin: 0 }}>Tasks</h1>{work && <a className="btn sm primary" href="#add">+ Add a task</a>}</div>
       <p className="fine" style={{ marginBottom: 10 }}>Tasks on a deal or an investor, for anyone on the desk. Whoever a task is for gets a reminder email at 9 AM on the day it is due, and each day after until it is done.</p>
       <div className="adm-filter">{[["me", "Mine"], ["all", "Everyone"], ...members.filter((m) => m.id !== me.id).map((m) => [String(m.id), m.name])].map(([k, l]) =>

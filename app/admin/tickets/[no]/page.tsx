@@ -6,16 +6,15 @@ import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
 import { offices, ticketMessages, tickets, users } from "@/db/schema";
 import { listDeals } from "@/lib/deals";
-import { Msg } from "@/components/AdminBits";
 import { STATUS, catLabel, idFromNo, ticketNo } from "@/lib/tickets";
 import { deskReply } from "../actions";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
 
-export default async function DeskTicket({ params, searchParams }: { params: Promise<{ no: string }>; searchParams: Promise<{ msg?: string }> }) {
+export default async function DeskTicket({ params }: { params: Promise<{ no: string }> }) {
   const me = await requireDesk();
   const seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
-  const { no } = await params, { msg } = await searchParams;
+  const { no } = await params;
   const db = await getDb();
   const [t] = await db.select().from(tickets).where(eq(tickets.id, idFromNo(no) || -1));
   if (!t) notFound();
@@ -29,7 +28,6 @@ export default async function DeskTicket({ params, searchParams }: { params: Pro
   const st = STATUS[t.status] ?? { label: t.status, pill: "" };
   return (
     <>
-      <Msg msg={msg} />
       <a className="btn sm ghost" href="/admin/tickets">← All tickets</a>
       <header className="tk-head">
         <div><span className="mono tk-no">{ticketNo(t.id)}</span><h1>{t.subject}</h1>

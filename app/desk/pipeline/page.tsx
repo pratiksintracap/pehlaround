@@ -3,13 +3,13 @@ import { can } from "@/lib/perm";
 import { deskDeals, deskMembers } from "@/lib/desk";
 import { DEAL_STAGES } from "@/lib/stages";
 import { setDealStage } from "@/lib/desk-actions";
-import { DkHead, DkToast, DkEmpty, shortDay } from "@/components/DeskApp";
+import { DkHead, DkEmpty, shortDay } from "@/components/DeskApp";
 
-type P = { searchParams: Promise<{ msg?: string; closed?: string }> };
+type P = { searchParams: Promise<{ closed?: string }> };
 
 export default async function Pipeline({ searchParams }: P) {
   const me = await requireDesk();
-  const { msg, closed } = await searchParams;
+  const { closed } = await searchParams;
   const [all, members] = await Promise.all([deskDeals(), deskMembers()]);
   const work = can(me, "workflow");
   const owner = new Map(members.map((m) => [m.id, m.name.split(" ")[0]]));
@@ -18,7 +18,6 @@ export default async function Pipeline({ searchParams }: P) {
   const closedN = by("closed").length;
   return (
     <>
-      <DkToast msg={msg} />
       <DkHead title="Pipeline" sub={`${all.length - closedN} active · ${closedN} closed`} />
       <nav className="dk-chips" aria-label="Stages">
         {stages.map((s) => <a key={s.id} href={`#s-${s.id}`} className={by(s.id).length ? "" : "dim"}>{s.label} <span>{by(s.id).length}</span></a>)}

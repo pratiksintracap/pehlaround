@@ -4,14 +4,13 @@ import { can } from "@/lib/perm";
 import { deskDeals, deskMembers, listTasks } from "@/lib/desk";
 import { setDealStage } from "@/lib/desk-actions";
 import { DEAL_STAGES } from "@/lib/stages";
-import { Msg } from "@/components/AdminBits";
 import { fmtT } from "@/components/DeskBits";
 
 export const dynamic = "force-dynamic";
 
-export default async function Board({ searchParams }: { searchParams: Promise<{ msg?: string; who?: string; kind?: string; view?: string }> }) {
+export default async function Board({ searchParams }: { searchParams: Promise<{ who?: string; kind?: string; view?: string }> }) {
   const me = await requireDesk();
-  const { msg, who, kind, view } = await searchParams;
+  const { who, kind, view } = await searchParams;
   const board = view === "board";
   const [all, members, open] = await Promise.all([deskDeals(), deskMembers(), listTasks({ status: "open", me })]);
   const ownerFilter = who === "me" ? me.id : who === "none" ? null : who ? Number(who) : undefined;
@@ -22,7 +21,6 @@ export default async function Board({ searchParams }: { searchParams: Promise<{ 
   const back = q("x", "");
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 4px" }}>Deal pipeline</h1>
       <p className="fine" style={{ marginBottom: 10 }}>Every deal by the desk&apos;s own stage. Moving a card changes nothing on the site: publishing and opening a room stay in the deal itself.</p>
       <div className="adm-filter">{[["", "Everyone"], ["me", "Mine"], ["none", "No owner"], ...members.filter((m) => m.id !== me.id).map((m) => [String(m.id), m.name])].map(([k, l]) =>

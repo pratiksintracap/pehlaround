@@ -2,14 +2,14 @@ import { requireDesk } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { deskMembers, listTasks, names } from "@/lib/desk";
 import { istDay } from "@/lib/stages";
-import { DkHead, DkToast, DkTask, DkAddTask, DkEmpty } from "@/components/DeskApp";
+import { DkHead, DkTask, DkAddTask, DkEmpty } from "@/components/DeskApp";
 
-type P = { searchParams: Promise<{ msg?: string; view?: string }> };
+type P = { searchParams: Promise<{ view?: string }> };
 const VIEWS: [string, string][] = [["", "Mine"], ["all", "Everyone"], ["done", "Done"]];
 
 export default async function Tasks({ searchParams }: P) {
   const me = await requireDesk();
-  const { msg, view = "" } = await searchParams;
+  const { view = "" } = await searchParams;
   const [list, members, nm] = await Promise.all([
     listTasks({ me, status: view === "done" ? "done" : "open", assigneeId: view === "" ? me.id : undefined }),
     deskMembers(),
@@ -28,7 +28,6 @@ export default async function Tasks({ searchParams }: P) {
   ];
   return (
     <>
-      <DkToast msg={msg} />
       <DkHead title="Tasks" sub={view === "done" ? "Finished recently" : `${list.length} open${view === "" ? " for you" : " on the desk"}`} />
       <nav className="dk-seg" aria-label="Show">
         {VIEWS.map(([k, l]) => <a key={k} href={`/desk/tasks${k ? `?view=${k}` : ""}`} aria-current={view === k ? "true" : undefined}>{l}</a>)}

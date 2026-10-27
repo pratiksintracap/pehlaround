@@ -8,15 +8,15 @@ import { deskDeal, deskMembers, hiddenOffices, names, workspace } from "@/lib/de
 import { DEAL_STAGES, stageLabel } from "@/lib/stages";
 import { saveDeskNote, setDealOwner, setDealStage, logCall } from "@/lib/desk-actions";
 import { readinessFor } from "@/lib/transfer";
-import { DkToast, DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
+import { DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
 
-type P = { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> };
+type P = { params: Promise<{ id: string }> };
 
 // One deal on the phone: stage and owner, tasks, desk notes, desk files, who has signed and indicated, and the trail.
 // Desk only. Editing the deal's content (terms, documents, the room) stays in the console.
-export default async function DeskDeal({ params, searchParams }: P) {
+export default async function DeskDeal({ params }: P) {
   const me = await requireDesk();
-  const [{ id: raw }, { msg }] = await Promise.all([params, searchParams]);
+  const { id: raw } = await params;
   const id = Number(raw);
   if (!Number.isInteger(id) || id <= 0) notFound();
   const d = await deskDeal(id);
@@ -45,7 +45,6 @@ export default async function DeskDeal({ params, searchParams }: P) {
     : [["Round", d.roundLabel], ["Pre-money", d.preMoney], ["P/E", d.peLabel], ["Listing", d.listingLabel], ["Min ticket", d.minTicket], ["On the site", d.published ? (d.open ? "Published, room open" : "Published, closed") : d.preview ? "Coming soon" : "Not published"]];
   return (
     <>
-      <DkToast msg={msg} />
       <a className="dk-back" href={`/desk/pipeline#d${d.id}`}><Ico d="M15 6l-6 6 6 6" size={18} /> Pipeline</a>
       <header className="dk-dealhead">
         <span className="dk-pill">{d.listed ? "Listed company" : d.category}</span>

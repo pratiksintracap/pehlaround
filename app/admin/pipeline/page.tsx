@@ -3,7 +3,6 @@ import { listDeals } from "@/lib/deals";
 import { pipeline, STAGES, type Card } from "@/lib/pipeline";
 import { saveInterest } from "@/lib/admin-actions";
 import { can } from "@/lib/perm";
-import { Msg } from "@/components/AdminBits";
 
 const fmtD = (d: Date | null) => (d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }) : "—");
 const cr = (v: number) => `₹${+v.toFixed(2)} Cr`;
@@ -13,9 +12,9 @@ const ago = (d: Date | null) => {
   return h < 1 ? "within the hour" : h < 24 ? `${Math.round(h)}h ago` : `${Math.round(h / 24)}d ago`;
 };
 
-export default async function Pipeline({ searchParams }: { searchParams: Promise<{ deal?: string; msg?: string }> }) {
+export default async function Pipeline({ searchParams }: { searchParams: Promise<{ deal?: string }> }) {
   const me = await requireDesk();
-  const { deal: want, msg } = await searchParams;
+  const { deal: want } = await searchParams;
   const deals = await listDeals(true);
   const d = deals.find((x) => x.slug === want || String(x.id) === want) ?? deals.find((x) => x.published && x.open) ?? deals[0];
   if (!d) return <p>No deals yet.</p>;
@@ -44,7 +43,6 @@ export default async function Pipeline({ searchParams }: { searchParams: Promise
   );
   return (
     <>
-      <Msg msg={msg} />
       <div className="pl-head">
         <div><h1 style={{ fontSize: 30, margin: "6px 0 4px" }}>Pipeline</h1><p className="fine">Every office that has touched the deal, at the furthest stage it has reached. Office names stay on the desk.</p></div>
         <form className="pl-pick" action="/admin/pipeline"><label className="fine">Deal<select name="deal" defaultValue={d.slug}>{deals.map((x) => <option key={x.id} value={x.slug}>{x.company}{x.published ? "" : " (draft)"}</option>)}</select></label><button className="btn sm" type="submit">Show</button></form>

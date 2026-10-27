@@ -2,16 +2,13 @@ import { desc } from "drizzle-orm";
 import { requireDesk } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { articles } from "@/db/schema";
-import { Msg } from "@/components/AdminBits";
 
-export default async function AdminArticles({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function AdminArticles() {
   const me = await requireDesk();
-  const { msg } = await searchParams;
   const db = await getDb();
   const list = await db.select().from(articles).orderBy(desc(articles.publishedAt));
   return (
     <>
-      <Msg msg={msg} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>Articles</h1><a className="btn primary" href="/admin/articles/new">Write an article</a></div>
       <p className="fine" style={{ marginBottom: 12 }}>The latest ten published articles run in the strip under the home-page hero; all of them are listed at /articles. For a piece published on another site, fill in its link and the strip points there.</p>

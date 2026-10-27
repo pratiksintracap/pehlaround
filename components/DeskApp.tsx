@@ -29,11 +29,6 @@ export function DkHead({ title, sub, action }: { title: string; sub?: React.Reac
   );
 }
 
-/** The result of the last action, shown briefly at the top (the server redirect carries it as ?msg=). */
-export function DkToast({ msg }: { msg?: string }) {
-  return msg ? <p className="dk-toast" role="status">{msg}</p> : null;
-}
-
 /** One task with a round tick box that marks it done (or reopens it) in one tap. */
 export function DkTask({ t, back, who, about }: { t: Task; back: string; who?: string; about?: { href: string; label: string } | null }) {
   const today = istDay();

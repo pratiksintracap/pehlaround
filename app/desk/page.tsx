@@ -9,13 +9,10 @@ import { callList } from "@/lib/call-list";
 import { CallListRows } from "@/components/CallList";
 import { can } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
-import { DkHead, DkToast, DkTask, DkEmpty, Ico, ICONS, ago } from "@/components/DeskApp";
+import { DkHead, DkTask, DkEmpty, Ico, ICONS, ago } from "@/components/DeskApp";
 
-type P = { searchParams: Promise<{ msg?: string }> };
-
-export default async function Today({ searchParams }: P) {
+export default async function Today() {
   const me = await requireDesk();
-  const { msg } = await searchParams;
   const db = await getDb();
   // An analyst sees office activity and their own desk actions; a super admin sees everything (as in the Log).
   const scope = isSuper(me) ? sql`true` : sql`(${audit.officeId} is not null or ${audit.userId} = ${me.id})`;
@@ -36,7 +33,6 @@ export default async function Today({ searchParams }: P) {
   const hello = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   return (
     <>
-      <DkToast msg={msg} />
       <DkHead title={`${hello}, ${me.name.split(" ")[0]}`} sub={`${ROLE_LABEL[me.role as DeskRole]} · ${new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Kolkata" })}`}
         action={<a className="dk-iconbtn" href="/notifications" aria-label="Notifications"><Ico d={ICONS.bell} /></a>} />
 

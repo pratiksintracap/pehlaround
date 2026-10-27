@@ -9,17 +9,17 @@ import { canSeeOffice, deskMembers, listTasks } from "@/lib/desk";
 import { saveDeskNote, logCall, checkKycFile } from "@/lib/desk-actions";
 import { officeTransfer, readiness, KYC_KINDS, isKycKind, fmtSize } from "@/lib/transfer";
 import { setApproval } from "@/lib/admin-actions";
-import { DkToast, DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
+import { DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
 
-type P = { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> };
+type P = { params: Promise<{ id: string }> };
 const TYPE: Record<string, string> = { family_office: "Family office", fund: "Fund", individual: "Individual" };
 
 /** WhatsApp wants the number with its country code and no symbols; a bare 10-digit Indian mobile gets 91. */
 const wa = (p: string) => { const d = p.replace(/\D/g, ""); return d.length === 10 ? `91${d}` : d.replace(/^0+/, ""); };
 
-export default async function Investor({ params, searchParams }: P) {
+export default async function Investor({ params }: P) {
   const me = await requireDesk();
-  const [{ id: raw }, { msg }] = await Promise.all([params, searchParams]);
+  const { id: raw } = await params;
   const id = Number(raw);
   if (!Number.isInteger(id) || id <= 0) notFound();
   const db = await getDb();
@@ -53,7 +53,6 @@ export default async function Investor({ params, searchParams }: P) {
   const assignees = members.filter((m) => canSeeOffice(m, o)).map((m) => ({ id: m.id, name: m.name }));
   return (
     <>
-      <DkToast msg={msg} />
       <a className="dk-back" href="/desk/investors"><Ico d="M15 6l-6 6 6 6" size={18} /> Investors</a>
       <header className="dk-hero">
         <span className="dk-av lg" aria-hidden="true">{o.name.slice(0, 1).toUpperCase()}</span>

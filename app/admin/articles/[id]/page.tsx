@@ -5,19 +5,16 @@ import { can } from "@/lib/perm";
 import { getDb } from "@/lib/db";
 import { articles } from "@/db/schema";
 import { saveArticle } from "@/lib/admin-actions";
-import { Msg } from "@/components/AdminBits";
 
-export default async function EditArticle({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> }) {
+export default async function EditArticle({ params }: { params: Promise<{ id: string }> }) {
   const me = await requireDesk();
   const { id } = await params;
-  const { msg } = await searchParams;
   const db = await getDb();
   const a = id === "new" ? null : (await db.select().from(articles).where(eq(articles.id, Number(id))))[0];
   if (id !== "new" && !a) notFound();
   const date = (a?.publishedAt ?? new Date()).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
   return (
     <>
-      <Msg msg={msg} />
       <p className="crumb"><a href="/admin/articles">← All articles</a>{a && <> · <a href={`/articles/${a.slug}`}>View</a></>}</p>
       <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>{a ? "Edit article" : "Write an article"}</h1>
       <form action={saveArticle} className="form adm-form">

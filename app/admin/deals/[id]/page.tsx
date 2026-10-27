@@ -11,7 +11,6 @@ import { SITE_URL } from "@/lib/site";
 import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { peerCompareFor } from "@/lib/peers";
-import { Msg } from "@/components/AdminBits";
 import { PHASES, phaseInfo, isPublic } from "@/lib/phase";
 import ART from "@/lib/deal-art.json";
 import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
@@ -25,10 +24,10 @@ const IN = ({ name, label, value, hint, ph }: { name: string; label: string; val
   <label>{label}<input name={name} defaultValue={value ?? ""} placeholder={ph} />{hint && <span className="hint">{hint}</span>}</label>
 );
 
-export default async function EditDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string; link?: string }> }) {
+export default async function EditDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ link?: string }> }) {
   const me = await requireDesk();
   const id = Number((await params).id);
-  const { msg, link: fresh } = await searchParams;
+  const { link: fresh } = await searchParams;
   const db = await getDb();
   const [d] = await db.select().from(deals).where(eq(deals.id, id));
   if (!d) notFound();
@@ -52,7 +51,6 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   const artKey = Object.entries(ART as Record<string, string>).find(([, v]) => v === d.art)?.[0] || "";
   return (
     <>
-      <Msg msg={msg} />
       <p className="crumb"><a href="/admin/deals">← All deals</a> · <a href={`/deals/${d.slug}`}>Public overview</a> · <a href={`/room/${d.slug}`}>Room</a> · <a href={`/admin/pipeline?deal=${d.slug}`}>Pipeline</a> · <a href="#promoters">Promoter access</a></p>
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>{d.company}</h1>
       <DeskWorkspace d={d} me={me} back={`/admin/deals/${d.id}`} />

@@ -3,16 +3,13 @@ import { getSettings } from "@/lib/settings";
 import { saveSiteSettings } from "@/lib/admin-actions";
 import { emailReady } from "@/lib/notify";
 import { aiReady } from "@/lib/ai";
-import { Msg } from "@/components/AdminBits";
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function SettingsPage() {
   await requireAdmin();
-  const { msg } = await searchParams;
   const st = await getSettings();
   const mail = emailReady();
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>Settings</h1>
       <form action={saveSiteSettings} className="form chart" style={{ maxWidth: 720 }}>
         <span className="k eyebrow">Who sees what</span>

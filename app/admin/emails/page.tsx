@@ -6,14 +6,12 @@ import { SERIES, preview, queueStats } from "@/lib/onboarding";
 import { getSettings } from "@/lib/settings";
 import { emailReady } from "@/lib/email";
 import { setOnboardingEmails, sendTestOnboarding, backfillOnboarding } from "@/lib/admin-actions";
-import { Msg } from "@/components/AdminBits";
 
 const fmtT = (d: Date) => d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
 const when = (s: (typeof SERIES)[number]) => (s.days === 0 ? `On ${s.anchor === "register" ? "registration" : "approval"}, straight away` : `Day ${s.days} after approval, 9 AM IST`);
 
-export default async function Emails({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function Emails() {
   await requireAdmin();
-  const { msg } = await searchParams;
   const st = await getSettings();
   const mail = emailReady();
   const stats = await queueStats();
@@ -25,7 +23,6 @@ export default async function Emails({ searchParams }: { searchParams: Promise<{
   const name = new Map(SERIES.map((s) => [s.key, s.name]));
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Onboarding emails</h1>
       <p className="fine" style={{ marginBottom: 14, maxWidth: 760 }}>
         Every new family office gets this series. Welcome goes on registration; the rest are timed from approval and go at 9 AM IST.

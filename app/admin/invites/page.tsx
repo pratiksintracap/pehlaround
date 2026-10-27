@@ -7,13 +7,11 @@ import { createInvites, sendSampleInvite, emailPendingInvites } from "@/lib/admi
 export const maxDuration = 60;
 import { emailReady } from "@/lib/notify";
 import { SITE_URL } from "@/lib/site";
-import { Msg } from "@/components/AdminBits";
 
 const fmtD = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
 
-export default async function Invites({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+export default async function Invites() {
   await requireAdmin();
-  const { msg } = await searchParams;
   const db = await getDb();
   const rows = await db.select().from(deskInvites).orderBy(desc(deskInvites.createdAt)).limit(300);
   const mail = emailReady();
@@ -21,7 +19,6 @@ export default async function Invites({ searchParams }: { searchParams: Promise<
   const pending = rows.filter((r) => !r.emailedAt && !r.usedAt).length;
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Invite family offices</h1>
       <p className="fine" style={{ marginBottom: 16 }}>Each invitation is a personal link. The office registers through it already approved, so it sees every company by name at once. Paste your list, one office per line: name, email, family office. {mail ? "Tick the box to email the links from the desk." : "Email is not set up yet: copy each link into your own email or WhatsApp."}</p>
       <div className="two">

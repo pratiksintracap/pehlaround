@@ -6,15 +6,15 @@ import { deals, offices, tasks } from "@/db/schema";
 import { can } from "@/lib/perm";
 import { canSeeOffice, deskMembers } from "@/lib/desk";
 import { setTaskDone, snoozeTask } from "@/lib/desk-actions";
-import { DkToast, Ico, shortDay } from "@/components/DeskApp";
+import { Ico, shortDay } from "@/components/DeskApp";
 import { istDay } from "@/lib/stages";
 
-type P = { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> };
+type P = { params: Promise<{ id: string }> };
 
 // One task, reached from the 9 AM reminder email or the Monday summary: mark it done or push it out in one tap.
-export default async function DeskTask({ params, searchParams }: P) {
+export default async function DeskTask({ params }: P) {
   const me = await requireDesk();
-  const [{ id: raw }, { msg }] = await Promise.all([params, searchParams]);
+  const { id: raw } = await params;
   const db = await getDb();
   const [t] = await db.select().from(tasks).where(eq(tasks.id, Number(raw) || 0));
   if (!t) notFound();
@@ -27,7 +27,6 @@ export default async function DeskTask({ params, searchParams }: P) {
   const work = can(me, "workflow"), today = istDay();
   return (
     <>
-      <DkToast msg={msg} />
       <a className="dk-back" href="/desk/tasks"><Ico d="M15 6l-6 6 6 6" size={18} /> Tasks</a>
       <header className="dk-dealhead">
         <span className={`dk-pill${t.status === "done" ? "" : t.dueOn && t.dueOn < today ? " bad" : ""}`}>{t.status === "done" ? `Done${t.doneBy ? ` by ${t.doneBy}` : ""}` : t.dueOn ? (t.dueOn < today ? `Overdue since ${t.dueOn}` : t.dueOn === today ? "Due today" : `Due ${t.dueOn}`) : "No date"}</span>

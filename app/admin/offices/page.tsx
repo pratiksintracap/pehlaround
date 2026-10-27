@@ -8,15 +8,14 @@ import { deals, invites, ndas, offices, users } from "@/db/schema";
 import { setOfficeType, setApproval, setOfficeStatus, saveOfficeNotes, resetPassword, toggleUser, revokeNda } from "@/lib/admin-actions";
 import { completeness } from "@/lib/profile";
 import { officeEngagement } from "@/lib/interest";
-import { Msg } from "@/components/AdminBits";
 import { addInvestor, importInvestors, saveInvestorContact } from "@/lib/desk-actions";
 import { listTasks, officeScope } from "@/lib/desk";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
-export default async function Offices({ searchParams }: { searchParams: Promise<{ msg?: string; show?: string }> }) {
+export default async function Offices({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
   const me = await requireDesk();
-  const { msg, show } = await searchParams;
+  const { show } = await searchParams;
   const manage = can(me, "offices.manage"), seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const em = (v?: string | null) => (seeContacts ? v : mask(v));
   const db = await getDb();
@@ -41,7 +40,6 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
   const AP: Record<string, [string, string]> = { pending: ["Awaiting approval", "mid"], approved: ["Approved", "ok"], rejected: ["Declined", "off"] };
   return (
     <>
-      <Msg msg={msg} />
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Family offices</h1>
       <p className="fine" style={{ marginBottom: 10 }}>New registrations wait here for the desk. An office sees company names, terms and NDAs only after you approve it, and it is told in its dashboard (and by email, once email is set up). {manage ? <>Approval can be switched off in <a href="/admin/settings">Settings</a>.</> : null}</p>
       <div className="adm-filter">{[["", `All (${os.length})`], ["pending", `Awaiting approval (${pendingN})`], ["approved", "Approved (registered)"], ["registered", `Registered (${os.length - deskN})`], ["desk", `Added by desk (${deskN})`], ["rejected", "Declined"]].map(([k, l]) =>

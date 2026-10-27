@@ -5,7 +5,6 @@ import { can } from "@/lib/perm";
 import { deskDeal } from "@/lib/desk";
 import { saveListedDeal } from "@/lib/desk-actions";
 import { LISTED_TYPES } from "@/lib/stages";
-import { Msg } from "@/components/AdminBits";
 import { DeskWorkspace } from "@/components/DeskWorkspace";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +13,9 @@ const IN = ({ name, label, value, ph, mode }: { name: string; label: string; val
   <label>{label}<input name={name} defaultValue={value ?? ""} placeholder={ph} inputMode={mode} maxLength={200} /></label>
 );
 
-export default async function ListedDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string }> }) {
+export default async function ListedDeal({ params }: { params: Promise<{ id: string }> }) {
   const me = await requireDesk();
   const id = Number((await params).id);
-  const { msg } = await searchParams;
   const d = await deskDeal(id);
   if (!d) notFound();
   if (!d.listed) redirect(`/admin/deals/${d.id}`);
@@ -26,7 +24,6 @@ export default async function ListedDeal({ params, searchParams }: { params: Pro
   const back = `/admin/after-the-bell/${d.id}`;
   return (
     <>
-      <Msg msg={msg} />
       <p className="crumb"><a href="/admin/after-the-bell">← After the Bell</a> · <a href="/admin/board">Deal pipeline</a></p>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", margin: "6px 0 6px" }}>
         <h1 style={{ fontSize: 30, margin: 0 }}>{d.company}</h1><span className="pill">Listed · desk only</span>
