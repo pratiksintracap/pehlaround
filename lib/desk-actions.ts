@@ -200,9 +200,9 @@ export async function createListedDeal(f: FormData) {
   // A unique, meaningless slug: listed deals have no public page, so nothing should be guessable from it.
   const slug = `atb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
   const [row] = await db.insert(deals).values({
-    slug, company, title: info.sector || "Listed company", category: info.dealType || "Listed company", stage: "Desk only", status: "After the Bell · desk only",
+    slug, company, title: info.sector || "Listed company", category: info.dealType || "Listed company",
     headline: s(f, "summary", 600), listingLabel: [info.exchange, info.ticker].filter(Boolean).join(": ") || "Listed",
-    open: false, published: false, preview: false, listed: true, listedInfo: info, sort: 500,
+    phase: "preparing", listed: true, listedInfo: info, sort: 500,
     pipelineStage: asStage(s(f, "stage", 20)) ?? "sourced", stageAt: new Date(), ownerId: n(f, "ownerId") || me.id,
     room: { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [], interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] },
   }).returning({ id: deals.id });

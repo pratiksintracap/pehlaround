@@ -23,6 +23,7 @@ import { fromText } from "@/lib/pipes";
 import { investorWhere } from "@/lib/deal-guard";
 import type { RoomContent, IpoProgress, PeerCompare } from "@/lib/types";
 import { checkCompare, peerCompareFor } from "@/lib/peers";
+import { isPhase, isPublic, roomOpen, phaseInfo, type Phase } from "@/lib/phase";
 import ART from "@/lib/deal-art.json";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -220,23 +221,22 @@ export async function saveDeal(f: FormData) {
   const ipo: IpoProgress = { closed: day("ipo_closed"), drhp: day("ipo_drhp"), sebi: day("ipo_sebi"), rhp: day("ipo_rhp"), priceBand: s(f, "ipo_priceBand", 60) || undefined,
     listing: day("ipo_listing"), listPrice: rs("ipo_listPrice"), lastPrice: rs("ipo_lastPrice"), lastAt: day("ipo_lastAt"), note: s(f, "ipo_note", 300) || undefined };
   const vals = {
-    company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80), stage: s(f, "stage", 80), status: s(f, "status", 200),
+    company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
     score: total ?? manual, scoreParts: Object.keys(parts).length ? parts : null,
     roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null, minTicket: s(f, "minTicket", 80) || null,
-    open: pub ? f.get("open") === "on" : cur.open, published: pub ? f.get("published") === "on" : cur.published, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
+    phase: pub && isPhase(f.get("phase")) ? (f.get("phase") as Phase) : cur.phase, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
     publicRisks: fromText.list(s(f, "publicRisks", 6000)),
     roundCr: (() => { const v = parseFloat(s(f, "roundCr", 20).replace(/,/g, "")); return isFinite(v) && v > 0 ? v : null; })(),
     ipo, promoterDemand: f.get("promoterDemand") === "on",
-    preview: pub ? f.get("preview") === "on" : cur.preview,
     dataRoomUrl: (() => { const v = s(f, "dataRoomUrl", 2000); return /^https:\/\//.test(v) ? v : null; })(),
     art: artKey && (ART as Record<string, string>)[artKey] ? (ART as Record<string, string>)[artKey] : cur.art,
     room, updatedAt: new Date(),
   };
   await db.update(deals).set(vals).where(eq(deals.id, id));
-  const diff = changes(cur, vals, ["company", "title", "category", "stage", "status", "headline", "listingLabel", "listingMonth", "score", "roundLabel", "preMoney", "peLabel", "minTicket",
-    "open", "published", "preview", "roundCr", "dataRoomUrl", "ndaVersion", "sort", "asOf"]);
+  const diff = changes(cur, vals, ["company", "title", "category", "headline", "listingLabel", "listingMonth", "score", "roundLabel", "preMoney", "peLabel", "minTicket",
+    "phase", "roundCr", "dataRoomUrl", "ndaVersion", "sort", "asOf"]);
   if (JSON.stringify(cur.room) !== JSON.stringify(room)) diff.room = ["…", "room content edited"];
   if (JSON.stringify(cur.ipo) !== JSON.stringify(ipo)) diff.ipo = [cur.ipo, ipo];
   await log(admin, `Desk updated the deal: ${s(f, "company", 200)}`, id, { entity: "deal", entityId: id, detail: { changes: diff } });
@@ -247,26 +247,29 @@ export async function saveDeal(f: FormData) {
     const holders = [...new Set((await db.select({ o: interests.officeId }).from(interests).where(and(eq(interests.dealId, id), eq(interests.status, "Allotted")))).map((r) => r.o))];
     if (holders.length) await notifyOffices(holders, { title: `${s(f, "company", 200)}: ${fresh[fresh.length - 1][1]}`, body: ipo.note || null, link: "/dashboard#Portfolio" });
   }
-  // Newly published: tell approved offices, if the desk ticked the box.
-  if (pub && !cur.published && f.get("published") === "on" && f.get("announce") === "on") {
+  // Newly on the shelf, or its room newly open: tell approved offices, if the desk ticked the box.
+  const goesPublic = !isPublic(cur.phase) && isPublic(vals.phase), opens = !roomOpen(cur.phase) && roomOpen(vals.phase);
+  if (pub && (goesPublic || opens) && f.get("announce") === "on") {
     const ids = (await db.select({ id: offices.id }).from(offices).where(eq(offices.approval, "approved"))).map((r) => r.id);
-    await notifyOffices(ids, { title: `New on the desk: ${s(f, "company", 200)}`, body: `${s(f, "title", 200)} · ${s(f, "category", 80)}. ${s(f, "headline", 600)}`, link: `/deals/${cur.slug}` });
+    await notifyOffices(ids, { title: goesPublic ? `New on the desk: ${s(f, "company", 200)}` : `Room open: ${s(f, "company", 200)}`, body: `${s(f, "title", 200)} · ${s(f, "category", 80)}. ${s(f, "headline", 600)}`, link: `/deals/${cur.slug}` });
   }
   revalidatePath("/", "layout");
   back(path, total != null ? `Saved. Desk Score ${total.toFixed(1)} from the rubric; the site shows it now.` : Object.keys(parts).length ? `Saved. The rubric has ${Object.keys(parts).length} of ${RUBRIC.length} areas marked; the score stays as entered until all are marked.` : "Saved. The site shows the change now.");
 }
 
 /** One-click from the deals list: take a live deal down (back to in preparation) or put it live again. No announcement is sent. */
-export async function setDealPublished(f: FormData) {
+/** Moves a deal along its lifecycle from the deals list (MODEL.md §3). No announcement is sent from here. */
+export async function setDealPhase(f: FormData) {
   const admin = await requirePerm("deals.publish");
-  const id = n(f, "id"), on = f.get("published") === "1";
+  const id = n(f, "id"), to = f.get("phase");
+  if (!isPhase(to)) return back("/admin/deals", "Choose a phase.");
   const db = await getDb();
-  const [d] = await db.select({ company: deals.company }).from(deals).where(investorWhere(eq(deals.id, id)));
-  if (!d) return;
-  await db.update(deals).set({ published: on, updatedAt: new Date() }).where(eq(deals.id, id));
-  await log(admin, `Desk ${on ? "published" : "took down (in preparation)"} the deal: ${d.company}`, id, { entity: "deal", entityId: id, detail: { changes: { published: [!on, on] } } });
+  const [d] = await db.select({ company: deals.company, phase: deals.phase }).from(deals).where(investorWhere(eq(deals.id, id)));
+  if (!d || d.phase === to) return back("/admin/deals", "Nothing to change.");
+  await db.update(deals).set({ phase: to, updatedAt: new Date() }).where(eq(deals.id, id));
+  await log(admin, `Desk moved ${d.company} to ${phaseInfo(to).label.toLowerCase()}`, id, { entity: "deal", entityId: id, detail: { changes: { phase: [d.phase, to] } } });
   revalidatePath("/", "layout");
-  back("/admin/deals", on ? `${d.company} is live again.` : `${d.company} is taken down: in preparation, the desk alone sees it.`);
+  back("/admin/deals", `${d.company}: ${phaseInfo(to).label}. ${phaseInfo(to).desk}`);
 }
 
 export async function createDeal(f: FormData) {
@@ -280,8 +283,8 @@ export async function createDeal(f: FormData) {
   const room: RoomContent = { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [],
     interest: { min: 0.5, max: 10, step: 0.5, def: 1, note: "Non-binding indication. A commitment is made only on signed documents after KYC, with a summary of terms and the risks to confirm first." },
     alerts: ["A new document is added", "The promoter answers a question", "Terms or price change"], passReasons: ["Valuation too rich for us", "Sector outside our mandate", "Other"] };
-  const [row] = await db.insert(deals).values({ slug, company, title, category: "Pre-IPO primary", stage: "Draft", status: "In diligence · not open", headline: "",
-    listingLabel: "To be set", open: false, published: false, sort: 200, art: Object.values(ART as Record<string, string>)[0], room }).returning({ id: deals.id });
+  const [row] = await db.insert(deals).values({ slug, company, title, category: "Pre-IPO primary", headline: "",
+    listingLabel: "To be set", phase: "preparing", sort: 200, art: Object.values(ART as Record<string, string>)[0], room }).returning({ id: deals.id });
   await log(admin, `Desk created the deal: ${company}`, row.id, { entity: "deal", entityId: row.id, detail: { note: "created in preparation" } });
   revalidateTag(PUBLIC_TAG); // the console's deal list reads the cached list: show the new deal straight away
   redirect(`/admin/deals/${row.id}?msg=${encodeURIComponent(can(admin, "deals.publish") ? "Created, in preparation: the desk alone sees it. Fill it in, then tick Published." : "Created, in preparation. Fill it in, then ask a super admin to publish it.")}`);
@@ -292,11 +295,11 @@ export async function requestPublish(f: FormData) {
   const me = await requirePerm("deals.edit");
   const id = n(f, "id");
   const db = await getDb();
-  const [d] = await db.select({ company: deals.company, published: deals.published, open: deals.open }).from(deals).where(investorWhere(eq(deals.id, id)));
+  const [d] = await db.select({ company: deals.company, phase: deals.phase }).from(deals).where(investorWhere(eq(deals.id, id)));
   if (!d) return;
-  const what = !d.published ? "publish" : !d.open ? "open for allocation requests" : "review";
+  const what = !isPublic(d.phase) ? "put on the shelf" : !roomOpen(d.phase) && d.phase !== "closed" ? "open the room of" : "review";
   const note = s(f, "note", 600);
-  await notifyDesk({ title: `${me.name} asks you to ${what}: ${d.company}`, body: note || "Check the deal and tick Published (and Open) if it is ready.", link: `/admin/deals/${id}` });
+  await notifyDesk({ title: `${me.name} asks you to ${what}: ${d.company}`, body: note || "Check the deal and move it to the next phase if it is ready.", link: `/admin/deals/${id}` });
   await log(me, `Desk asked a super admin to ${what} the deal: ${d.company}`, id);
   back(`/admin/deals/${id}`, "Sent to a super admin. You will see it go live when they publish it.");
 }
@@ -665,7 +668,7 @@ export async function removeEmptyDeal(f: FormData) {
   const db = await getDb();
   const [d] = await db.select({ id: deals.id, company: deals.company, published: deals.published }).from(deals).where(eq(deals.id, id));
   if (!d) return back("/admin/deals", "That deal no longer exists.");
-  if (d.published) return back(page + "#remove", "Unpublish the deal before removing it.");
+  if (d.published) return back(page + "#remove", "Move the deal back to In preparation before removing it.");
   const tables = ["ndas", "sign_codes", "documents", "questions", "calls", "interests", "passes", "deal_prefs", "desk_notes", "desk_files", "tasks", "deal_links", "deal_views", "broadcasts", "tickets", "ai_chats", "events"];
   const counts = await Promise.all(tables.map(async (t) => {
     const r = await db.execute(sql.raw(`select count(*)::int as n from "${t}" where deal_id = ${Number(id)}`)) as unknown as { rows: { n: number }[] };

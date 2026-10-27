@@ -13,7 +13,7 @@ export default async function Founder({ searchParams }: { searchParams: Promise<
   const [st, qs, docs] = await Promise.all([founderStats(d), founderQuestions(d.id), founderDocuments(d.id)]);
   const open = qs.filter((q) => !q.answer), answered = qs.filter((q) => q.answer);
   const maxW = Math.max(1, ...st.weekly);
-  const live = d.published ? (d.open ? "Live on the desk · room open" : "Live on the desk · room not yet open") : "Being prepared by the desk";
+  const live = d.phase === "closed" ? "Round closed · updates continue for holders" : d.published ? (d.open ? "Live on the desk · room open" : "Live on the desk · room not yet open") : "Being prepared by the desk";
   const tiles: [string, string | number, string][] = [
     ["Overview views", st.views30, "last 30 days"],
     ["Offices that looked", st.offViewed, "since the overview went live"],

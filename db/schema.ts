@@ -1,4 +1,6 @@
 import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex, index, numeric, doublePrecision } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { PHASE_SQL, type Phase } from "@/lib/phase";
 import type { RoomContent, IpoProgress } from "@/lib/types";
 import type { Source } from "@/lib/source";
 
@@ -86,8 +88,11 @@ export const deals = pgTable("deals", {
   company: text("company").notNull(),           // shown only inside the room
   title: text("title").notNull(),               // anonymised public title (sector)
   category: text("category").notNull(),         // Pre-IPO primary | Pre-IPO secondary | Growth round
-  stage: text("stage").notNull(),               // tag on the card: "Room open", "Live mandate", "Not open"
-  status: text("status").notNull(),             // "Room open to registered offices"
+  // The lifecycle (MODEL.md §3): the only field that says where a deal is. The five columns marked "from phase"
+  // are computed by the database and cannot be written.
+  phase: text("phase").$type<Phase>().notNull().default("preparing"),
+  stage: text("stage").notNull().generatedAlwaysAs(sql.raw(PHASE_SQL.stage)),   // from phase: the tag on the card
+  status: text("status").notNull().generatedAlwaysAs(sql.raw(PHASE_SQL.status)), // from phase: the status line
   headline: text("headline").notNull(),         // anonymised one-liner
   listingLabel: text("listing_label").notNull(),// "Sept 2028" or "To be confirmed"
   listingMonth: text("listing_month"),          // "2028-09" for the runway and sorting
@@ -96,8 +101,8 @@ export const deals = pgTable("deals", {
   preMoney: text("pre_money"),                  // gated: "₹1,200 Cr"
   peLabel: text("pe_label"),                    // gated: "35x · 18x"
   minTicket: text("min_ticket"),                // gated: "₹1 Cr"
-  open: boolean("open").notNull().default(true),        // room can be opened with an NDA
-  published: boolean("published").notNull().default(true),
+  open: boolean("open").notNull().generatedAlwaysAs(sql.raw(PHASE_SQL.open)),             // from phase: the NDA can be signed
+  published: boolean("published").notNull().generatedAlwaysAs(sql.raw(PHASE_SQL.published)), // from phase: on the public shelf
   sort: integer("sort").notNull().default(100),
   art: text("art"),                             // inline SVG for the card
   score: doublePrecision("score"),               // Desk Score out of 10, set by the desk (proprietary)
@@ -110,7 +115,7 @@ export const deals = pgTable("deals", {
   ipo: jsonb("ipo").$type<IpoProgress>().notNull().default({}), // the road to listing, shown to holders
   promoterDemand: boolean("promoter_demand").notNull().default(false), // the founder portal shows the total indicated
   dataRoomUrl: text("data_room_url"),
-  preview: boolean("preview").notNull().default(false), // in preparation, shown publicly as "coming to the desk" (sector and structure only)           // the data bank (a Google Drive folder); reached only from the NDA room, every open logged
+  preview: boolean("preview").notNull().generatedAlwaysAs(sql.raw(PHASE_SQL.preview)), // from phase: shown under "Coming to the desk"
   // After the Bell: a company already listed on an exchange. Desk only, never on any investor-facing surface.
   // A database check keeps such a deal unpublished, closed and out of "coming to the desk"; lib/deal-guard.ts keeps it out of every investor query.
   listed: boolean("listed").notNull().default(false),

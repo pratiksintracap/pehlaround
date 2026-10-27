@@ -260,6 +260,13 @@
       "when": 1792153000000,
       "tag": "0036_armsoftech_round_35",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1792154000000,
+      "tag": "0037_deal_phase",
+      "breakpoints": true
     }
   ]
 }

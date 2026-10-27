@@ -1,3 +1,4 @@
+import type { Phase } from "@/lib/phase";
 // The six deals the desk opens with. Figures are as stated in the company documents named in each
 // room; the desk's own tracker says what is verified and what is not. Edit live content in /admin.
 import ART from "./deal-art.json";
@@ -16,9 +17,9 @@ type Doc = { title: string; kind?: string; status: "available" | "requested" | "
 type Q = { q: string; a?: string; by?: string; asked: string; answered?: string };
 type Session = { title: string; status: string; when: string; summary?: string };
 export type SeedDeal = {
-  slug: string; company: string; title: string; category: string; stage: string; status: string; headline: string;
+  slug: string; company: string; title: string; category: string; headline: string;
   listingLabel: string; listingMonth: string | null; listingNote: string; roundLabel: string; preMoney: string; peLabel: string;
-  minTicket: string; open: boolean; published: boolean; sort: number; art: string; publicRisks: string[]; asOf: string; score?: number;
+  minTicket: string; phase: Phase; sort: number; art: string; publicRisks: string[]; asOf: string; score?: number;
   room: RoomContent; documents: Doc[]; questions: Q[]; sessions: Session[];
 };
 
@@ -28,11 +29,11 @@ export const SEED_DEALS: SeedDeal[] = [
   // ------------------------------------------------------------------ Krasny
   {
     slug: "naval-defence-secondary", company: "Krasny Defence Technologies Ltd", title: "Naval defence services and manufacturing",
-    category: "Pre-IPO secondary", stage: "Room open", status: "Room open to registered offices",
+    category: "Pre-IPO secondary",
     headline: "Tier I supplier to the Ministry of Defence. Secondary sale: the money goes to the selling shareholders, not the company.",
     listingLabel: "Sept 2028", listingMonth: "2028-09", listingNote: "main board",
     roundLabel: "₹50 Cr", preMoney: "₹1,200 Cr", peLabel: "35x · 18x", minTicket: "₹1 Cr",
-    open: true, published: true, sort: 10, art: art["naval-defence-secondary"], asOf: "12 Oct 2026",
+    phase: "open", sort: 10, art: art["naval-defence-secondary"], asOf: "12 Oct 2026",
     publicRisks: [
       "Audit not complete: FY26 figures unaudited and two sources disagree by about 9%.",
       "Secondary only: no capital goes to the company.",
@@ -153,11 +154,11 @@ export const SEED_DEALS: SeedDeal[] = [
   // ------------------------------------------------------------------ Jandani
   {
     slug: "jewellery-pre-ipo", company: "Jandani Jewellers Limited", title: "Jewellery manufacturing and retail",
-    category: "Pre-IPO primary", stage: "Room open", status: "Room open to registered offices",
+    category: "Pre-IPO primary",
     headline: "Jewellery manufacturer and retailer with an in-house manufacturing technology unit; growing through franchise stores and store-in-store supply to a listed jeweller.",
     listingLabel: "Late 2028", listingMonth: "2028-12", listingNote: "main board, on FY28 numbers",
     roundLabel: "₹12.5 Cr", preMoney: "₹125 Cr", peLabel: "12.5x · 8.2x", minTicket: "₹50 L",
-    open: true, published: true, sort: 20, art: art["jewellery-pre-ipo"], asOf: "12 Oct 2026",
+    phase: "open", sort: 20, art: art["jewellery-pre-ipo"], asOf: "12 Oct 2026",
     publicRisks: [
       "FY26 figures are provisional; completion is conditional on the audited accounts.",
       "Gold price and gold working capital drive both growth and margin.",
@@ -270,11 +271,11 @@ export const SEED_DEALS: SeedDeal[] = [
   // ------------------------------------------------------------------ Armsoftech
   {
     slug: "ai-collections-software", company: "Armsoftech Private Limited", title: "AI-led collections software",
-    category: "Growth round", stage: "Room open", status: "Room open to registered offices",
+    category: "Growth round",
     headline: "Collections platform for banks and NBFCs: AI voice agents, scoring and human-assisted centres. RBI recovery-conduct rules are a listed risk.",
     listingLabel: "Late 2028", listingMonth: "2028-12", listingNote: "main board, on FY28 numbers",
     roundLabel: "₹35 Cr", preMoney: "₹150 Cr", peLabel: "14.2x · 10.2x", minTicket: "₹50 L",
-    open: true, published: true, sort: 30, art: art["ai-collections-software"], asOf: "12 Oct 2026",
+    phase: "open", sort: 30, art: art["ai-collections-software"], asOf: "12 Oct 2026",
     publicRisks: [
       "Open questions on the financial statements must be answered before diligence closes.",
       "Profit rose sharply in FY26 on provisional figures; FY25 PAT was under ₹1 Cr.",
@@ -381,11 +382,11 @@ export const SEED_DEALS: SeedDeal[] = [
   // ------------------------------------------------------------------ Karthik Agro
   {
     slug: "ethanol-distillery-pre-ipo", company: "Karthik Agro Industries Pvt Ltd", title: "Grain-based ethanol and ENA distillery",
-    category: "Pre-IPO primary", stage: "Room open", status: "Room open to registered offices",
+    category: "Pre-IPO primary",
     headline: "Large grain-based distillery making extra neutral alcohol and fuel ethanol, running at full capacity and raising ahead of a main-board listing.",
     listingLabel: "Jul 2027", listingMonth: "2027-07", listingNote: "main board",
     roundLabel: "₹35 Cr", preMoney: "≈ ₹459 Cr", peLabel: "35x · 10x", minTicket: "₹1 Cr",
-    open: true, published: true, sort: 40, art: art["ethanol-distillery-pre-ipo"], asOf: "12 Oct 2026",
+    phase: "open", sort: 40, art: art["ethanol-distillery-pre-ipo"], asOf: "12 Oct 2026",
     publicRisks: [
       "PAT margin was 1.0–1.5% in FY25 and FY26; the price rests on a projected step-up in FY27.",
       "Grain is a seasonal crop, so the business carries heavy working capital and debt.",
@@ -485,11 +486,11 @@ export const SEED_DEALS: SeedDeal[] = [
   // ------------------------------------------------------------------ Royal Oils & Foods
   {
     slug: "edible-oils-pre-ipo", company: "Royal Oils & Foods Ltd", title: "Edible oils",
-    category: "Pre-IPO primary", stage: "Room open", status: "Room open to registered offices",
+    category: "Pre-IPO primary",
     headline: "Edible-oil refiner expanding its refining capacity ahead of a listing.",
     listingLabel: "Sept 2028", listingMonth: "2028-09", listingNote: "company target",
     roundLabel: "₹50 Cr", preMoney: "₹200 Cr", peLabel: "19.3x · 7.4x", minTicket: "₹1 Cr",
-    open: true, published: true, sort: 50, art: art["edible-oils-pre-ipo"], asOf: "12 Oct 2026",
+    phase: "open", sort: 50, art: art["edible-oils-pre-ipo"], asOf: "12 Oct 2026",
     publicRisks: [
       "FY26 combines a proprietorship (first half) and the company (second half); combined figures need restating.",
       "A thin-margin commodity business; a few customers take the whole output.",
@@ -588,11 +589,11 @@ export const SEED_DEALS: SeedDeal[] = [
   // ------------------------------------------------------------------ LAHS Green
   {
     slug: "waste-management-growth-round", company: "LAHS Green India Pvt Ltd", title: "Waste management and composting equipment",
-    category: "Pre-IPO primary", stage: "Room open", status: "Room open to registered offices",
+    category: "Pre-IPO primary",
     headline: "Composting and waste-processing machines for municipalities and companies, with patented products. Raising ahead of an SME IPO.",
     listingLabel: "September 2027", listingMonth: "2027-09", listingNote: "SME IPO",
     roundLabel: "₹33 Cr", preMoney: "₹100 Cr", peLabel: "22x · 6.4x", minTicket: "₹50 L",
-    open: true, published: true, sort: 60, art: art["waste-management-growth-round"], asOf: "12 Oct 2026",
+    phase: "open", sort: 60, art: art["waste-management-growth-round"], asOf: "12 Oct 2026",
     publicRisks: [
       "Profit is small to date; the price rests on a large step-up projected for FY27.",
       "The company's own projections differ between documents.",

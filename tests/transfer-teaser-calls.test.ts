@@ -43,7 +43,7 @@ test("the call list ranks fresh allocation requests and repeat deck reads, and d
     { name: `Hot FO ${t}`, approval: "approved" }, { name: `Warm FO ${t}`, approval: "approved" }, { name: `Private FO ${t}`, approval: "approved", origin: "desk", addedById: 999999 },
   ]).returning({ id: offices.id });
   const [u] = await db.insert(users).values({ email: `c${t}@x.in`, name: "C", passwordHash: "x", officeId: o1.id }).returning({ id: users.id });
-  const [d] = await db.insert(deals).values({ slug: `call-test-${t}`, company: "Call Test Co", title: "t", category: "Pre-IPO primary", stage: "Room open", status: "s", headline: "h", listingLabel: "2028", room: {} as never }).returning({ id: deals.id });
+  const [d] = await db.insert(deals).values({ slug: `call-test-${t}`, company: "Call Test Co", title: "t", category: "Pre-IPO primary", phase: "open", headline: "h", listingLabel: "2028", room: {} as never }).returning({ id: deals.id });
   const now = new Date();
   await db.insert(interests).values({ dealId: d.id, officeId: o1.id, userId: u.id, amountCr: "2" });
   await db.insert(events).values([1, 2, 3].map(() => ({ kind: "deck_opened", officeId: o2.id, dealId: d.id, at: new Date(+now - 864e5) })));

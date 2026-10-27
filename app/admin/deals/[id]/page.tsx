@@ -12,6 +12,7 @@ import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { peerCompareFor } from "@/lib/peers";
 import { Msg } from "@/components/AdminBits";
+import { PHASES, phaseInfo, isPublic } from "@/lib/phase";
 import ART from "@/lib/deal-art.json";
 import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
 
@@ -69,20 +70,18 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
       </form>
       <form action={saveDeal} className="form adm-form">
         <input type="hidden" name="id" value={d.id} />
-        <div className="adm-vis"><span className="k">Visibility · {d.published ? (d.open ? "live, room open" : "live, room closed") : "in preparation (desk only)"}</span>
+        <div className="adm-vis"><span className="k">Phase · {phaseInfo(d.phase).label}</span>
         {pub ? <>
-        <label className="chk"><input type="checkbox" name="published" defaultChecked={d.published} /> Published (shown on the site). Unticked: in preparation, visible to the desk only. Save the deal for it to take effect.</label>
-        {!d.published && <label className="chk"><input type="checkbox" name="announce" defaultChecked /> When I publish it, tell every approved office (in the app, and by email once email is set up)</label>}
-        <label className="chk"><input type="checkbox" name="open" defaultChecked={d.open} /> Room open (offices can sign the NDA and enter)</label>
-        <label className="chk"><input type="checkbox" name="preview" defaultChecked={d.preview} /> While in preparation, show it under &ldquo;Coming to the desk&rdquo; (public title, structure and listing year only; no name, round or valuation)</label>
-        </> : <p className="notice adm-locked"><b>{d.published ? "Published" : "Hidden draft"}</b> · {d.open ? "room open" : "room closed"}. Publishing and opening the room are done by a super admin; use <a href="#ask-publish">Ask to publish</a> below the form when it is ready.</p>}
+        <div className="ph-pick" role="radiogroup" aria-label="Phase">{PHASES.map((p) => (
+          <label key={p.id} className={`chk ph-opt${d.listed && p.id !== "preparing" ? " off" : ""}`}><input type="radio" name="phase" value={p.id} defaultChecked={d.phase === p.id} disabled={d.listed && p.id !== "preparing"} /> <b>{p.label}</b> <span className="fine">{p.desk}</span></label>))}</div>
+        <label className="chk"><input type="checkbox" name="announce" defaultChecked={!isPublic(d.phase)} /> When this save makes it public or opens the room, tell every approved office (in the app, and by email once email is set up)</label>
+        </> : <p className="notice adm-locked"><b>{phaseInfo(d.phase).label}</b> · {phaseInfo(d.phase).desk} Moving a deal between phases is done by a super admin; use <a href="#ask-publish">Ask to publish</a> below the form when it is ready.</p>}
         </div>
         <h2>On the shelf and the public overview</h2>
         <div className="row"><IN name="company" label="Company (shown only to registered offices)" value={d.company} /><IN name="title" label="Public title (anonymised)" value={d.title} /></div>
         <TA name="headline" label="One-line description (anonymised, public)" value={d.headline} rows={2} />
-        <div className="row"><label>Structure<select name="category" defaultValue={d.category}><option>Pre-IPO primary</option><option>Pre-IPO secondary</option><option>Growth round</option><option>SME IPO anchor</option></select></label>
-          <IN name="stage" label="Tag on the card" value={d.stage} ph="Room open" /></div>
-        <div className="row"><IN name="status" label="Status line" value={d.status} /><IN name="asOf" label="Score and tracker as of" value={d.asOf} ph="12 Oct 2026" /></div>
+        <div className="row"><label>Structure<select name="category" defaultValue={d.category}><option>Pre-IPO primary</option><option>Pre-IPO secondary</option><option>Growth round</option><option>SME IPO anchor</option></select></label></div>
+        <div className="row"><IN name="asOf" label="Score and tracker as of" value={d.asOf} ph="12 Oct 2026" /></div>
         <div className="score-rubric" id="score">
           <span className="k">Desk Score · {rubricTotal(d.scoreParts) != null ? <>{rubricTotal(d.scoreParts)!.toFixed(1)} from the rubric</> : d.score != null ? <>{d.score.toFixed(1)}, entered by hand (not yet scored on the rubric)</> : "not set"}</span>
           <p className="fine">Mark each area 0–10 against the checklist and give a one-line reason. When every area is marked, the weighted total becomes the Desk Score. The bar for the desk is {DESK_BAR.toFixed(1)}: a total below it is not saved, because such a company is not listed. The marks and reasons stay with the desk; the site shows only the total and what the score weighs.</p>
@@ -147,7 +146,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
       </form>
       {!pub && (
         <form action={requestPublish} className="form adm-card" id="ask-publish"><input type="hidden" name="id" value={d.id} />
-          <b>Ask a super admin to {!d.published ? "publish this deal" : !d.open ? "open the room" : "review this deal"}</b>
+          <b>Ask a super admin to {d.phase === "preparing" || d.phase === "coming" ? "announce this deal" : d.phase === "announced" ? "open the room" : "review this deal"}</b>
           <label>Note (optional)<input name="note" maxLength={600} placeholder="e.g. Numbers updated to FY26 audited; ready to go live" /></label>
           <div><button className="btn sm primary" type="submit">Send the request</button></div>
         </form>)}

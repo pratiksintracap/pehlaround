@@ -92,7 +92,7 @@ export default async function Room({ params }: P) {
             <details className="ds-menu"><summary className="btn sm">Switch deal <span aria-hidden="true">▾</span></summary>
               <div className="ds-list">
                 {myRooms.length > 0 && <><span className="k">Your rooms</span>{myRooms.map((x) => <a key={x.id} href={`/room/${x.slug}`}><b>{x.company}{passedIds.has(x.id) && <> <span className="pill off">Passed</span></>}</b><small>{x.category}{x.score != null ? ` · Desk Score ${x.score.toFixed(1)}` : ""}</small></a>)}</>}
-                {rest.length > 0 && <><span className="k">{myRooms.length ? "Rest of the shelf" : "On the shelf"}</span>{rest.map((x) => <a key={x.id} href={hrefFor(x)}><b>{x.company}</b><small>{x.category}{x.open ? " · sign its NDA to open the room" : " · room not open yet"}</small></a>)}</>}
+                {rest.length > 0 && <><span className="k">{myRooms.length ? "Rest of the shelf" : "On the shelf"}</span>{rest.map((x) => <a key={x.id} href={hrefFor(x)}><b>{x.company}</b><small>{x.category}{x.open ? " · sign its NDA to open the room" : x.phase === "closed" ? " · round closed" : " · room not open yet"}</small></a>)}</>}
               </div>
             </details>
             {others.length > 0 && <a className="btn sm ghost" href={hrefFor(nextD)} title={nextD.company} aria-label={`Next deal: ${nextD.company}`}>›</a>}

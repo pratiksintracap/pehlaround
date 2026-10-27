@@ -46,7 +46,7 @@ const SAVE = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14l-5
 
 export function cardHtml(d: Deal, i: number, signed: boolean, registered = false) {
   const acts = !d.open
-    ? `<span class="btn" aria-disabled="true">Not open</span><a class="btn" href="/deals/${d.slug}">Overview</a>`
+    ? `<span class="btn" aria-disabled="true">${d.phase === "closed" ? "Round closed" : "Not open"}</span><a class="btn" href="/deals/${d.slug}">Overview</a>`
     : signed
       ? `<a class="btn primary" href="/room/${d.slug}">Open room</a><a class="btn" href="/deals/${d.slug}">Overview</a>`
       : `<a class="btn primary" href="/room/${d.slug}"><span class="lock">Unlock room</span></a><a class="btn" href="/deals/${d.slug}">Overview</a>`;

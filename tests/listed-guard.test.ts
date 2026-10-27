@@ -13,15 +13,15 @@ const room = { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: []
   interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] };
 // drizzle wraps the driver error; the constraint name is on the cause.
 const CHECK = (e: unknown) => /deals_listed_desk_only|check constraint/i.test(`${e} ${(e as { cause?: unknown })?.cause ?? ""}`);
-const base = { company: SECRET, title: "Listed company", category: "Block deal", stage: "Desk only", status: "desk", headline: "", listingLabel: "NSE: ZETA", room };
+const base = { company: SECRET, title: "Listed company", category: "Block deal", headline: "", listingLabel: "NSE: ZETA", room };
 
 test("listed deals are refused publication by the database", async () => {
   const db = await getDb();
-  await assert.rejects(db.insert(deals).values({ ...base, slug: "atb-pub", listed: true, published: true, open: false, preview: false }), CHECK);
-  await assert.rejects(db.insert(deals).values({ ...base, slug: "atb-open", listed: true, published: false, open: true, preview: false }), CHECK);
-  await assert.rejects(db.insert(deals).values({ ...base, slug: "atb-prev", listed: true, published: false, open: false, preview: true }), CHECK);
-  const [row] = await db.insert(deals).values({ ...base, slug: "atb-ok", listed: true, published: false, open: false, preview: false }).returning({ id: deals.id });
-  await assert.rejects(db.update(deals).set({ published: true }).where(eq(deals.id, row.id)), CHECK);
+  await assert.rejects(db.insert(deals).values({ ...base, slug: "atb-pub", listed: true, phase: "announced" }), CHECK);
+  await assert.rejects(db.insert(deals).values({ ...base, slug: "atb-open", listed: true, phase: "open" }), CHECK);
+  await assert.rejects(db.insert(deals).values({ ...base, slug: "atb-prev", listed: true, phase: "coming" }), CHECK);
+  const [row] = await db.insert(deals).values({ ...base, slug: "atb-ok", listed: true, phase: "preparing" }).returning({ id: deals.id });
+  await assert.rejects(db.update(deals).set({ phase: "open" }).where(eq(deals.id, row.id)), CHECK);
 });
 
 test("investor-facing deal reads never return a listed company", async () => {

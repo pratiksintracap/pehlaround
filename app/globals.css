@@ -1103,6 +1103,14 @@ body.disc-bar-on .an-fab{bottom:96px}
 .funnel-row span{font-size:12px;color:var(--ink3)}
 .adm-vis{border:1px solid var(--line2);border-radius:12px;padding:12px 16px;margin:0 0 18px;background:var(--bg);display:grid;gap:6px}
 .adm-vis .k{margin-bottom:4px}
+.ph-pick{display:grid;gap:4px}
+.ph-opt{display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:baseline;padding:6px 8px;border-radius:8px}
+.ph-opt:has(input:checked){background:var(--accent-soft)}
+.ph-opt.off{opacity:.45}
+@media (max-width:640px){.ph-opt{grid-template-columns:auto 1fr}.ph-opt .fine{grid-column:2}}
+.ph-move{display:inline-flex;gap:6px;align-items:center}
+.ph-move select{font:inherit;font-size:13px;padding:4px 6px;border-radius:8px;border:1px solid var(--line2);background:var(--bg2);color:var(--ink)}
+.pill[class*=ph-]{background:var(--bg3)}.pill.ph-preparing{opacity:.7}.pill.ph-open{color:var(--live)}.pill.ph-closed{color:var(--ink3)}
 .hero .ctas{align-items:center}
 .hero-note{font-size:13.5px;color:var(--ink3);line-height:1.4;max-width:30ch}
 /* founders and management, with LinkedIn */

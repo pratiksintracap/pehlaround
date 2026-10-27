@@ -42,7 +42,7 @@ export default async function Overview({ params }: P) {
   const decks = registered ? await db.select().from(documents).where(and(eq(documents.dealId, d.id), eq(documents.audience, "approved"))).orderBy(asc(documents.sort), asc(documents.id)) : [];
   const layer = !user ? 0 : !registered ? 1 : !signed ? 2 : 3;
   const stages = ["Overview", "Room open", "Closing"];
-  const now = d.open ? "Room open" : "Overview";
+  const now = d.open ? "Room open" : d.phase === "closed" ? "Closing" : "Overview";
   const others = all.filter((x) => x.id !== d.id);
   // Approved investors (and the desk) can forward a blind teaser; an office's link carries its invite code.
   const share = d.published && user && (isDesk(user) || registered)
