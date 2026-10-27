@@ -55,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script id="ud-data" type="application/json" dangerouslySetInnerHTML={{ __html: data }} />
         <div dangerouslySetInnerHTML={{ __html: content("drawer") }} />
         <div dangerouslySetInnerHTML={{ __html: content("disclaimer") }} />
-        <Script src="/js/site.js?v=55" strategy="afterInteractive" />
+        <Script src="/js/site.js?v=56" strategy="afterInteractive" />
         <Script id="app-bridge" strategy="afterInteractive">{`if(/BeforeTheBellApp/.test(navigator.userAgent)){var s=document.createElement("script");s.src="/js/app-bridge.js?v=2";document.body.appendChild(s)}`}</Script>
         <Analytics />
       </body>

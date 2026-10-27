@@ -580,6 +580,40 @@
       });
       Array.prototype.forEach.call(f.querySelectorAll("[data-login-pass]"), function (btn) { btn.addEventListener("click", function () { mode(false); }); });
     })();
+    // sign in with a mobile number and a texted code (approved accounts only; the server decides)
+    var lp = document.querySelector(".lg-phone");
+    if (lp) (function () {
+      var f = lp.closest("form"), ph = lp.querySelector("input[name=phone]"), code = lp.querySelector("input[name=code]"), box = lp.querySelector(".lg-phone-code"), sendBox = lp.querySelector(".lg-phone-send");
+      var others = [".lg-email", ".lg-pass", ".lg-code", ".lg-phone-link"].map(function (q) { return f.querySelector(q); }).filter(Boolean);
+      var mode = function (usePhone) {
+        others.forEach(function (el) { el.hidden = usePhone; });
+        if (!usePhone) { var lc = f.querySelector(".lg-code"); if (lc) lc.hidden = true; }
+        Array.prototype.forEach.call(f.querySelectorAll(".lg-email input, .lg-pass input"), function (i) { i.disabled = usePhone; i.required = !usePhone; });
+        Array.prototype.forEach.call(f.querySelectorAll(".lg-code input"), function (i) { i.disabled = true; i.required = false; });
+        lp.hidden = !usePhone; ph.disabled = !usePhone; ph.required = usePhone;
+        if (!usePhone) { code.disabled = true; code.required = false; box.hidden = true; sendBox.hidden = false; }
+        (usePhone ? ph : f.querySelector("input[name=email]")).focus();
+      };
+      var send = function (btn) {
+        if (!ph.value.trim()) { ph.reportValidity(); return; }
+        var label = btn.textContent; btn.disabled = true; btn.textContent = "Sending…";
+        fetch("/api/auth/phone-code", { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify({ phone: ph.value }), credentials: "same-origin" })
+          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || "The code could not be sent."); return j; }); })
+          .then(function (j) {
+            btn.disabled = false; btn.textContent = label; sendBox.hidden = true; box.hidden = false; code.disabled = false; code.required = true; code.value = ""; code.focus();
+            var st = lp.querySelector("[data-phone-status]"); if (st) st.textContent = "If " + (j.to || "this number") + " is on an approved account, a code is on its way. It works for " + (j.minutes || 10) + " minutes.";
+            var ok = f.querySelector(".ok.bad"); if (ok) ok.className = "ok";
+          })
+          .catch(function (err) {
+            btn.disabled = false; btn.textContent = label;
+            var ok = f.querySelector(".ok"); if (!ok) { ok = document.createElement("div"); ok.setAttribute("role", "alert"); f.insertBefore(ok, f.firstChild); }
+            ok.className = "ok show bad"; ok.textContent = err.message; });
+      };
+      Array.prototype.forEach.call(f.querySelectorAll("[data-login-phone]"), function (b) { b.addEventListener("click", function () { mode(true); }); });
+      Array.prototype.forEach.call(f.querySelectorAll("[data-login-email]"), function (b) { b.addEventListener("click", function () { mode(false); }); });
+      Array.prototype.forEach.call(lp.querySelectorAll("[data-phone-send]"), function (b) { b.addEventListener("click", function () { send(b); }); });
+      ph.addEventListener("keydown", function (e) { if (e.key === "Enter" && box.hidden) { e.preventDefault(); send(sendBox.querySelector("button")); } });
+    })();
     Array.prototype.forEach.call(document.querySelectorAll("form[data-api]"), function (f) {
       f.addEventListener("submit", function (e) {
         e.preventDefault(); if (!f.reportValidity()) return;

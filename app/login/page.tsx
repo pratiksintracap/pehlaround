@@ -8,6 +8,7 @@ import { scoreSvg } from "@/lib/render";
 import { AppPromo } from "@/components/AppPromo";
 import { providers } from "@/lib/oauth";
 import { emailReady } from "@/lib/email";
+import { smsReady } from "@/lib/sms";
 import { OAuthButtons } from "@/components/OAuthButtons";
 
 export const metadata: Metadata = pageMeta({ path: "/login", title: "Sign in", description: "Your family office's shelf, deal rooms, calls, documents and log, in one place.", noindex: true });
@@ -47,7 +48,7 @@ export default async function Login({ searchParams }: P) {
   const months = all.map((d) => d.listingMonth).filter((m): m is string => !!m).sort();
   const lbl = (ym: string) => new Date(ym + "-01").toLocaleDateString("en-IN", { month: "short", year: "numeric" });
   const listingSpan = months.length ? (months[0] === months[months.length - 1] ? lbl(months[0]) : `${lbl(months[0])} – ${lbl(months[months.length - 1])}`) : "—";
-  const provs = providers(), mail = emailReady();
+  const provs = providers(), mail = emailReady(), sms = smsReady();
   const reg = `/register${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   return (
     <main>
@@ -81,7 +82,7 @@ export default async function Login({ searchParams }: P) {
             <input type="hidden" name="next" value={next} />
             {error && <div className="ok show bad" role="alert">{error}</div>}
             <OAuthButtons list={provs} next={next} verb="Continue" />
-            <label>Email<input type="email" required autoComplete="email" name="email" /></label>
+            <label className="lg-email">Email<input type="email" required autoComplete="email" name="email" /></label>
             <div className="lg-pass">
               <label>Password<input type="password" required autoComplete="current-password" name="password" /></label>
               <div><button className="btn primary" type="submit">Sign in</button></div>
@@ -92,6 +93,19 @@ export default async function Login({ searchParams }: P) {
                 <label>Sign-in code from your email<input name="code" disabled inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="6 digits" /><span className="hint" data-code-status="" /></label>
                 <div><button className="btn primary" type="submit">Sign in</button></div>
                 <p className="fine"><button type="button" className="linkbtn" data-login-code="">Send a new code</button> · <button type="button" className="linkbtn" data-login-pass="">Use my password</button></p>
+              </div>
+            )}
+            {sms && <p className="fine lg-phone-link"><button type="button" className="linkbtn" data-login-phone="">Sign in with your mobile number instead</button></p>}
+            {sms && (
+              <div className="lg-phone" hidden>
+                <label>Mobile number<input type="tel" name="phone" disabled autoComplete="tel" placeholder="+91 98765 43210" /><span className="hint">The number on your approved account. Outside India, start with + and the country code.</span></label>
+                <div className="lg-phone-send"><button type="button" className="btn primary" data-phone-send="">Text me a sign-in code</button></div>
+                <div className="lg-phone-code" hidden>
+                  <label>Code from the text message<input name="code" disabled inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="6 digits" /><span className="hint" data-phone-status="" /></label>
+                  <div><button className="btn primary" type="submit">Sign in</button></div>
+                  <p className="fine"><button type="button" className="linkbtn" data-phone-send="">Send a new code</button></p>
+                </div>
+                <p className="fine"><button type="button" className="linkbtn" data-login-email="">Use my email instead</button></p>
               </div>
             )}
           </form>
