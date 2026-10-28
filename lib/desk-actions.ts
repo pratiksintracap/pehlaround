@@ -3,7 +3,8 @@
 // and investors the desk adds by hand. Every rule is checked here on the server (lib/perm.ts); the admin UI only
 // hides what a role cannot do. Every change is written to the audit trail with the fields that changed.
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { PUBLIC_TAG } from "@/lib/cache";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { deals, deskFiles, deskNotes, kycFiles, offices, tasks, users, type ListedInfo } from "@/db/schema";
@@ -39,6 +40,7 @@ export async function setDealStage(f: FormData) {
   // Archiving also takes the deal off every investor surface (back to In preparation); nothing is deleted.
   const archive = stage === "archived";
   await db.update(deals).set({ pipelineStage: stage, stageAt: new Date(), ...(archive ? { phase: "preparing" as const } : {}) }).where(eq(deals.id, d.id));
+  revalidateTag(PUBLIC_TAG); // deal lists are cached; archiving also changes what investors see
   await log(me, `Desk moved ${d.company} to ${stageLabel(stage)}`, d.id, { entity: "deal", entityId: d.id, detail: { changes: { pipelineStage: [stageLabel(d.pipelineStage), stageLabel(stage)] } } });
   back(f, dealPage(d), archive ? `${d.company} is archived: off the site and the working lists, with its history kept. Move it to any stage to bring it back.`
     : `${d.company} is at ${stageLabel(stage)}. Nothing on the site changes with the stage.`);
