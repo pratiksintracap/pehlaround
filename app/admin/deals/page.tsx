@@ -11,7 +11,8 @@ import { OFFEREE_LIMIT } from "@/lib/investor";
 
 export default async function AdminDeals() {
   const me = await requireDesk();
-  const deals = await listDeals(true);
+  const every = await listDeals(true);
+  const deals = every.filter((d) => d.pipelineStage !== "archived"), archived = every.filter((d) => d.pipelineStage === "archived");
   const db = await getDb();
   const off = await offereeCounts();
   // Funnel per deal over the last 30 days: overview views → offices that opened the room → NDAs → allocation requests.
@@ -35,6 +36,12 @@ export default async function AdminDeals() {
                 <select name="phase" defaultValue={d.phase} aria-label={`Phase of ${d.company}`}>{PHASES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}</select>
                 <button className="btn sm ghost" type="submit">Move</button></form>}</div></td></tr>); })}
       </tbody></table></div>
+      {archived.length > 0 && (
+        <details className="adm-card" id="archived" style={{ marginTop: 16 }}>
+          <summary><b>Archived ({archived.length})</b> <span className="fine">Dropped, listed elsewhere or not a deal. Kept with their history, off the site and the working lists. Open one and move it to any stage to bring it back.</span></summary>
+          <ul className="dt-list" style={{ marginTop: 10 }}>{archived.map((d) => (
+            <li key={d.id}><a href={`/admin/deals/${d.id}`}><b>{d.company}</b></a> <span className="fine">· {d.title} · {d.category}</span></li>))}</ul>
+        </details>)}
       <div className="chart" style={{ marginTop: 22 }} id="add"><span className="k">Add a deal</span>
         <form action={createDeal} className="form"><div className="row">
           <label>Company (legal name)<input name="company" required /></label><label>Public title (anonymised sector)<input name="title" required placeholder="e.g. Specialty chemicals" /></label></div>

@@ -73,7 +73,7 @@ work. The card tag and status line are also derived from `phase`. Write `phase`,
 
 ### Deal: `pipelineStage` (the desk's own workflow)
 
-`sourced → diligence → live → interest → docs → escrow → closed`. Desk only; never shown to investors and never changes
+`sourced → diligence → live → interest → docs → escrow → closed`, plus `archived` (dropped, listed elsewhere or not a deal: kept with its history, off the site and the working lists; archiving puts the deal back to `preparing`). Desk only; never shown to investors and never changes
 `phase` on its own. The board and the phone desk group deals by it.
 
 ### Office: `approval`

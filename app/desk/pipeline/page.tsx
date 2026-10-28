@@ -1,7 +1,7 @@
 import { requireDesk } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { deskDeals, deskMembers } from "@/lib/desk";
-import { DEAL_STAGES } from "@/lib/stages";
+import { ACTIVE_STAGES, DEAL_STAGES } from "@/lib/stages";
 import { setDealStage } from "@/lib/desk-actions";
 import { DkHead, DkEmpty, shortDay } from "@/components/DeskApp";
 
@@ -13,7 +13,7 @@ export default async function Pipeline({ searchParams }: P) {
   const [all, members] = await Promise.all([deskDeals(), deskMembers()]);
   const work = can(me, "workflow");
   const owner = new Map(members.map((m) => [m.id, m.name.split(" ")[0]]));
-  const stages = DEAL_STAGES.filter((s) => s.id !== "closed" || closed);
+  const stages = ACTIVE_STAGES.filter((s) => s.id !== "closed" || closed);
   const by = (id: string) => all.filter((d) => (d.pipelineStage || "sourced") === id);
   const closedN = by("closed").length;
   return (

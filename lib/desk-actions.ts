@@ -36,9 +36,12 @@ export async function setDealStage(f: FormData) {
   if (!d || !stage) return refuse(f, "/admin/board", "Pick a stage.");
   if (d.pipelineStage === stage) return refuse(f, dealPage(d), "No change.");
   const db = await getDb();
-  await db.update(deals).set({ pipelineStage: stage, stageAt: new Date() }).where(eq(deals.id, d.id));
+  // Archiving also takes the deal off every investor surface (back to In preparation); nothing is deleted.
+  const archive = stage === "archived";
+  await db.update(deals).set({ pipelineStage: stage, stageAt: new Date(), ...(archive ? { phase: "preparing" as const } : {}) }).where(eq(deals.id, d.id));
   await log(me, `Desk moved ${d.company} to ${stageLabel(stage)}`, d.id, { entity: "deal", entityId: d.id, detail: { changes: { pipelineStage: [stageLabel(d.pipelineStage), stageLabel(stage)] } } });
-  back(f, dealPage(d), `${d.company} is at ${stageLabel(stage)}. Nothing on the site changes with the stage.`);
+  back(f, dealPage(d), archive ? `${d.company} is archived: off the site and the working lists, with its history kept. Move it to any stage to bring it back.`
+    : `${d.company} is at ${stageLabel(stage)}. Nothing on the site changes with the stage.`);
 }
 
 export async function setDealOwner(f: FormData) {

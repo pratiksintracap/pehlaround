@@ -3,7 +3,7 @@ import { requireDesk } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { deskDeals, deskMembers, listTasks } from "@/lib/desk";
 import { setDealStage } from "@/lib/desk-actions";
-import { DEAL_STAGES } from "@/lib/stages";
+import { ACTIVE_STAGES, DEAL_STAGES } from "@/lib/stages";
 import { fmtT } from "@/components/DeskBits";
 
 export const dynamic = "force-dynamic";
@@ -19,10 +19,11 @@ export default async function Board({ searchParams }: { searchParams: Promise<{ 
   const work = can(me, "workflow");
   const q = (k: string, v: string) => { const p = new URLSearchParams(); if (who) p.set("who", who); if (kind) p.set("kind", kind); if (board) p.set("view", "board"); if (v) p.set(k, v); else p.delete(k); const s = p.toString(); return `/admin/board${s ? `?${s}` : ""}`; };
   const back = q("x", "");
+  const archivedN = list.filter((d) => d.pipelineStage === "archived").length;
   return (
     <>
       <h1 style={{ fontSize: 30, margin: "6px 0 4px" }}>Deal pipeline</h1>
-      <p className="fine" style={{ marginBottom: 10 }}>Every deal by the desk&apos;s own stage. Moving a card changes nothing on the site: publishing and opening a room stay in the deal itself.</p>
+      <p className="fine" style={{ marginBottom: 10 }}>Every deal by the desk&apos;s own stage. Moving a card changes nothing on the site: publishing and opening a room stay in the deal itself.{archivedN ? <> <a href="/admin/deals#archived">Archived ({archivedN})</a> are kept on the Deals page.</> : null}</p>
       <div className="adm-filter">{[["", "Everyone"], ["me", "Mine"], ["none", "No owner"], ...members.filter((m) => m.id !== me.id).map((m) => [String(m.id), m.name])].map(([k, l]) =>
         <a key={`w${k}`} href={q("who", k)} className={(who || "") === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["", "All deals"], ["private", "Pre-IPO and unlisted"], ["listed", "After the Bell (listed)"]].map(([k, l]) =>
@@ -30,7 +31,7 @@ export default async function Board({ searchParams }: { searchParams: Promise<{ 
       <div className="adm-filter">{[["", "Sections"], ["board", "Board"]].map(([k, l]) =>
         <a key={`v${k}`} href={q("view", k)} className={(view || "") === k ? "on" : ""}>{l}</a>)}</div>
       {!board && <div className="pl-sections">
-        {DEAL_STAGES.map((s) => { const cs = list.filter((d) => d.pipelineStage === s.id); return (
+        {ACTIVE_STAGES.map((s) => { const cs = list.filter((d) => d.pipelineStage === s.id); return (
           <section key={s.id} className={`pl-sec pl-${s.id}${cs.length ? "" : " empty"}`} aria-label={s.label}>
             <h2>{s.label} <em>{cs.length}</em>{!cs.length && <small className="fine"> · {s.hint}</small>}</h2>
             {cs.length > 0 && <div className="cmpwrap"><table className="cmp plain pl-table"><thead><tr><th>Deal</th><th>Type</th><th>Owner</th><th>Open tasks</th><th>In this stage since</th>{work && <th>Move to</th>}</tr></thead>
@@ -49,7 +50,7 @@ export default async function Board({ searchParams }: { searchParams: Promise<{ 
           </section>); })}
       </div>}
       {board && <div className="pl-board deal-board">
-        {DEAL_STAGES.map((s) => { const cs = list.filter((d) => d.pipelineStage === s.id); return (
+        {ACTIVE_STAGES.map((s) => { const cs = list.filter((d) => d.pipelineStage === s.id); return (
           <section key={s.id} className={`pl-col pl-${s.id}`} aria-label={s.label}>
             <header><b>{s.label}</b><em>{cs.length}</em></header>
             <ul>{cs.length ? cs.map((d) => { const t = open.filter((x) => x.dealId === d.id).length; return (

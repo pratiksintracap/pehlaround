@@ -8,8 +8,11 @@ export const DEAL_STAGES = [
   { id: "docs", label: "Term sheet / KYC", hint: "Term sheet, SHA and KYC" },
   { id: "escrow", label: "Escrow / allotment", hint: "Money in escrow, allotment or transfer" },
   { id: "closed", label: "Closed", hint: "Allotted, transferred or dropped" },
+  { id: "archived", label: "Archived", hint: "Dropped, listed elsewhere or not a deal; kept for the record, off the working lists" },
 ] as const;
 export type DealStage = (typeof DEAL_STAGES)[number]["id"];
+/** The stages the desk works in: everything but the archive. */
+export const ACTIVE_STAGES = DEAL_STAGES.filter((s) => s.id !== "archived");
 export const STAGE_IDS = DEAL_STAGES.map((s) => s.id) as DealStage[];
 export const stageLabel = (id: string | null | undefined) => DEAL_STAGES.find((s) => s.id === id)?.label ?? "Sourced";
 export const asStage = (v: string): DealStage | null => (STAGE_IDS as string[]).includes(v) ? (v as DealStage) : null;
