@@ -1,6 +1,6 @@
 {
- "asOf": "Market data as of 23 Oct 2026 close (screener.in); TruAlt fell a further 7.7% to ₹373 (≈₹3,199 Cr) on 26 Oct 2026",
- "basis": "Company figures FY26 audited, from the deal's information memorandum, with valuation at the round's ≈₹459 Cr pre-money; peers FY26 (year to Mar 2026) annual results (AABL and Gulshan standalone, others consolidated) and market capitalisation on 23 Oct 2026.",
+ "asOf": "Market data as of 30 Oct 2026 close",
+ "basis": "Company figures FY26 audited, from the deal's information memorandum, with valuation at the round's ≈₹459 Cr pre-money; peers FY26 (year to Mar 2026) annual results (AABL and Gulshan standalone, others consolidated) and market capitalisation at the 30 Oct 2026 close.",
  "companies": [
   {
    "name": "Karthik Agro Industries Pvt Ltd",
@@ -13,35 +13,35 @@
    "name": "Associated Alcohols & Breweries Ltd",
    "short": "Assoc. Alcohols",
    "ticker": "NSE:ASALCBR",
-   "mcapCr": 1081,
+   "mcapCr": 1079,
    "note": "Madhya Pradesh grain distiller selling merchant ENA, fuel ethanol and its own IMIL/IMFL brands; closest in revenue size."
   },
   {
    "name": "TruAlt Bioenergy Ltd",
    "short": "TruAlt",
    "ticker": "NSE:TRUALT",
-   "mcapCr": 3488,
+   "mcapCr": 3084,
    "note": "India's largest ethanol producer by installed capacity, 2,000 KLPD across five Karnataka units including Badami; listed Sep 2025."
   },
   {
    "name": "CIAN Agro Industries & Infrastructure Ltd",
    "short": "CIAN Agro",
    "ticker": "BSE:519477",
-   "mcapCr": 2305,
+   "mcapCr": 2812,
    "note": "Nagpur-based diversified group that entered distillery/ethanol in FY25 through acquisitions; ethanol is one of several businesses."
   },
   {
    "name": "Globus Spirits Ltd",
    "short": "Globus Spirits",
    "ticker": "NSE:GLOBUSSPR",
-   "mcapCr": 2243,
+   "mcapCr": 2136,
    "note": "Multi-state grain-to-glass distiller (Rajasthan, Haryana, West Bengal, Jharkhand, Bihar) selling ENA, ethanol and IMIL/IMFL brands."
   },
   {
    "name": "Gulshan Polyols Ltd",
    "short": "Gulshan Polyols",
    "ticker": "NSE:GULPOLY",
-   "mcapCr": 941,
+   "mcapCr": 887,
    "note": "Grain-based ethanol producer (≈810 KLPD; UP, MP, Assam) with grain processing and mineral chemicals; ethanol was ₹1,609 Cr of FY26 revenue."
   }
  ],
@@ -97,13 +97,13 @@
    "better": "none",
    "vals": [
     459,
-    1081,
-    3488,
-    2305,
-    2243,
-    941
+    1079,
+    3084,
+    2812,
+    2136,
+    887
    ],
-   "note": "Peers: market cap at 23 Oct 2026 close. Subject: ≈₹459 Cr pre-money at the round."
+   "note": "Peers: market cap at 30 Oct 2026 close. Subject: ≈₹459 Cr pre-money at the round."
   },
   {
    "group": "Scale",
@@ -276,10 +276,10 @@
    "vals": [
     35.3,
     12.3,
-    36,
-    10.3,
-    24.6,
-    8.8
+    31.8,
+    12.6,
+    23.4,
+    8.3
    ],
    "note": "Peers: market cap over FY26 PAT. Subject: pre-money over audited FY26 PAT (round is priced at 10x FY27E projected PAT)."
   },
@@ -290,11 +290,11 @@
    "better": "low",
    "vals": [
     10.3,
-    8,
-    17.7,
-    7.4,
-    10.8,
-    5.4
+    8.0,
+    16.3,
+    8.4,
+    10.4,
+    5.1
    ],
    "note": "EV = market cap (subject: pre-money) plus gross borrowings; cash not deducted."
   },
@@ -306,10 +306,10 @@
    "vals": [
     5.1,
     1.6,
-    2.3,
-    1.1,
-    2.1,
-    1.3
+    2.0,
+    1.3,
+    2.0,
+    1.2
    ],
    "note": "Subject at pre-money over March 2026 net worth of ₹90.8 Cr."
   }
@@ -612,7 +612,7 @@
    "Debt reduction from the round and IPO proceeds, and the outcome of the Supreme Court allocation litigation, which covers the whole industry."
   ],
   "valuation": [
-   "P/E on audited FY26 PAT at the round's pre-money is 35.3x against a peer median of 12.3x; EV/EBITDA is 10.3x against a peer median of 8.0x. The round is priced at 10x FY27E PAT, which depends on PAT rising 3.5x."
+   "P/E on audited FY26 PAT at the round's pre-money is 35.3x against a peer median of 12.6x; EV/EBITDA is 10.3x against a peer median of 8.4x. The round is priced at 10x FY27E PAT, which depends on PAT rising 3.5x."
   ]
  },
  "sources": [

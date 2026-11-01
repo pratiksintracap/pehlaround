@@ -1,6 +1,6 @@
 {
- "asOf": "Market data as of 26 Oct 2026 (Kalyan Jewellers: close of 23 Oct 2026)",
- "basis": "Company figures FY25 audited and FY26 provisional, valuation at the round's ₹125 Cr pre-money; peers FY26 (year to Mar 2026) consolidated annual results and market capitalisation on 23–26 Oct 2026.",
+ "asOf": "Market data as of 30 Oct 2026 close",
+ "basis": "Company figures FY25 audited and FY26 provisional, valuation at the round's ₹125 Cr pre-money; peers FY26 (year to Mar 2026) consolidated annual results and market capitalisation at the 30 Oct 2026 close.",
  "companies": [
   {
    "name": "Jandani Jewellers Limited",
@@ -13,35 +13,35 @@
    "name": "Senco Gold Limited",
    "short": "Senco Gold",
    "ticker": "NSE:SENCO",
-   "mcapCr": 5010,
+   "mcapCr": 4801,
    "note": "Kolkata-based national jewellery retailer (201 showrooms); also Jandani's store-in-store partner, so both a peer and a customer."
   },
   {
    "name": "Kalyan Jewellers India Limited",
    "short": "Kalyan",
    "ticker": "NSE:KALYANKJIL",
-   "mcapCr": 52877,
+   "mcapCr": 51431,
    "note": "Largest listed jewellery retailer by revenue (507 showrooms in India, Middle East, UK, US); grows through franchise-owned showrooms, the route Jandani is taking."
   },
   {
    "name": "Thangamayil Jewellery Limited",
    "short": "Thangamayil",
    "ticker": "NSE:THANGAMAYL",
-   "mcapCr": 14395,
+   "mcapCr": 13847,
    "note": "Madurai-based regional chain (66+ stores across Tamil Nadu); a regional retailer that scaled from a single home market."
   },
   {
    "name": "Sky Gold and Diamonds Limited",
    "short": "Sky Gold",
    "ticker": "NSE:SKYGOLD",
-   "mcapCr": 16273,
+   "mcapCr": 13678,
    "note": "Navi Mumbai B2B gold jewellery manufacturer supplying organised retailers and export; peer to Jandani's manufacturing and supply business."
   },
   {
    "name": "RBZ Jewellers Limited",
    "short": "RBZ",
    "ticker": "NSE:RBZJEWEL",
-   "mcapCr": 689,
+   "mcapCr": 690,
    "note": "Ahmedabad antique-jewellery maker with one retail showroom and B2B supply to ~190 retailers; the closest listed peer in size and model."
   }
  ],
@@ -201,11 +201,11 @@
    "better": "none",
    "vals": [
     125,
-    5010,
-    52877,
-    14395,
-    16273,
-    689
+    4801,
+    51431,
+    13847,
+    13678,
+    690
    ],
    "note": "Jandani at the round's pre-money (₹137.5 Cr post-money)."
   },
@@ -216,10 +216,10 @@
    "better": "low",
    "vals": [
     12.5,
-    8.7,
-    39.2,
-    40.9,
-    57.7,
+    8.3,
+    38.1,
+    39.3,
+    48.5,
     12.6
    ],
    "note": "Market cap over FY26 reported PAT. Jandani at pre-money on provisional PAT."
@@ -231,10 +231,10 @@
    "better": "low",
    "vals": [
     1.5,
-    0.59,
-    1.48,
-    1.69,
-    2.59,
+    0.57,
+    1.44,
+    1.63,
+    2.18,
     1.08
    ],
    "note": "Market cap over FY26 revenue. Jandani at pre-money."
@@ -538,7 +538,7 @@
    "FY27 progress against the ₹164 Cr revenue / ₹15.3 Cr PAT projection, and the effect of gold price moves on margins."
   ],
   "valuation": [
-   "P/E at the round is 12.5x FY26 PAT (pre-money), against a peer median of 39.2x; RBZ trades at 12.6x and Senco at 8.7x."
+   "P/E at the round is 12.5x FY26 PAT (pre-money), against a peer median of 38.1x; RBZ trades at 12.6x and Senco at 8.3x."
   ]
  },
  "sources": [

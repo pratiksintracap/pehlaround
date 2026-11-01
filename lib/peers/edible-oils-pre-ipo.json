@@ -1,6 +1,6 @@
 {
- "asOf": "Market data as of 23 Oct 2026 close (screener.in); BCL Industries and Gokul Refoils read 26 Oct 2026 intraday, Vijay Solvex 21 Oct 2026 close",
- "basis": "Royal Oils & Foods: FY26 audited figures combining the proprietorship's first half and the company's second half, with valuation at the ₹200 Cr pre-money. Peers: FY26 (year to Mar 2026) annual results from screener.in (consolidated where available; Gujarat Ambuja Exports and Vijay Solvex standalone) and market cap in late Oct 2026. Peer multiples are computed on FY26 figures, not TTM. EV uses gross debt for every company.",
+ "asOf": "Market data as of 30 Oct 2026 close",
+ "basis": "Royal Oils & Foods: FY26 audited figures combining the proprietorship's first half and the company's second half, with valuation at the ₹200 Cr pre-money. Peers: FY26 (year to Mar 2026) annual results from screener.in (consolidated where available; Gujarat Ambuja Exports and Vijay Solvex standalone) and market cap at the 30 Oct 2026 close. Peer multiples are computed on FY26 figures, not TTM. EV uses gross debt for every company.",
  "companies": [
   {
    "name": "Royal Oils & Foods Ltd",
@@ -13,42 +13,42 @@
    "name": "AWL Agri Business Ltd",
    "short": "AWL Agri",
    "ticker": "NSE:AWL",
-   "mcapCr": 22497,
+   "mcapCr": 21337,
    "note": "Formerly Adani Wilmar. India's largest branded edible-oil company (Fortune, Kings), sells groundnut oil among others; it is the sector's scale benchmark."
   },
   {
    "name": "Gokul Agro Resources Ltd",
    "short": "Gokul Agro",
    "ticker": "NSE:GOKULAGRO",
-   "mcapCr": 5789,
+   "mcapCr": 6329,
    "note": "Gujarat edible-oil refiner (main plant at Gandhidham; Vitalife, Mahek, Zaika). Like the subject, it runs a high-volume, thin-margin refining model."
   },
   {
    "name": "Gujarat Ambuja Exports Ltd",
    "short": "Guj Ambuja",
    "ticker": "NSE:GAEL",
-   "mcapCr": 7056,
+   "mcapCr": 6388,
    "note": "Gujarat agro-processor: corn starch, soya derivatives, feed, cotton yarn and edible oils. A diversified regional peer."
   },
   {
    "name": "BCL Industries Ltd",
    "short": "BCL Inds",
    "ticker": "NSE:BCLIND",
-   "mcapCr": 812,
+   "mcapCr": 890,
    "note": "Bathinda-based edible-oil refiner (Homecook) with a large grain-ethanol distillery business; a mid-size refining peer."
   },
   {
    "name": "Vijay Solvex Ltd",
    "short": "Vijay Solvex",
    "ticker": "BSE:531069",
-   "mcapCr": 191,
+   "mcapCr": 230,
    "note": "Rajasthan mustard-oil crusher and refiner (edible oils, vanaspati, de-oiled cake). A small-cap peer with a market cap close to the subject's valuation."
   },
   {
    "name": "Gokul Refoils and Solvent Ltd",
    "short": "Gokul Refoils",
    "ticker": "NSE:GOKUL",
-   "mcapCr": 342,
+   "mcapCr": 339,
    "note": "Gujarat (Sidhpur) seed processor, solvent extractor and refiner that also sells groundnut and cottonseed oils; the closest listed Gujarat model in size."
   }
  ],
@@ -264,12 +264,12 @@
    "better": "none",
    "vals": [
     19.3,
-    21.5,
-    15.7,
-    23.1,
-    6.4,
-    10.1,
-    19
+    20.4,
+    17.2,
+    20.9,
+    7.0,
+    12.2,
+    18.8
    ],
    "note": "Subject at ₹200 Cr pre-money on ₹10.4 Cr combined PAT; peers market cap ÷ FY26 PAT"
   },
@@ -280,11 +280,11 @@
    "better": "none",
    "vals": [
     0.39,
-    0.3,
-    0.24,
-    1.23,
-    0.29,
-    0.08,
+    0.28,
+    0.26,
+    1.11,
+    0.32,
+    0.1,
     0.08
    ],
    "note": "Subject at pre-money"
@@ -296,11 +296,11 @@
    "better": "none",
    "vals": [
     11.1,
-    2.2,
-    4.1,
     2.1,
-    0.9,
-    0.6,
+    4.5,
+    1.9,
+    1.0,
+    0.7,
     0.9
    ],
    "note": "Subject at pre-money on ₹18.0 Cr net worth"
@@ -312,12 +312,12 @@
    "better": "none",
    "vals": [
     13,
-    11.1,
-    9.4,
-    16,
-    5.7,
-    7.3,
-    20.2
+    10.5,
+    10.2,
+    14.6,
+    6.0,
+    8.4,
+    20.1
    ],
    "note": "EV = market cap (subject: pre-money) plus gross borrowings; cash not deducted"
   }
@@ -653,7 +653,7 @@
    "Broadening of the customer base beyond six or seven buyers, and progress of the distillation plant toward the targeted 3.5–4.5% PAT margin."
   ],
   "valuation": [
-   "At the pre-money, price/book is 11.1x against a peer range of 0.6–4.1x, and EV/EBITDA is 13.0x against a peer median of about 10.3x."
+   "At the pre-money, price/book is 11.1x against a peer range of 0.7–4.5x, and EV/EBITDA is 13.0x against a peer median of about 10.4x."
   ]
  },
  "sources": [

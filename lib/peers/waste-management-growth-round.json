@@ -1,6 +1,6 @@
 {
- "asOf": "Market data as of 23 Oct 2026 close (Felix Industries 26 Oct 2026)",
- "basis": "LAHS Green figures from the deal file (FY26 provisional, profit before tax) and valuation at the ₹100 Cr pre-money; peers FY26 (year to Mar 2026) annual results, consolidated except Felix (standalone), and market capitalisation on 23 Oct 2026.",
+ "asOf": "Market data as of 30 Oct 2026 close",
+ "basis": "LAHS Green figures from the deal file (FY26 provisional, profit before tax) and valuation at the ₹100 Cr pre-money; peers FY26 (year to Mar 2026) annual results, consolidated except Felix (standalone), and market capitalisation at the 30 Oct 2026 close.",
  "companies": [
   {
    "name": "LAHS Green India Pvt Ltd",
@@ -13,42 +13,42 @@
    "name": "Antony Waste Handling Cell Ltd",
    "short": "Antony Waste",
    "ticker": "NSE:AWHCL",
-   "mcapCr": 796,
+   "mcapCr": 785,
    "note": "Thane-based municipal solid-waste collection, processing and waste-to-energy operator; same municipal customer base."
   },
   {
    "name": "EMS Ltd",
    "short": "EMS",
    "ticker": "NSE:EMSLIMITED",
-   "mcapCr": 1582,
+   "mcapCr": 1560,
    "note": "Ghaziabad water, sewerage and wastewater EPC contractor for urban local bodies; municipal-tender peer."
   },
   {
    "name": "Ion Exchange (India) Ltd",
    "short": "Ion Exchange",
    "ticker": "NSE:IONEXCHANG",
-   "mcapCr": 4954,
+   "mcapCr": 4963,
    "note": "Mumbai environmental-equipment maker (water/wastewater treatment plants, resins, chemicals) for industry and municipalities."
   },
   {
    "name": "Enviro Infra Engineers Ltd",
    "short": "Enviro Infra",
    "ticker": "NSE:EIEL",
-   "mcapCr": 2833,
+   "mcapCr": 2824,
    "note": "Delhi builder-operator of water and wastewater treatment plants, mainly for government bodies; listed Nov 2024."
   },
   {
    "name": "Eco Recycling Ltd",
    "short": "Eco Recycling",
    "ticker": "NSE:ECORECO",
-   "mcapCr": 735,
+   "mcapCr": 789,
    "note": "Mumbai-region e-waste recycling and IT asset disposition company; small listed waste-processing peer."
   },
   {
    "name": "Felix Industries Ltd",
    "short": "Felix",
    "ticker": "NSE:FELIX (SME)",
-   "mcapCr": 310,
+   "mcapCr": 299,
    "note": "Ahmedabad SME-listed environmental engineering firm (water/wastewater, solid waste, recycling); closest in size and listing route."
   }
  ],
@@ -108,14 +108,14 @@
    "better": "none",
    "vals": [
     100,
-    796,
-    1582,
-    4954,
-    2833,
-    735,
-    310
+    785,
+    1560,
+    4963,
+    2824,
+    789,
+    299
    ],
-   "note": "Subject at round pre-money (₹133 Cr post-money); peers at 23 Oct 2026 close (Felix 26 Oct)."
+   "note": "Subject at round pre-money (₹133 Cr post-money); peers at 30 Oct 2026 close."
   },
   {
    "group": "Growth",
@@ -268,12 +268,12 @@
    "better": "low",
    "vals": [
     22.2,
-    8.7,
-    17.4,
-    34.6,
+    8.6,
+    17.2,
+    34.7,
     15.1,
-    32.0,
-    15.5
+    34.4,
+    14.9
    ],
    "note": "Subject at pre-money on provisional pre-tax profit (₹100 Cr / ₹4.5 Cr); peers market cap / FY26 PAT."
   },
@@ -284,12 +284,12 @@
    "better": "low",
    "vals": [
     3.19,
-    0.76,
-    2.16,
+    0.75,
+    2.13,
     1.7,
-    2.47,
-    15.31,
-    4.03
+    2.46,
+    16.43,
+    3.89
    ],
    "note": "Subject at pre-money."
   },
@@ -300,12 +300,12 @@
    "better": "low",
    "vals": [
     14.9,
-    1.08,
-    1.5,
-    3.7,
-    2.3,
-    6.68,
-    2.08
+    1.07,
+    1.48,
+    3.71,
+    2.29,
+    7.17,
+    2.01
    ],
    "note": "Subject at pre-money on Mar 2025 audited net worth (pre-round); peers on Mar 2026 net worth."
   },
@@ -638,7 +638,7 @@
   ],
   "valuation": [
    "At the round, the FY27E P/E is 6.4x on the company's ₹15.6 Cr projection; no verified forward estimates were available for peers.",
-   "FY26 P/E at the round is 22.2x (pre-money, pre-tax profit) against a peer median of 16.5x; P/B is 14.9x on Mar 2025 net worth against 1.1–6.7x for peers."
+   "FY26 P/E at the round is 22.2x (pre-money, pre-tax profit) against a peer median of 16.2x; P/B is 14.9x on Mar 2025 net worth against 1.1–7.2x for peers."
   ]
  },
  "sources": [

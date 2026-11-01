@@ -1,6 +1,6 @@
 {
- "asOf": "Market data as of 23 Oct 2026 close (Intellect Design Arena 26 Oct 2026 intraday), screener.in",
- "basis": "Armsoftech figures FY26 provisional (FY24–FY25 audited) and valuation at the round's ₹150 Cr pre-money; peers FY26 (year to Mar 2026) consolidated annual results and market capitalisation on 23 Oct 2026. Peer multiples are market cap on FY26 figures, not EV.",
+ "asOf": "Market data as of 30 Oct 2026 close",
+ "basis": "Armsoftech figures FY26 provisional (FY24–FY25 audited) and valuation at the round's ₹150 Cr pre-money; peers FY26 (year to Mar 2026) consolidated annual results and market capitalisation at the 30 Oct 2026 close. Peer multiples are market cap on FY26 figures, not EV.",
  "companies": [
   {
    "name": "Armsoftech Private Limited",
@@ -13,42 +13,42 @@
    "name": "Firstsource Solutions Ltd",
    "short": "Firstsource",
    "ticker": "NSE:FSL",
-   "mcapCr": 20532,
+   "mcapCr": 20709,
    "note": "RP-Sanjiv Goenka group BPM (US$1.08 bn FY26 revenue) with a third-party collections line for banks and fintechs and an agentic-AI operating layer; closest listed match for the human-assisted collections seats."
   },
   {
    "name": "Hinduja Global Solutions Ltd",
    "short": "HGS",
    "ticker": "NSE:HGS",
-   "mcapCr": 1572,
+   "mcapCr": 1552,
    "note": "Hinduja group voice and non-voice BPM (contact centres, back-office processing) plus a media and communications platform; peer for the seat-based, contact-centre side of the subject's model."
   },
   {
    "name": "eClerx Services Ltd",
    "short": "eClerx",
    "ticker": "NSE:ECLERX",
-   "mcapCr": 17792,
+   "mcapCr": 14641,
    "note": "Process management, automation and analytics services to Fortune 2000 clients with financial services as a core vertical; peer for an automation-led, high-margin services model."
   },
   {
    "name": "Nucleus Software Exports Ltd",
    "short": "Nucleus",
    "ticker": "NSE:NUCLEUS",
-   "mcapCr": 1703,
+   "mcapCr": 1718,
    "note": "Lending software (FinnOne Neo, including a Gen-AI enabled FinnOne Neo Collections module) for 200+ banks and financial institutions in 50 countries; the most direct product overlap with the subject's collections software."
   },
   {
    "name": "Intellect Design Arena Ltd",
    "short": "Intellect",
    "ticker": "NSE:INTELLECT",
-   "mcapCr": 8327,
+   "mcapCr": 7091,
    "note": "Chennai banking and insurance software house (core banking, lending, transaction banking, AI platform); peer for a lender-facing software product sold to banks."
   },
   {
    "name": "Tanla Platforms Ltd",
    "short": "Tanla",
    "ticker": "NSE:TANLA",
-   "mcapCr": 7390,
+   "mcapCr": 8318,
    "note": "Hyderabad A2P messaging / CPaaS platform with about 30% of India's CPaaS market; BFSI reminders and borrower communications are the digital channel the subject's voice agent and SMS/WhatsApp nudges sit alongside."
   }
  ],
@@ -251,14 +251,14 @@
    "better": "none",
    "vals": [
     150,
-    20532,
-    1572,
-    17792,
-    1703,
-    8327,
-    7390
+    20709,
+    1552,
+    14641,
+    1718,
+    7091,
+    8318
    ],
-   "note": "Armsoftech at ₹150 Cr pre-money (₹185 Cr post-money); peers market cap on 23 Oct 2026."
+   "note": "Armsoftech at ₹150 Cr pre-money (₹185 Cr post-money); peers market cap at the 30 Oct 2026 close."
   },
   {
    "group": "Valuation",
@@ -267,14 +267,14 @@
    "better": "none",
    "vals": [
     14.2,
-    30.5,
+    30.8,
     null,
-    25.2,
-    14.6,
-    24.3,
-    14.5
+    20.7,
+    14.7,
+    20.7,
+    16.3
    ],
-   "note": "Armsoftech at pre-money on provisional PAT (10.2x on FY27E projection). Peers: market cap / FY26 PAT. HGS not meaningful (PAT ₹5 Cr). Peer median 24.3x."
+   "note": "Armsoftech at pre-money on provisional PAT (10.2x on FY27E projection). Peers: market cap / FY26 PAT. HGS not meaningful (PAT ₹5 Cr). Peer median 20.7x."
   },
   {
    "group": "Valuation",
@@ -283,14 +283,14 @@
    "better": "none",
    "vals": [
     5.7,
-    12.8,
-    15.4,
-    16.9,
-    13.5,
-    14.3,
-    10.2
+    12.9,
+    15.2,
+    13.9,
+    13.6,
+    12.2,
+    11.5
    ],
-   "note": "Armsoftech at pre-money on provisional EBITDA. Market cap, not EV, for all companies. Peer median 13.9x."
+   "note": "Armsoftech at pre-money on provisional EBITDA. Market cap, not EV, for all companies. Peer median 13.3x."
   },
   {
    "group": "Valuation",
@@ -299,14 +299,14 @@
    "better": "none",
    "vals": [
     2.05,
-    2.15,
+    2.17,
     0.36,
-    4.32,
-    1.94,
-    2.74,
-    1.67
+    3.55,
+    1.96,
+    2.33,
+    1.88
    ],
-   "note": "Armsoftech at pre-money (1.5x on FY27E projection). Peer median about 2.0x."
+   "note": "Armsoftech at pre-money (1.5x on FY27E projection). Peer median about 2.1x."
   },
   {
    "group": "Valuation",
@@ -315,12 +315,12 @@
    "better": "none",
    "vals": [
     null,
-    4.68,
+    4.72,
     0.19,
-    6.95,
-    1.88,
-    2.63,
-    2.97
+    5.72,
+    1.9,
+    2.24,
+    3.34
    ],
    "note": "Market cap over Mar 2026 shareholders' funds. Not derivable for Armsoftech."
   }
@@ -642,7 +642,7 @@
    "Any change in RBI recovery-conduct rules, and customer additions that bring the top-three share below 36%."
   ],
   "valuation": [
-   "At the round, P/E FY26 is 14.2x and market cap / EBITDA 5.7x, against peer medians of 24.3x and 13.9x; price / sales of 2.05x is in line with the peer median of about 2.0x."
+   "At the round, P/E FY26 is 14.2x and market cap / EBITDA 5.7x, against peer medians of 20.7x and 13.3x; price / sales of 2.05x is in line with the peer median of about 2.1x."
   ]
  },
  "sources": [
