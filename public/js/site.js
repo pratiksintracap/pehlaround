@@ -464,6 +464,18 @@
         .catch(function (err) { if (b) { b.disabled = false; b.textContent = "Send"; } okMsg(fo, err.message, true); });
     });
 
+    // ---------- other intake forms: /sell and /partners (data-lead names the kind; data-ok the thank-you line) ----------
+    $$("form[data-lead]").forEach(function (lf) {
+      lf.addEventListener("submit", function (e) {
+        e.preventDefault(); if (!lf.reportValidity()) return;
+        var b = $("button[type=submit]", lf), label = b ? b.textContent : "", data = { kind: lf.getAttribute("data-lead") };
+        $$("input,select,textarea", lf).forEach(function (el) { if (el.name) data[el.name] = el.type === "checkbox" ? (el.checked ? "yes" : "no") : el.value; });
+        if (b) { b.disabled = true; b.textContent = "Sending…"; }
+        api("/api/leads", data).then(function () { if (b) b.textContent = "Sent"; okMsg(lf, lf.getAttribute("data-ok") || "Received. The desk will be in touch."); })
+          .catch(function (err) { if (b) { b.disabled = false; b.textContent = label; } okMsg(lf, err.message, true); });
+      });
+    });
+
     // ---------- deal room ----------
     var room = $(".room[data-room]"); if (!room) return;
     var slug = room.getAttribute("data-room"), base = "/api/room/" + slug + "/";

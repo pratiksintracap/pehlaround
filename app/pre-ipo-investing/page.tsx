@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pageMeta, faqLd, crumbsLd, ld } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
+import { INVESTOR_GUIDES } from "@/lib/investor-guides";
 
 // The evergreen guide: what someone searching "pre-IPO investing in India" needs to know before buying unlisted
 // shares. Written as reference, not marketing; the desk appears only at the end. Facts are kept general and
@@ -78,6 +79,8 @@ export default function Guide() {
         <div className="art-body" dangerouslySetInnerHTML={{ __html: BODY }} />
         <h2 style={{ marginTop: 36 }}>Questions investors ask</h2>
         <div dangerouslySetInnerHTML={{ __html: FAQ }} />
+        <h2 style={{ marginTop: 36, fontSize: 22 }}>Going deeper</h2>
+        <ul className="raise-more">{INVESTOR_GUIDES.map((g) => <li key={g.slug}><a href={`/pre-ipo-investing/${g.slug}`}>{g.title}</a></li>)}</ul>
         <p style={{ marginTop: 28 }}><a className="btn primary" href="/register">Register to see the companies</a></p>
         <p className="fine" style={{ marginTop: 18 }}>For information only. Not an offer, advice or a recommendation to buy or sell any security. Laws and tax rates change; take advice on your own position.</p>
       </article>

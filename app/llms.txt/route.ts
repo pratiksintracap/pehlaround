@@ -1,6 +1,7 @@
 import { listArticles } from "@/lib/articles";
 import { listDeals } from "@/lib/deals";
 import { SITE_URL } from "@/lib/site";
+import { INVESTOR_GUIDES } from "@/lib/investor-guides";
 
 // llms.txt: a plain summary of the site for AI search assistants (ChatGPT, Perplexity, Gemini, Claude),
 // so they describe the desk accurately and link to the right pages. Public, anonymised information only.
@@ -18,6 +19,9 @@ export async function GET() {
     "",
     "## Key pages",
     `- [Pre-IPO investing in India: a guide](${SITE_URL}/pre-ipo-investing): primary vs secondary rounds, who can invest, lock-in, tax, what to check, risks`,
+    ...INVESTOR_GUIDES.map((g) => `- [${g.title}](${SITE_URL}/pre-ipo-investing/${g.slug}): ${g.desc}`),
+    `- [Sell your pre-IPO shares](${SITE_URL}/sell): for holders of unlisted shares who want to sell before the listing`,
+    `- [Partner with the desk](${SITE_URL}/partners): for wealth managers, RIAs, CAs and family-office advisers`,
     `- [How it works](${SITE_URL}/how-it-works): from registration to allotment, and an FAQ`,
     `- [Deals on the desk](${SITE_URL}/deals): anonymised overviews of current rounds`,
     `- [About](${SITE_URL}/about): who runs the desk`,
