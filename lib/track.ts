@@ -8,7 +8,7 @@ import { REF_COOKIE, SRC_COOKIE, REF_RE, type Source } from "@/lib/source";
 
 export type EventKind = "register_started" | "register_completed" | "office_approved" | "nda_signed" | "room_opened"
   | "question_asked" | "allocation_requested" | "call_requested" | "subscribed" | "referral_visit"
-  | "deck_opened" | "databank_opened";
+  | "deck_opened" | "databank_opened" | "ipo_interest";
 
 /** The first-touch source saved by the middleware, if any. */
 export async function readSource(): Promise<Source | null> {

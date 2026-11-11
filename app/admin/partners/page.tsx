@@ -74,7 +74,7 @@ export default async function Partners() {
               {ft.map((t) => { const c = tally(fc, cNdas, cAsks, t.dealId); const p = t.leg === "pre_ipo" ? progress(t, c) : null; return (
                 <tr key={t.id}><th scope="row">{dealName.get(t.dealId) ?? `#${t.dealId}`}</th><td>{t.leg === "ipo" ? "IPO" : "Pre-IPO round"}</td>
                   <td>{[t.intros ? `${t.intros} ${t.leg === "ipo" ? "clients" : "introductions"}` : "", t.amountCr ? fmtCr(t.amountCr) : ""].filter(Boolean).join(" · ")}{t.note ? <><br /><small className="fine">{t.note}</small></> : null}</td>
-                  <td>{t.leg === "pre_ipo" ? <>{c.intros} introductions · {fmtCr(c.indicatedCr)}{p !== null ? ` · ${Math.round(p * 100)}%` : ""}</> : <small className="fine">Counted from clients&apos; IPO interest</small>}</td>
+                  <td>{t.leg === "pre_ipo" ? <>{c.intros} introductions · {fmtCr(c.indicatedCr)}{p !== null ? ` · ${Math.round(p * 100)}%` : ""}</> : <a href="/admin/ipo">See the IPO book</a>}</td>
                   <td><small className="fine">{t.setBy} · {fmtD(t.updatedAt)}</small></td></tr>); })}
             </tbody></table></div> : <p className="fine">No targets set.</p>}
             {setTargets && <form action={savePartnerTarget} className="form" style={{ marginTop: 8 }}><input type="hidden" name="officeId" value={f.id} />

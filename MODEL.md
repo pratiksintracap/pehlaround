@@ -42,6 +42,7 @@ the public site with `?site=1`.
 | Allocation request | `interests` | An office's non-binding indication for a deal, and what was finally allotted |
 | Closing steps | `interests.closing` | The dates of one request's closing: term sheet, documents, funds, shares credited |
 | Holders' update | `deal_updates` | A note from a company to the offices that hold its shares, shown once the desk publishes it |
+| IPO interest | `ipo_bids` | An office's indication for a company's public issue, taken after the price-band prospectus is filed; not an application |
 | Pass | `passes` | An office saying no to a deal, with a reason |
 | Partner target | `partner_targets` | What the desk asks a partner firm to bring to one issue (introductions, ₹ Cr), per leg: `pre_ipo` or `ipo` |
 | Transfer details | `transfer_kyc`, `kyc_files` | What a share transfer needs from an office, given once for every deal |
@@ -95,6 +96,18 @@ shares credited. A step is done when the desk dated it (`interests.closing`) or 
 step done means the earlier ones are (`lib/closing.ts`). The office sees the four steps under Portfolio from the first
 one until the request is Allotted, and is told once when each is dated.
 
+### The public issue: `deals.ipo` (the IPO leg)
+
+The same record as the road to listing. `ipoStage` (`lib/ipo.ts`) reads it: `none` until "price band announced"
+(`rhp`) has a date that has come; `open` from then until the issue closes (`closes`); `closed` until the listing date;
+then `listed`. Nothing about the issue is shown to investors or partners while it is `none`. Offices register, change
+or withdraw interest only while it is `open`.
+
+### IPO interest: `ipo_bids.status`
+
+`Indicated → With the lead manager → Applied → Allotted`, or `Withdrawn`. One row per office per issue. The office
+moves it only between Indicated and Withdrawn; a super admin moves the rest, and the office is told.
+
 ### Holders' update: `deal_updates.status`
 
 `draft → published`. The promoter drafts in the founder portal, or the desk writes one; only the desk publishes
@@ -128,6 +141,8 @@ named fields, never whole rows.
 | Desk notes, tasks, files, pipeline stage, rubric marks | **never** | **never** | **never** | **never** | **never** | yes | yes |
 | Listed deals (After the Bell) | **never** | **never** | **never** | **never** | **never** | yes | yes |
 | Holders' updates (published) | — | — | only if allotted | only if allotted | own drafts and status | yes | yes |
+| A live public issue: price band, dates, where to apply | — | — | yes | yes | — | yes | yes |
+| An office's IPO interest | — | — | own | own | never | yes | yes |
 | An office's closing steps | — | own | own | own | — | yes | yes |
 | An office's transfer details and files | — | own | own | own | — | status; files if contacts allowed | yes |
 | Contact details of office people | — | own office | own office | own office | — | if Settings allows | yes |
@@ -183,6 +198,13 @@ Product and wording rules agreed with the founder. They apply to every page, ema
   client. An introduction is a client that signed that company's NDA. The desk sets a target per firm per issue
   (`/admin/partners`); progress is the better of introductions and amount requested. Fees and commissions are never
   shown: "your terms are in your partner agreement".
+- **IPO leg**: once a company on the desk files its price-band prospectus, approved offices see the issue under IPOs
+  and register interest in ₹ lakh, in the category they will apply in (anchor and QIB only for a SEBI-registered AIF).
+  Every surface says the same thing (`IPO_DISCLAIMER`): interest is not an application or a bid and reserves nothing;
+  the office applies through its own broker on the terms of the prospectus; anchor allocation is the lead manager's.
+  The desk's IPO book (`/admin/ipo`) totals interest by category and by partner firm and exports it for the lead
+  manager (super admin). A partner firm sees how many of its clients are interested and for how much, against its
+  `ipo` target; never which category or broker. Offices that signed the company's NDA are told when the issue opens.
 - **Teasers**: built only from public fields; the company name is stripped as a last check.
 - **Transfer readiness**: PAN, demat, CML, cancelled cheque, and authority for entities. Ready = all given; checked =
   all accepted by the desk.
@@ -195,6 +217,7 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 |---|---|
 | Public pages | `app/(page)` at the top level: `/`, `/deals`, `/raise`, `/ipo-calendar`, `/articles` … |
 | Investor product | `/dashboard`, `/deals/[slug]` (signed in), `/room/[slug]`, `/notifications` |
+| IPO leg | `lib/ipo.ts`, the IPOs panel on `/dashboard`, `/api/office/ipo`; the desk's book at `/admin/ipo` |
 | Partner desk | `/dashboard/partner`, `lib/partner.ts`, `lib/partner-math.ts`; the desk's side at `/admin/partners` |
 | Founder portal | `/founder` |
 | Desk on the phone | `/desk` |
@@ -206,4 +229,4 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 | UI kit | `components/ui.tsx` |
 
 Tests that hold the rules: `tests/listed-guard*.test.ts` (listed deals), `tests/investor-privacy.test.ts` (desk data),
-`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), `tests/closing.test.ts` (closing steps), plus feature tests.
+`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), `tests/closing.test.ts` (closing steps), `tests/ipo.test.ts` (when an issue is shown and who may choose which category), plus feature tests.

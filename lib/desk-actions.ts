@@ -7,8 +7,10 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { PUBLIC_TAG } from "@/lib/cache";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { deals, deskFiles, deskNotes, kycFiles, offices, tasks, users, type ListedInfo } from "@/db/schema";
-import { requirePerm, log, changes } from "@/lib/auth";
+import { deals, deskFiles, deskNotes, ipoBids, kycFiles, offices, tasks, users, type ListedInfo } from "@/db/schema";
+import { requirePerm, requireAdmin, log, changes } from "@/lib/auth";
+import { notifyOffices } from "@/lib/notify";
+import { IPO_STATUS, type IpoStatus } from "@/lib/ipo";
 import { can } from "@/lib/perm";
 import { asStage, stageLabel } from "@/lib/stages";
 import { investorRows, investorType } from "@/lib/csv";
@@ -359,3 +361,19 @@ export async function checkKycFile(f: FormData) {
   back(f, fallback, status === "accepted" ? `${label} accepted.` : "The office has been asked to redo it.");
 }
 
+
+// ---------------------------------------------------------------- the IPO book
+/** Where one office's IPO interest stands, and a note for it. A super admin moves it (as with allocations); the office is told. */
+export async function saveIpoBid(f: FormData) {
+  const admin = await requireAdmin();
+  const db = await getDb();
+  const [prev] = await db.select().from(ipoBids).where(eq(ipoBids.id, n(f, "id")));
+  if (!prev) return refuse(f, "/admin/ipo", "That interest no longer exists.");
+  const status = (IPO_STATUS as readonly string[]).includes(s(f, "status", 40)) ? (s(f, "status", 40) as IpoStatus) : (prev.status as IpoStatus);
+  const note = s(f, "note", 600) || null;
+  await db.update(ipoBids).set({ status, note, updatedAt: new Date() }).where(eq(ipoBids.id, prev.id));
+  const [d] = await db.select({ company: deals.company }).from(deals).where(eq(deals.id, prev.dealId));
+  if (prev.status !== status && d) await notifyOffices([prev.officeId], { title: `${d.company} IPO: your interest is ${status === "With the lead manager" ? "with the lead manager" : status.toLowerCase()}`, body: note, link: "/dashboard#IPOs" });
+  await log(admin, `Desk set IPO interest #${prev.id} to ${status}`, prev.dealId, { entity: "deal", entityId: prev.dealId, officeId: prev.officeId, detail: { changes: changes(prev, { status, note }, ["status", "note"]) } });
+  back(f, "/admin/ipo", prev.status !== status ? "Saved; the office is told." : "Saved.");
+}

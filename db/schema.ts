@@ -429,6 +429,22 @@ export const dealLinks = pgTable("deal_links", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("deal_links_token_uq").on(t.token), index("deal_links_deal_idx").on(t.dealId)]);
 
+// The IPO leg: an office's indication of interest in a company's public issue, taken once the price-band prospectus is
+// filed. Not an application or a bid: the office applies through its own broker. One row per office per issue.
+export const ipoBids = pgTable("ipo_bids", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  officeId: integer("office_id").notNull(),
+  userId: integer("user_id").notNull(),
+  category: text("category").notNull(),          // anchor | qib | hni | individual (lib/ipo.ts)
+  amountCr: numeric("amount_cr").notNull(),
+  status: text("status").notNull().default("Indicated"), // Indicated | With the lead manager | Applied | Allotted | Withdrawn
+  broker: text("broker"),                        // who the office will apply through, if it said
+  note: text("note"),                            // the desk's note, shown to the office
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("ipo_bids_office_deal_uq").on(t.officeId, t.dealId), index("ipo_bids_deal_idx").on(t.dealId)]);
+
 // What the desk asks of a partner firm (an office of type "broker") for one issue: how many clients to introduce and how
 // much to bring. leg: pre_ipo (the round on the desk) | ipo (the public issue that follows). Shown to that firm only.
 export const partnerTargets = pgTable("partner_targets", {

@@ -218,7 +218,9 @@ export async function saveDeal(f: FormData) {
   const day = (k: string) => { const v = s(f, k, 10); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined; };
   const rs = (k: string) => { const v = parseFloat(s(f, k, 20).replace(/[₹,\s]/g, "")); return isFinite(v) && v > 0 ? v : undefined; };
   const ipo: IpoProgress = { closed: day("ipo_closed"), drhp: day("ipo_drhp"), sebi: day("ipo_sebi"), rhp: day("ipo_rhp"), priceBand: s(f, "ipo_priceBand", 60) || undefined,
-    listing: day("ipo_listing"), listPrice: rs("ipo_listPrice"), lastPrice: rs("ipo_lastPrice"), lastAt: day("ipo_lastAt"), note: s(f, "ipo_note", 300) || undefined };
+    listing: day("ipo_listing"), listPrice: rs("ipo_listPrice"), lastPrice: rs("ipo_lastPrice"), lastAt: day("ipo_lastAt"), note: s(f, "ipo_note", 300) || undefined,
+    opens: day("ipo_opens"), closes: day("ipo_closes"), issueCr: rs("ipo_issueCr"), exchange: s(f, "ipo_exchange", 40) || undefined, lot: s(f, "ipo_lot", 120) || undefined,
+    applyUrl: (() => { const v = s(f, "ipo_applyUrl", 500); return /^https:\/\//.test(v) ? v : undefined; })() };
   const vals = {
     company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
@@ -245,6 +247,12 @@ export async function saveDeal(f: FormData) {
   if (fresh.length) {
     const holders = [...new Set((await db.select({ o: interests.officeId }).from(interests).where(and(eq(interests.dealId, id), eq(interests.status, "Allotted")))).map((r) => r.o))];
     if (holders.length) await notifyOffices(holders, { title: `${s(f, "company", 200)}: ${fresh[fresh.length - 1][1]}`, body: ipo.note || null, link: "/dashboard#Portfolio" });
+    // The prospectus with the price band is filed: the IPO leg opens (lib/ipo.ts). Offices that already signed this
+    // company's NDA are told they can register interest; holders were told above.
+    if (fresh.some(([k]) => k === "rhp")) {
+      const known = (await ndaOffices(id)).filter((o) => !holders.includes(o));
+      if (known.length) await notifyOffices(known, { title: `${s(f, "company", 200)}: the IPO price band is out`, body: "You can register interest in the issue from your dashboard. You apply through your own broker, on the terms of the prospectus.", link: "/dashboard#IPOs" });
+    }
   }
   // Newly on the shelf, or its room newly open: tell approved offices, if the desk ticked the box.
   const goesPublic = !isPublic(cur.phase) && isPublic(vals.phase), opens = !roomOpen(cur.phase) && roomOpen(vals.phase);

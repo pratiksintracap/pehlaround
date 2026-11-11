@@ -5,7 +5,7 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
-import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT, deskInvites, offices, dealUpdates } from "@/db/schema";
+import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT, deskInvites, offices, dealUpdates, ipoBids } from "@/db/schema";
 import { CATEGORIES, STATUS, catLabel, ticketNo } from "@/lib/tickets";
 import { listDeals, canSeeNames , signedDealIds } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
@@ -22,6 +22,7 @@ import { officeRefCode } from "@/lib/track";
 import { investorWhere } from "@/lib/deal-guard";
 import { visibleClients } from "@/lib/partner-math";
 import { closingSteps, isClosing, fmtIso } from "@/lib/closing";
+import { IPO_CATEGORY, IPO_DISCLAIMER, amountRange, categoriesFor, fmtAmount, ipoLive, ipoStage } from "@/lib/ipo";
 import { DeckPanel } from "@/components/DeckPanel";
 import { officeTransfer, readiness, KYC_KINDS, fmtSize, needsAuthority, type KycKind } from "@/lib/transfer";
 
@@ -104,6 +105,10 @@ export default async function Dashboard({ searchParams }: P) {
   // What each company has told its holders: published updates only, for companies this office holds.
   const holderNews = allotted.length ? await db.select({ id: dealUpdates.id, dealId: dealUpdates.dealId, title: dealUpdates.title, period: dealUpdates.period, body: dealUpdates.body, at: dealUpdates.publishedAt })
     .from(dealUpdates).where(and(inArray(dealUpdates.dealId, allotted.map((x) => x.dealId)), eq(dealUpdates.status, "published"))).orderBy(desc(dealUpdates.publishedAt)) : [];
+  // The IPO leg: companies on the desk whose price-band prospectus is filed, until they list. Approved offices only.
+  const ipoDeals = names ? deals.filter((d) => ipoLive(d.ipo)) : [];
+  const myBids = ipoDeals.length ? await db.select().from(ipoBids).where(eq(ipoBids.officeId, office.id)) : [];
+  const ipoCats = categoriesFor(office);
   const pfCost = holdings.reduce((t, x) => t + x.h.costRs, 0);
   const marked = holdings.filter((x) => x.h.value);
   const pfMarked = marked.length, pfValue = marked.reduce((t, x) => t + x.h.value!.rs, 0), pfMarkedCost = marked.reduce((t, x) => t + x.h.costRs, 0);
@@ -168,6 +173,7 @@ export default async function Dashboard({ searchParams }: P) {
     ["Documents", "Documents", "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6", null],
     ...(isBroker ? [["Clients", "Your clients", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", clients.length || null] as [string, string, string, number | null]] : []),
     ...(ready ? [["Transfer", "Ready to transfer", "M7 17l-4-4 4-4M3 13h13M17 7l4 4-4 4", trGap || null] as [string, string, string, number | null]] : []),
+    ...(ipoDeals.length ? [["IPOs", "IPOs", "M3 17l6-6 4 4 8-8M15 7h6v6", ipoDeals.filter((d) => ipoStage(d.ipo) === "open").length || null] as [string, string, string, number | null]] : []),
     ["Portfolio", "Portfolio", "M4 19V9M10 19V5M16 19v-7M22 19H2", allotted.length + closing.length || null],
     ["Profile", "Investment profile", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", null],
     ["Team", "Team", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", team.length > 1 ? team.length : null],
@@ -333,6 +339,30 @@ export default async function Dashboard({ searchParams }: P) {
         </tbody></table></div>
           : <div className="chart"><p>No clients yet. Send your link from the <a href="/dashboard/partner">partner desk</a> to the people you advise; when they register through it, they appear here.</p></div>}
         <p className="fine">Totals: {cAsks.filter((x) => x.status !== "Withdrawn").reduce((t, x) => t + Number(x.amountCr), 0).toLocaleString("en-IN")} Cr requested, {cAsks.filter((x) => x.status === "Allotted").reduce((t, x) => t + Number(x.amountCr), 0).toLocaleString("en-IN")} Cr allotted. Your terms with the desk are agreed separately.</p>
+      </section>}
+
+      {ipoDeals.length > 0 && <section className="panel" data-panel="IPOs" hidden>
+        <div className="panel-head"><div><h2>IPOs</h2><p className="fine">Companies from the desk whose public issue is under way. Tell the desk what you plan to apply for; the application itself goes through your own broker.</p></div></div>
+        <div className="pf-list">{ipoDeals.map((d) => { const stage = ipoStage(d.ipo), bid = myBids.find((x) => x.dealId === d.id && x.status !== "Withdrawn"), holds = allotted.some((x) => x.dealId === d.id); const canEdit = stage === "open" && (!bid || bid.status === "Indicated"); return (
+          <article className="chart pf-card" key={d.id} id={`ipo-${d.slug}`}>
+            <div className="pf-head"><div><span className="k">{[d.ipo.exchange, stage === "open" ? "Open for interest" : "Issue closed, listing awaited"].filter(Boolean).join(" · ")}</span><h3>{d.company}</h3></div>
+              {d.ipo.applyUrl ? <a className="btn sm" href={d.ipo.applyUrl} target="_blank" rel="noopener noreferrer">Where to apply ↗</a> : null}</div>
+            <div className="pf-kv">
+              <div><span>Price band</span><b>{d.ipo.priceBand || "—"}</b><small>{d.ipo.lot || "Lot size in the prospectus"}</small></div>
+              <div><span>Issue</span><b>{d.ipo.opens ? `${fmtIso(d.ipo.opens)}${d.ipo.closes ? ` to ${fmtIso(d.ipo.closes)}` : ""}` : "Dates to be announced"}</b><small>{d.ipo.issueCr ? `Issue size ₹${d.ipo.issueCr.toLocaleString("en-IN")} Cr` : "Issue size in the prospectus"}</small></div>
+              <div><span>Listing</span><b>{d.ipo.listing ? fmtIso(d.ipo.listing) : "To be announced"}</b><small>{holds ? "You hold shares bought before the IPO; they stay locked in for six months from the IPO allotment" : "The exchange confirms the date after the issue closes"}</small></div>
+            </div>
+            {bid && <p className="pf-note"><b>Your interest: {fmtAmount(bid.amountCr)}</b> as {IPO_CATEGORY[bid.category as keyof typeof IPO_CATEGORY]?.label.toLowerCase() ?? bid.category}{bid.broker ? `, applying through ${bid.broker}` : ""} · <span className="pill ok">{bid.status}</span>{bid.note ? <><br />{bid.note}</> : null}</p>}
+            {canEdit && canCommit && <form method="post" action="/api/office/ipo" className="form" style={{ marginTop: 10 }}><input type="hidden" name="slug" value={d.slug} />
+              <div className="row3"><label>Category you will apply in<select name="category" defaultValue={bid?.category ?? ipoCats[0]}>{ipoCats.map((c) => <option key={c} value={c}>{IPO_CATEGORY[c].label}</option>)}</select></label>
+                <label>Amount, ₹ lakh<input name="amountLakh" inputMode="decimal" required defaultValue={bid ? String(Math.round(Number(bid.amountCr) * 10000) / 100) : ""} placeholder={`${amountRange(ipoCats[0])[0]} or more`} /></label>
+                <label>Broker you will apply through (optional)<input name="broker" maxLength={120} defaultValue={bid?.broker ?? ""} /></label></div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><button className="btn primary sm" type="submit">{bid ? "Update my interest" : "Register interest"}</button>
+                {bid && <button className="btn sm ghost" type="submit" name="action" value="withdraw" formNoValidate>Withdraw</button>}</div></form>}
+            {canEdit && !canCommit && <p className="fine">Your access is view-only; your office&apos;s principal can register interest.</p>}
+            {!canEdit && bid && bid.status !== "Allotted" && stage === "open" && <form method="post" action="/api/office/ipo" style={{ marginTop: 8 }}><input type="hidden" name="slug" value={d.slug} /><button className="btn sm ghost" type="submit" name="action" value="withdraw">Withdraw my interest</button></form>}
+          </article>); })}</div>
+        <p className="fine">{IPO_DISCLAIMER} The desk takes no view on the price.</p>
       </section>}
 
       <section className="panel" data-panel="Portfolio" hidden>

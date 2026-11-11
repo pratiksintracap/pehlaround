@@ -6,6 +6,11 @@ import { partnerBook } from "@/lib/partner";
 import { fmtCr, progress, tally } from "@/lib/partner-math";
 import { officeRefCode, userRefCode } from "@/lib/track";
 import { SITE_URL } from "@/lib/site";
+import { ipoLive } from "@/lib/ipo";
+import { fmtIso } from "@/lib/closing";
+import { getDb } from "@/lib/db";
+import { ipoBids } from "@/db/schema";
+import { inArray } from "drizzle-orm";
 
 export const metadata: Metadata = { title: "Partner desk", robots: { index: false } };
 
@@ -29,6 +34,10 @@ export default async function PartnerDesk() {
   const total = tally(book.clients, book.ndas, book.asks);
   const target = (dealId: number, leg: string) => book.targets.find((t) => t.dealId === dealId && t.leg === leg);
   const rmName = new Map(book.people.map((p) => [p.id, p.name]));
+  // IPO leg: issues whose prospectus is filed, with what this book's clients have indicated.
+  const ipoDeals = (await listDeals()).filter((d) => ipoLive(d.ipo));
+  const ids = book.clients.map((c) => c.id);
+  const bids = ids.length && ipoDeals.length ? await (await getDb()).select({ officeId: ipoBids.officeId, dealId: ipoBids.dealId, amountCr: ipoBids.amountCr, status: ipoBids.status, category: ipoBids.category }).from(ipoBids).where(inArray(ipoBids.officeId, ids)) : [];
   const share = (url: string, text: string) => (
     <div className="dl-acts"><input readOnly value={url} aria-label="Link" /><button type="button" className="btn sm" data-copy={url}>Copy</button>
       <a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`} target="_blank" rel="noopener">WhatsApp</a></div>);
@@ -69,6 +78,17 @@ export default async function PartnerDesk() {
           : <tr><td colSpan={6} className="fine">No issues on the desk right now.</td></tr>}
       </tbody></table></div>
       <p className="fine">The link opens the anonymised overview; the company&apos;s name and deck open once the desk approves the client. Never send a company&apos;s name or documents yourself: each company may be offered to a limited number of identified people.</p>
+
+      {ipoDeals.length > 0 && <>
+        <h2 style={{ fontSize: 22, marginTop: 28 }}>IPOs</h2>
+        <p className="fine">Issues whose price-band prospectus is filed. Your clients register interest from their own dashboard; the application itself goes through their broker.</p>
+        <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Issue</th><th>Target</th><th>Clients interested</th><th>Indicated</th></tr></thead><tbody>
+          {ipoDeals.map((d) => { const t = target(d.id, "ipo"); const b = bids.filter((x) => x.dealId === d.id && x.status !== "Withdrawn"); const amt = Math.round(b.reduce((s, x) => s + Number(x.amountCr), 0) * 100) / 100; const p = progress(t, { intros: b.length, indicatedCr: amt }); return (
+            <tr key={d.id}><th scope="row">{names ? d.company : d.title}<br /><small className="fine">{[d.ipo.priceBand && `Price band ${d.ipo.priceBand}`, d.ipo.opens && `opens ${fmtIso(d.ipo.opens)}`, d.ipo.closes && `closes ${fmtIso(d.ipo.closes)}`].filter(Boolean).join(" · ")}</small></th>
+              <td>{t ? <>{[t.intros ? `${t.intros} clients` : "", t.amountCr ? fmtCr(t.amountCr) : ""].filter(Boolean).join(" · ") || "—"}
+                {p !== null && <i className="as-meter" style={{ marginTop: 6, minWidth: 90 }}><i style={{ width: `${Math.round(p * 100)}%` }} /></i>}</> : <small className="fine">Not set</small>}</td>
+              <td>{b.length}</td><td>{amt ? fmtCr(amt) : "—"}</td></tr>); })}
+        </tbody></table></div></>}
 
       {book.admin && <>
         <h2 style={{ fontSize: 22, marginTop: 28 }}>Relationship managers</h2>

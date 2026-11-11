@@ -140,6 +140,10 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row3"><IN name="ipo_rhp" label="Price band announced" value={d.ipo.rhp} /><IN name="ipo_priceBand" label="Price band" value={d.ipo.priceBand} ph="₹420–440" /><IN name="ipo_listing" label="Listing date" value={d.ipo.listing} /></div>
         <div className="row3"><IN name="ipo_listPrice" label="Listing-day close, ₹ per share" value={d.ipo.listPrice ?? ""} /><IN name="ipo_lastPrice" label="Latest price, ₹ per share" value={d.ipo.lastPrice ?? ""} /><IN name="ipo_lastAt" label="Latest price as of" value={d.ipo.lastAt} /></div>
         <IN name="ipo_note" label="One line for holders (optional)" value={d.ipo.note} ph="SEBI observations received; RHP expected in March" />
+        <h3 id="issue" style={{ fontSize: 16, margin: "14px 0 4px" }}>The public issue (the IPO leg)</h3>
+        <p className="fine">Once &ldquo;Price band announced&rdquo; above has a date, approved offices see this issue under IPOs on their dashboard and can register interest until it closes; partners see it on the partner desk. Nothing shows before that date. The <a href="/admin/ipo">IPO book</a> has the interest registered.</p>
+        <div className="row3"><IN name="ipo_opens" label="Issue opens" value={d.ipo.opens} ph="2027-03-10" /><IN name="ipo_closes" label="Issue closes" value={d.ipo.closes} ph="2027-03-12" /><IN name="ipo_issueCr" label="Issue size, ₹ Cr" value={d.ipo.issueCr ?? ""} ph="50" /></div>
+        <div className="row3"><IN name="ipo_exchange" label="Exchange" value={d.ipo.exchange} ph="BSE SME" /><IN name="ipo_lot" label="Lot size, in words" value={d.ipo.lot} ph="1,200 shares a lot, about ₹1.3 lakh" /><IN name="ipo_applyUrl" label="Where to apply (https link)" value={d.ipo.applyUrl} ph="https://…" /></div>
         <label className="chk"><input type="checkbox" name="promoterDemand" defaultChecked={d.promoterDemand} /> Show the promoter the total amount indicated (founder portal). Off: they see activity counts only.</label>
         <div className="adm-save"><button className="btn primary" type="submit">Save deal</button></div>
       </form>

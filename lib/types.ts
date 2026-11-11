@@ -42,6 +42,13 @@ export type IpoProgress = {
   lastPrice?: number;   // ₹ per share, latest
   lastAt?: string;      // date of the latest price
   note?: string;        // one line from the desk
+  // The public issue itself, for the IPO leg (lib/ipo.ts). Interest opens when rhp is filed and closes with the issue.
+  opens?: string;       // issue opens
+  closes?: string;      // issue closes
+  issueCr?: number;     // issue size, ₹ crore
+  exchange?: string;    // "BSE SME", "NSE Emerge", "NSE and BSE"
+  lot?: string;         // "1,200 shares a lot, about ₹1.3 lakh"
+  applyUrl?: string;    // where to apply: the lead manager's or a broker's page for this issue
 };
 
 /** A listed-peer comparison for a deal room. companies[0] is the company in the room; every row carries one value per company, in that order. */
