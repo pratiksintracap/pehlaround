@@ -5,9 +5,10 @@ import { DeskWorkspace } from "@/components/DeskWorkspace";
 import { officeScope } from "@/lib/desk";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { calls, dealLinks, deals, documents, ndas, offices, questions, users } from "@/db/schema";
+import { calls, dealLinks, deals, dealUpdates, documents, interests, ndas, offices, questions, users } from "@/db/schema";
 import { saveDeal, saveDocument, answerQuestion, addQuestion, saveCall, requestPublish, addPromoter, removePromoter, createDealLink, removeEmptyDeal } from "@/lib/admin-actions";
 import { SITE_URL } from "@/lib/site";
+import { saveDealUpdate, removeDealUpdate } from "@/lib/closing-actions";
 import { can } from "@/lib/perm";
 import { toText } from "@/lib/pipes";
 import { peerCompareFor } from "@/lib/peers";
@@ -17,6 +18,7 @@ import { RUBRIC, rubricTotal, DESK_BAR } from "@/lib/score";
 import ART from "@/lib/deal-art.json";
 import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
 
+const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
 export default async function EditDeal({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ link?: string }> }) {
   const me = await requireDesk();
@@ -33,6 +35,11 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   ]);
   const officeName = new Map(approvedOffices.map((o) => [o.id, o.name]));
   const promoters = await db.select().from(users).where(and(eq(users.role, "promoter"), eq(users.promoterDealId, id), eq(users.disabled, false)));
+  const [updates, holderRows] = await Promise.all([
+    db.select().from(dealUpdates).where(eq(dealUpdates.dealId, id)).orderBy(desc(dealUpdates.createdAt)),
+    db.select({ o: interests.officeId }).from(interests).where(and(eq(interests.dealId, id), eq(interests.status, "Allotted"))),
+  ]);
+  const holderN = new Set(holderRows.map((r) => r.o)).size;
   const [docs, qs, cs] = await Promise.all([
     db.select().from(documents).where(eq(documents.dealId, id)).orderBy(asc(documents.sort), asc(documents.id)),
     db.select().from(questions).where(eq(questions.dealId, id)).orderBy(desc(questions.askedAt)),
@@ -136,6 +143,25 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <label className="chk"><input type="checkbox" name="promoterDemand" defaultChecked={d.promoterDemand} /> Show the promoter the total amount indicated (founder portal). Off: they see activity counts only.</label>
         <div className="adm-save"><button className="btn primary" type="submit">Save deal</button></div>
       </form>
+      <h2 id="updates">Updates to holders ({holderN} {holderN === 1 ? "office holds" : "offices hold"} shares)</h2>
+      <p className="fine">A note from the company to the offices that were allotted shares: the quarter against plan, orders, where the listing stands. The promoter drafts it in the founder portal, or write one here. Only holders see it, under their Portfolio, once published.</p>
+      {updates.map((x) => (
+        <form key={x.id} action={saveDealUpdate} className="form adm-card"><input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="id" value={x.id} />
+          <p className="fine"><span className={`pill ${x.status === "published" ? "ok" : "mid"}`}>{x.status === "published" ? "Published" : "Draft"}</span> {x.fromPromoter ? "From the promoter" : "From the desk"}{x.draftedBy ? ` · ${x.draftedBy}` : ""} · {fmtD(x.publishedAt ?? x.createdAt)}</p>
+          <div className="row"><label>Title<input name="title" defaultValue={x.title} required maxLength={160} /></label><label>Period<input name="period" defaultValue={x.period ?? ""} maxLength={40} /></label></div>
+          <label>Update<textarea name="body" rows={6} defaultValue={x.body} required maxLength={6000} /></label>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button className="btn sm" type="submit">{x.status === "published" ? "Save changes" : "Save draft"}</button>
+            {x.status !== "published" && can(me, "deals.publish") && <button className="btn sm primary" type="submit" name="publish" value="1">Publish to holders</button>}
+            {x.status === "published" && <input type="hidden" name="publish" value="1" />}
+            {isSuper(me) && <button className="btn sm ghost" type="submit" formAction={removeDealUpdate} formNoValidate>Remove</button>}
+          </div></form>))}
+      <details className="adm-card"><summary><b>Write an update</b></summary>
+        <form action={saveDealUpdate} className="form"><input type="hidden" name="dealId" value={d.id} />
+          <div className="row"><label>Title<input name="title" required maxLength={160} /></label><label>Period<input name="period" maxLength={40} placeholder="Q2 FY27" /></label></div>
+          <label>Update<textarea name="body" rows={5} required maxLength={6000} /></label>
+          <div style={{ display: "flex", gap: 8 }}><button className="btn sm" type="submit">Save draft</button>{can(me, "deals.publish") && <button className="btn sm primary" type="submit" name="publish" value="1">Publish to holders</button>}</div></form></details>
+
       {!pub && (
         <form action={requestPublish} className="form adm-card" id="ask-publish"><input type="hidden" name="id" value={d.id} />
           <b>Ask a super admin to {d.phase === "preparing" || d.phase === "coming" ? "announce this deal" : d.phase === "announced" ? "open the room" : "review this deal"}</b>

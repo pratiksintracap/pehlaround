@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { deals, documents, questions } from "@/db/schema";
+import { deals, documents, questions, dealUpdates } from "@/db/schema";
 import { getUser, log } from "@/lib/auth";
 import { notifyDesk } from "@/lib/notify";
 import { investorWhere } from "@/lib/deal-guard";
@@ -50,4 +50,15 @@ export async function messageDesk(f: FormData) {
   await notifyDesk({ title: `${d.company}: message from ${u.name}`, body: text, link: `/admin/deals/${d.id}` });
   await log(u, `Promoter messaged the desk about ${d.company}`, d.id);
   back("Sent. The desk replies by phone or email.", "#desk");
+}
+
+/** A quarterly (or any) update for the offices that hold the company's shares. The desk reads it and publishes it. */
+export async function draftUpdate(f: FormData) {
+  const { u, d, db } = await promoter();
+  const title = s(f, "title", 160), period = s(f, "period", 40), body = s(f, "body", 6000);
+  if (!title || body.length < 40) back("Give the update a title and a few lines.", "#updates");
+  await db.insert(dealUpdates).values({ dealId: d.id, title, period: period || null, body, fromPromoter: true, draftedBy: u.name });
+  await notifyDesk({ title: `${d.company}: the promoter drafted an update for holders`, body: `${title}${period ? ` · ${period}` : ""}`, link: `/admin/deals/${d.id}#updates` });
+  await log(u, `Promoter drafted an update for ${d.company}'s holders: ${title}`, d.id);
+  back("Sent to the desk. Your shareholders see it once the desk publishes it.", "#updates");
 }

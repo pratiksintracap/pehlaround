@@ -5,7 +5,7 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
-import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT, deskInvites, offices } from "@/db/schema";
+import { audit, calls, docViews, documents, interests, invites, ndas, passes, questions, tickets, users , deals as dealsT, deskInvites, offices, dealUpdates } from "@/db/schema";
 import { CATEGORIES, STATUS, catLabel, ticketNo } from "@/lib/tickets";
 import { listDeals, canSeeNames , signedDealIds } from "@/lib/deals";
 import { monthsTo } from "@/lib/render";
@@ -21,6 +21,7 @@ import { SITE_URL } from "@/lib/site";
 import { officeRefCode } from "@/lib/track";
 import { investorWhere } from "@/lib/deal-guard";
 import { visibleClients } from "@/lib/partner-math";
+import { closingSteps, isClosing, fmtIso } from "@/lib/closing";
 import { DeckPanel } from "@/components/DeckPanel";
 import { officeTransfer, readiness, KYC_KINDS, fmtSize, needsAuthority, type KycKind } from "@/lib/transfer";
 
@@ -98,6 +99,11 @@ export default async function Dashboard({ searchParams }: P) {
   // The road to listing straight from the database, so a step the desk just added shows at once.
   const ipoNow = new Map(allotted.length ? (await db.select({ id: dealsT.id, ipo: dealsT.ipo }).from(dealsT).where(investorWhere(inArray(dealsT.id, allotted.map((x) => x.dealId))))).map((r) => [r.id, r.ipo]) : []);
   const holdings = allotted.map((a) => { const b = byId.get(a.dealId); const d = b ? { ...b, ipo: ipoNow.get(a.dealId) ?? b.ipo } : b; return { a, d, h: holding(a, d?.ipo ?? {}) }; });
+  // Requests that are closing: past the indication, not yet allotted. The office sees the four steps and what is next.
+  const closing = myInterests.filter((i) => i.status !== "Allotted" && isClosing(i.status, i.closing)).map((a) => ({ a, d: byId.get(a.dealId), steps: closingSteps(a.status, a.closing) })).filter((x) => x.d);
+  // What each company has told its holders: published updates only, for companies this office holds.
+  const holderNews = allotted.length ? await db.select({ id: dealUpdates.id, dealId: dealUpdates.dealId, title: dealUpdates.title, period: dealUpdates.period, body: dealUpdates.body, at: dealUpdates.publishedAt })
+    .from(dealUpdates).where(and(inArray(dealUpdates.dealId, allotted.map((x) => x.dealId)), eq(dealUpdates.status, "published"))).orderBy(desc(dealUpdates.publishedAt)) : [];
   const pfCost = holdings.reduce((t, x) => t + x.h.costRs, 0);
   const marked = holdings.filter((x) => x.h.value);
   const pfMarked = marked.length, pfValue = marked.reduce((t, x) => t + x.h.value!.rs, 0), pfMarkedCost = marked.reduce((t, x) => t + x.h.costRs, 0);
@@ -162,7 +168,7 @@ export default async function Dashboard({ searchParams }: P) {
     ["Documents", "Documents", "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6", null],
     ...(isBroker ? [["Clients", "Your clients", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", clients.length || null] as [string, string, string, number | null]] : []),
     ...(ready ? [["Transfer", "Ready to transfer", "M7 17l-4-4 4-4M3 13h13M17 7l4 4-4 4", trGap || null] as [string, string, string, number | null]] : []),
-    ["Portfolio", "Portfolio", "M4 19V9M10 19V5M16 19v-7M22 19H2", allotted.length || null],
+    ["Portfolio", "Portfolio", "M4 19V9M10 19V5M16 19v-7M22 19H2", allotted.length + closing.length || null],
     ["Profile", "Investment profile", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", null],
     ["Team", "Team", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", team.length > 1 ? team.length : null],
     ["Log", "Activity log", "M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z", null],
@@ -330,6 +336,16 @@ export default async function Dashboard({ searchParams }: P) {
       </section>}
 
       <section className="panel" data-panel="Portfolio" hidden>
+        {closing.length > 0 && <div className="pf-list" style={{ marginBottom: 14 }}>{closing.map(({ a, d, steps }) => { const next = steps.find((x) => x.now); return (
+          <article className="chart pf-card" key={a.id}>
+            <div className="pf-head"><div><span className="k">Allocation closing · ₹{Number(a.amountCr)} Cr</span><h3>{d!.company}</h3></div>
+              <a className="btn sm" href={`/room/${d!.slug}`}>Open room</a></div>
+            <ol className="pf-road" style={{ gridTemplateColumns: "repeat(4,1fr)" }} aria-label="Closing steps">{steps.map((st) => (
+              <li key={st.key} className={st.done ? "done" : st.now ? "now" : ""}><i aria-hidden="true" /><b>{st.label}</b><small>{st.date ? fmtIso(st.date) : st.done ? "Done" : st.now ? "Next" : ""}</small></li>))}</ol>
+            {next?.key === "funds" && a.closing?.fundsDue && <p className="pf-note">Funds are due by {fmtIso(a.closing.fundsDue)}. The desk sends the account details with the documents; pay only into the account named there.</p>}
+            {ready && !ready.ready && <p className="fine">Your transfer details are {ready.done} of {ready.total} complete. <a href="#Transfer">Finish them</a> so the shares can be credited to your demat.</p>}
+            {a.note && <p className="fine">{a.note}</p>}
+          </article>); })}</div>}
         {holdings.length ? <>
           <div className="pf-sum">
             <div><span className="k">Invested</span><b>{crore(pfCost)}</b><small>{holdings.length} {holdings.length === 1 ? "holding" : "holdings"}</small></div>
@@ -351,10 +367,15 @@ export default async function Dashboard({ searchParams }: P) {
                 <li key={st.label} className={st.done ? "done" : st.now ? "now" : ""}><i aria-hidden="true" /><b>{st.label}</b><small>{st.date ? fmtDay(st.date) : st.now ? "Next" : ""}</small></li>))}</ol>
               {d?.ipo.priceBand && !h.listed && <p className="fine">Price band {d.ipo.priceBand}.</p>}
               {d?.ipo.note && <p className="pf-note">{d.ipo.note}</p>}
+              {(() => { const news = holderNews.filter((x) => x.dealId === a.dealId); return news.length ? (
+                <div className="pf-news"><span className="k">From the company</span>
+                  {news.map((x, i) => <details key={x.id} open={i === 0}><summary><b>{x.title}</b><small className="fine"> · {[x.period, x.at ? fmtDay(x.at) : ""].filter(Boolean).join(" · ")}</small></summary>
+                    {x.body.split(/\n\s*\n/).map((para, k) => <p key={k}>{para}</p>)}</details>)}
+                  <p className="fine">Written by the company and passed on by the desk as received. The desk has not audited it.</p></div>) : null; })()}
             </article>))}</div>
           <p className="fine">Values are indicative, at the prices shown, before taxes and costs. Shares held before an IPO stay locked in for six months from the IPO allotment.</p>
         </>
-          : <div className="chart"><span className="k">Holdings</span><p>Nothing allotted yet. Once shares are credited to your demat, each holding appears here with its road to listing, lock-in date and value.</p></div>}
+          : !closing.length ? <div className="chart"><span className="k">Holdings</span><p>Nothing allotted yet. Once an allocation is agreed, its closing steps show here; once shares are credited to your demat, each holding appears with its road to listing, lock-in date and value.</p></div> : null}
       </section>
 
       {ready && tr && <section className="panel" data-panel="Transfer" hidden>

@@ -40,6 +40,8 @@ the public site with `?site=1`.
 | Question | `questions` | An office's question on a deal and the answer |
 | Call | `calls` | A call an office asked for, or a group session the desk set |
 | Allocation request | `interests` | An office's non-binding indication for a deal, and what was finally allotted |
+| Closing steps | `interests.closing` | The dates of one request's closing: term sheet, documents, funds, shares credited |
+| Holders' update | `deal_updates` | A note from a company to the offices that hold its shares, shown once the desk publishes it |
 | Pass | `passes` | An office saying no to a deal, with a reason |
 | Partner target | `partner_targets` | What the desk asks a partner firm to bring to one issue (introductions, ₹ Cr), per leg: `pre_ipo` or `ipo` |
 | Transfer details | `transfer_kyc`, `kyc_files` | What a share transfer needs from an office, given once for every deal |
@@ -88,6 +90,17 @@ PAN check (`registered → pan_submitted → verified | rejected`).
 `Indicated → Term sheet → Documents → Allotted`, or `Withdrawn`. Only a super admin moves it (`allocations.confirm`);
 the office is told at each step. Allotted rows carry shares, price and date, and feed the Portfolio.
 
+**Closing steps** sit under the status and never replace it: term sheet agreed → documents signed → funds received →
+shares credited. A step is done when the desk dated it (`interests.closing`) or the status has moved past it; a later
+step done means the earlier ones are (`lib/closing.ts`). The office sees the four steps under Portfolio from the first
+one until the request is Allotted, and is told once when each is dated.
+
+### Holders' update: `deal_updates.status`
+
+`draft → published`. The promoter drafts in the founder portal, or the desk writes one; only the desk publishes
+(`deals.publish`). Published updates are shown only to offices with an Allotted request in that company, under
+Portfolio, marked as written by the company and not audited by the desk. Those offices are told once, on first publish.
+
 ### Transfer document: `kyc_files.status`
 
 `received → accepted | redo`. A new upload of the same kind replaces the old (`replacedAt`) and starts again at
@@ -114,6 +127,8 @@ named fields, never whole rows.
 | Other offices' names, NDAs, amounts | **never** | **never** | **never** | **never** | **never**² | yes³ | yes |
 | Desk notes, tasks, files, pipeline stage, rubric marks | **never** | **never** | **never** | **never** | **never** | yes | yes |
 | Listed deals (After the Bell) | **never** | **never** | **never** | **never** | **never** | yes | yes |
+| Holders' updates (published) | — | — | only if allotted | only if allotted | own drafts and status | yes | yes |
+| An office's closing steps | — | own | own | own | — | yes | yes |
 | An office's transfer details and files | — | own | own | own | — | status; files if contacts allowed | yes |
 | Contact details of office people | — | own office | own office | own office | — | if Settings allows | yes |
 | Desk-added investors | — | — | — | — | — | only their own | yes |
@@ -191,4 +206,4 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 | UI kit | `components/ui.tsx` |
 
 Tests that hold the rules: `tests/listed-guard*.test.ts` (listed deals), `tests/investor-privacy.test.ts` (desk data),
-`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), plus feature tests.
+`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), `tests/closing.test.ts` (closing steps), plus feature tests.

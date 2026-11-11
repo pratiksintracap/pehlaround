@@ -227,8 +227,26 @@ export const interests = pgTable("interests", {
   shares: integer("shares"),                    // allotted shares
   price: doublePrecision("price"),              // ₹ per share at allotment
   allottedAt: timestamp("allotted_at", { withTimezone: true }),
+  closing: jsonb("closing").$type<import("@/lib/closing").Closing>().notNull().default({}), // the dates of each closing step, kept by the desk
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// An update from a company to the offices that hold its shares: drafted by the promoter (founder portal) or the desk,
+// shown to holders only once the desk publishes it.
+export const dealUpdates = pgTable("deal_updates", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  title: text("title").notNull(),
+  period: text("period"),                        // "Q2 FY27", "October 2026"
+  body: text("body").notNull(),                  // paragraphs separated by blank lines
+  status: text("status").notNull().default("draft"),   // draft | published
+  fromPromoter: boolean("from_promoter").notNull().default(false),
+  draftedBy: text("drafted_by"),
+  publishedBy: text("published_by"),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("deal_updates_deal_idx").on(t.dealId, t.status)]);
 
 export const passes = pgTable("passes", {
   id: serial("id").primaryKey(),

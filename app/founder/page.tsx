@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { founderContext, founderStats, founderQuestions, founderDocuments } from "@/lib/founder";
-import { draftAnswer, suggestDocument, messageDesk } from "@/lib/founder-actions";
+import { founderContext, founderStats, founderQuestions, founderDocuments, founderUpdates } from "@/lib/founder";
+import { draftAnswer, suggestDocument, messageDesk, draftUpdate } from "@/lib/founder-actions";
 import { STEPS, fmtDay } from "@/lib/portfolio";
 
 export const metadata: Metadata = { title: "Founder portal", robots: { index: false } };
@@ -10,7 +10,7 @@ const DOC_STATE: Record<string, [string, string]> = { available: ["In the room",
 export default async function Founder({ searchParams }: { searchParams: Promise<{ msg?: string; deal?: string }> }) {
   const { msg, deal: want } = await searchParams;
   const { user, deal: d, preview } = await founderContext(want);
-  const [st, qs, docs] = await Promise.all([founderStats(d), founderQuestions(d.id), founderDocuments(d.id)]);
+  const [st, qs, docs, ups] = await Promise.all([founderStats(d), founderQuestions(d.id), founderDocuments(d.id), founderUpdates(d.id)]);
   const open = qs.filter((q) => !q.answer), answered = qs.filter((q) => q.answer);
   const maxW = Math.max(1, ...st.weekly);
   const live = d.phase === "closed" ? "Round closed · updates continue for holders" : d.published ? (d.open ? "Live on the desk · room open" : "Live on the desk · room not yet open") : "Being prepared by the desk";
@@ -72,6 +72,15 @@ export default async function Founder({ searchParams }: { searchParams: Promise<
       <section className="chart fp-sec"><span className="k">Road to listing</span>
         <ol className="pf-road">{STEPS.map((s, k) => <li key={s.key} className={reached[k] ? "done" : k === last + 1 ? "now" : ""}><i aria-hidden="true" /><b>{s.label}</b><small>{d.ipo[s.key] ? fmtDay(new Date(String(d.ipo[s.key]) + "T00:00:00+05:30")) : k === last + 1 ? "Next" : ""}</small></li>)}</ol>
         <small className="fine">The desk keeps this up to date; offices that hold shares see the same steps.</small>
+      </section>
+
+      <section className="chart fp-sec" id="updates"><span className="k">Updates for your shareholders{ups.holders ? ` · ${ups.holders} ${ups.holders === 1 ? "office holds" : "offices hold"} shares` : ""}</span>
+        <p className="fine">A short note each quarter keeps the offices that invested with you through to the listing: sales and profit against plan, orders won, capacity added, where the IPO stands. The desk reads it and publishes it to holders only.</p>
+        {ups.rows.length > 0 && <ul className="feed">{ups.rows.map((x) => <li key={x.id}><span className="mono">{fmtD(x.publishedAt ?? x.createdAt)}</span>{x.title}{x.period ? ` · ${x.period}` : ""} <span className={`pill ${x.status === "published" ? "ok" : ""}`}>{x.status === "published" ? "Published to holders" : "With the desk"}</span></li>)}</ul>}
+        {!preview && <form action={draftUpdate} className="form fp-doc">
+          <div className="row"><label>Title<input name="title" required maxLength={160} placeholder="Second quarter: sales up, new line commissioned" /></label><label>Period (optional)<input name="period" maxLength={40} placeholder="Q2 FY27" /></label></div>
+          <label>Update<textarea name="body" rows={6} required minLength={40} maxLength={6000} placeholder="Sales and profit for the period against plan. Orders won. Capacity or people added. Where the listing stands. Anything that did not go to plan." /></label>
+          <div><button className="btn sm primary" type="submit">Send to the desk</button></div></form>}
       </section>
 
       {!preview && <section className="chart fp-sec" id="desk"><span className="k">Talk to the desk</span>

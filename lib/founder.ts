@@ -2,7 +2,7 @@ import "server-only";
 import { and, desc, eq, gt, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
-import { audit, calls, deals, dealViews, docViews, documents, interests, ndas, passes, questions } from "@/db/schema";
+import { audit, calls, deals, dealUpdates, dealViews, docViews, documents, interests, ndas, passes, questions } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import type { Deal } from "@/lib/deals";
 import { isDesk } from "@/lib/perm";
@@ -72,4 +72,15 @@ export async function founderDocuments(dealId: number) {
     .innerJoin(documents, eq(documents.id, docViews.documentId)).where(eq(documents.dealId, dealId)).groupBy(docViews.documentId);
   const m = new Map(opens.map((o) => [o.id, Number(o.n)]));
   return docs.map((x) => ({ id: x.id, title: x.title, kind: x.kind, status: x.status, offices: m.get(x.id) ?? 0, proposedBy: x.proposedBy, audience: x.audience }));
+}
+
+/** The updates this company has written for its holders, newest first, and how many offices hold its shares. */
+export async function founderUpdates(dealId: number) {
+  const db = await getDb();
+  const [rows, [h]] = await Promise.all([
+    db.select({ id: dealUpdates.id, title: dealUpdates.title, period: dealUpdates.period, status: dealUpdates.status, createdAt: dealUpdates.createdAt, publishedAt: dealUpdates.publishedAt })
+      .from(dealUpdates).where(eq(dealUpdates.dealId, dealId)).orderBy(desc(dealUpdates.createdAt)).limit(20),
+    db.select({ n: sql<number>`count(distinct ${interests.officeId})::int` }).from(interests).where(and(eq(interests.dealId, dealId), eq(interests.status, "Allotted"))),
+  ]);
+  return { rows, holders: h?.n ?? 0 };
 }

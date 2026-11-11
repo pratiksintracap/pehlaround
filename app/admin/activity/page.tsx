@@ -6,6 +6,8 @@ import { desc, eq, isNull, and } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { calls, deals, interests, leads, offices, passes, questions, users } from "@/db/schema";
 import { answerQuestion, saveCall, saveInterest, saveLead } from "@/lib/admin-actions";
+import { saveClosing } from "@/lib/closing-actions";
+import { closingSteps, CLOSING_STEPS } from "@/lib/closing";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
@@ -35,7 +37,14 @@ export default async function Activity() {
             <td>{(() => { const r = readyBy.get(i.officeId); return r && i.status !== "Withdrawn" ? <a className={`pill ${r.checked ? "ok" : r.ready ? "" : "mid"}`} href={`/desk/investors/${i.officeId}#transfer`}>{r.checked ? "Checked" : r.ready ? "To check" : `${r.done}/${r.total}`}</a> : "—"; })()}</td>
             <td>{!confirm ? <><span className="pill">{i.status}</span>{i.note ? <><br /><small className="fine">{i.note}</small></> : null}<br /><small className="fine">A super admin confirms allocations.</small></> : <form action={saveInterest} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}><input type="hidden" name="id" value={i.id} />
               <select name="status" defaultValue={i.status}>{["Indicated", "Term sheet", "Documents", "Allotted", "Withdrawn"].map((s) => <option key={s}>{s}</option>)}</select>
-              <input name="note" defaultValue={i.note ?? ""} placeholder="Note" style={{ maxWidth: 160 }} /><button className="btn sm" type="submit">Save</button></form>}</td></tr>); })
+              <input name="note" defaultValue={i.note ?? ""} placeholder="Note" style={{ maxWidth: 160 }} /><button className="btn sm" type="submit">Save</button></form>}
+              {confirm && i.status !== "Withdrawn" && i.status !== "Indicated" && (() => { const st = closingSteps(i.status, i.closing); return (
+                <details style={{ marginTop: 6 }}><summary className="fine" style={{ cursor: "pointer" }}>Closing: {st.filter((x) => x.done).length} of {st.length} steps</summary>
+                  <form action={saveClosing} className="form" style={{ marginTop: 6, minWidth: 260 }}><input type="hidden" name="id" value={i.id} /><input type="hidden" name="back" value="/admin/activity" />
+                    {CLOSING_STEPS.map((c) => <label key={c.key}>{c.label}<input type="date" name={c.key} defaultValue={i.closing?.[c.key] ?? ""} /></label>)}
+                    <label>Funds due by (shown to the office until funds arrive)<input type="date" name="fundsDue" defaultValue={i.closing?.fundsDue ?? ""} /></label>
+                    <div><button className="btn sm" type="submit">Save dates</button></div>
+                    <p className="fine">The office sees these four steps on its dashboard and is told when one is dated.</p></form></details>); })()}</td></tr>); })
           : <tr><td colSpan={6} className="fine">None yet.</td></tr>}
       </tbody></table></div>
 
