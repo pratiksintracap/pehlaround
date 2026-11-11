@@ -267,6 +267,13 @@
       "when": 1792154000000,
       "tag": "0037_deal_phase",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794300000000,
+      "tag": "0038_partners",
+      "breakpoints": true
     }
   ]
 }

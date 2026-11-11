@@ -112,7 +112,7 @@ export default async function Register({ searchParams }: P) {
           <input type="hidden" name="next" value={next} />
           {inv && <input type="hidden" name="invite" value={inv.token} />}
           {lk && <input type="hidden" name="link" value={lk.token} />}
-          {byCode?.refCode && <input type="hidden" name="ref" value={byCode.refCode} />}
+          {byCode?.code && <input type="hidden" name="ref" value={byCode.code} />}
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
           {error && <div className="ok show bad" role="alert">{error}</div>}
           {lk && <div className="ok show" role="status">Sent by the desk. You are approved as soon as you register.</div>}

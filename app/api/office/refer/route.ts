@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const recent = await db.select({ id: deskInvites.id }).from(deskInvites).where(and(eq(deskInvites.referrerOfficeId, u.office.id), gt(deskInvites.createdAt, new Date(Date.now() - 30 * 864e5))));
   if (recent.length >= 5) return err(req, "Your office can refer five offices every 30 days. The desk can invite more for you.");
   const token = randomBytes(18).toString("base64url");
-  await db.insert(deskInvites).values({ token, email, name, officeName: officeName || null, createdBy: `Referral by ${u.office.name}`, referrerOfficeId: u.office.id });
+  await db.insert(deskInvites).values({ token, email, name, officeName: officeName || null, createdBy: `Referral by ${u.office.name}`, referrerOfficeId: u.office.id, referrerUserId: u.office.investorType === "broker" ? u.id : null });
   const st = await getSettings();
   await notifyDesk({ title: `${u.office.name} referred ${officeName || name}`, body: st.referrals ? "Approved automatically when they register (Settings: referrals)." : "They will wait for your approval when they register.", link: "/admin/invites" });
   await log(u, `Referred ${officeName || name} to the desk`);

@@ -72,8 +72,9 @@ export async function POST(req: NextRequest) {
       ...(preApproved ? { approval: "approved", approvedAt: new Date() } : {}),
       name: entity, category: str(data.category, 60) || null, residency: str(data.residency, 80) || null, ticket: str(data.ticket, 60) || null,
       consents: { email: true, wa: data.contact === "on" || data.contact === true || data.contact === "yes", calls: data.contact === "on" || data.contact === true || data.contact === "yes" },
-      investorType: itype, declaration: itype === "individual" ? decl : null,
-      source, referredBy: dinv?.referrerOfficeId ?? byCode?.id ?? null,
+      // The desk can invite a firm as a partner: it registers as a broker / wealth manager, whatever it picked on the form.
+      investorType: dinv?.investorType === "broker" ? "broker" : itype, declaration: itype === "individual" && dinv?.investorType !== "broker" ? decl : null,
+      source, referredBy: dinv?.referrerOfficeId ?? byCode?.id ?? null, referredByUserId: dinv?.referrerUserId ?? byCode?.rmId ?? null,
     }).returning({ id: offices.id });
     officeId = o.id;
     if (dinv) await db.update(deskInvites).set({ usedAt: new Date(), officeId }).where(eq(deskInvites.id, dinv.id));

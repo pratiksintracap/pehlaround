@@ -20,6 +20,7 @@ import { holding, crore, fmtDay } from "@/lib/portfolio";
 import { SITE_URL } from "@/lib/site";
 import { officeRefCode } from "@/lib/track";
 import { investorWhere } from "@/lib/deal-guard";
+import { visibleClients } from "@/lib/partner-math";
 import { DeckPanel } from "@/components/DeckPanel";
 import { officeTransfer, readiness, KYC_KINDS, fmtSize, needsAuthority, type KycKind } from "@/lib/transfer";
 
@@ -80,7 +81,8 @@ export default async function Dashboard({ searchParams }: P) {
   // A broker sees the offices it introduced (through its invite link): which companies they signed for and what they
   // asked for. Not their documents, questions, notes or log. An office introduced by a broker is told so (Team).
   const isBroker = office.investorType === "broker";
-  const clients = isBroker ? await db.select({ id: offices.id, name: offices.name, approval: offices.approval, createdAt: offices.createdAt }).from(offices).where(eq(offices.referredBy, office.id)).orderBy(desc(offices.createdAt)) : [];
+  // A principal (commit rights) sees every client of the firm; a relationship manager only the ones they introduced.
+  const clients = isBroker ? visibleClients(user, await db.select({ id: offices.id, name: offices.name, approval: offices.approval, createdAt: offices.createdAt, rmId: offices.referredByUserId }).from(offices).where(eq(offices.referredBy, office.id)).orderBy(desc(offices.createdAt))) : [];
   const cIds = clients.map((c) => c.id);
   const [cNdas, cAsks] = cIds.length ? await Promise.all([
     db.select({ officeId: ndas.officeId, dealId: ndas.dealId, signedAt: ndas.signedAt }).from(ndas).where(and(inArray(ndas.officeId, cIds), isNull(ndas.revokedAt))),
@@ -313,7 +315,9 @@ export default async function Dashboard({ searchParams }: P) {
       </section>
 
       {isBroker && <section className="panel" data-panel="Clients" hidden>
-        <div className="panel-head"><div><h2>Your clients</h2><p className="fine">Offices that registered through your invite link. You see which companies they have signed NDAs for and the allocations they asked for. Their documents, questions and notes stay private to them. Share your link from Team.</p></div></div>
+        <div className="panel-head"><div><h2>Your clients</h2><p className="fine">Offices that registered through your link. You see which companies they have signed NDAs for and the allocations they asked for. Their documents, questions and notes stay private to them.</p></div>
+          <a className="btn primary sm" href="/dashboard/partner">Open the partner desk</a></div>
+        <p className="fine">The partner desk has your links, a link for each issue, your targets and a statement to download.</p>
         {clients.length ? <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Client</th><th>Status</th><th>NDAs signed</th><th>Allocations requested</th></tr></thead><tbody>
           {clients.map((c) => { const n = cNdas.filter((x) => x.officeId === c.id), a = cAsks.filter((x) => x.officeId === c.id && x.status !== "Withdrawn"); return (
             <tr key={c.id}><th scope="row">{c.name}<br /><small className="fine">Joined {fmtD(c.createdAt)}</small></th>
@@ -321,7 +325,7 @@ export default async function Dashboard({ searchParams }: P) {
               <td>{n.length ? n.map((x) => byId.get(x.dealId)?.company).filter(Boolean).join(", ") : "—"}</td>
               <td>{a.length ? a.map((x) => `${byId.get(x.dealId)?.company ?? ""}: ₹${Number(x.amountCr)} Cr (${x.status})`).join(" · ") : "—"}</td></tr>); })}
         </tbody></table></div>
-          : <div className="chart"><p>No clients yet. Send your office&apos;s invite link (under Team) to the people you advise; when they register through it, they appear here.</p></div>}
+          : <div className="chart"><p>No clients yet. Send your link from the <a href="/dashboard/partner">partner desk</a> to the people you advise; when they register through it, they appear here.</p></div>}
         <p className="fine">Totals: {cAsks.filter((x) => x.status !== "Withdrawn").reduce((t, x) => t + Number(x.amountCr), 0).toLocaleString("en-IN")} Cr requested, {cAsks.filter((x) => x.status === "Allotted").reduce((t, x) => t + Number(x.amountCr), 0).toLocaleString("en-IN")} Cr allotted. Your terms with the desk are agreed separately.</p>
       </section>}
 

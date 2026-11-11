@@ -15,7 +15,8 @@ Operator: SintraCap Advisors LLP. Public site and product: beforethebell.in.
 | Visitor | none | — | the public site |
 | Investor in a pending office | `member`, office `approval = pending` | registering | `/dashboard` (names hidden, shelf anonymised) |
 | Investor in an approved office | `member`, office `approval = approved` | registering, a desk invite, or a referral link | `/dashboard` |
-| Broker / wealth manager | `member`, office `investorType = broker` | as an investor; clients join through its invite link | `/dashboard` with a Clients tab |
+| Partner firm (broker / wealth manager) | `member`, office `investorType = broker` | a desk partner invite, or the desk sets the type; clients join through its links | `/dashboard` with a Clients tab, and the partner desk at `/dashboard/partner` |
+| Relationship manager | a person in a partner firm without commit rights | added by the firm's principal under Team | the same, limited to the clients they introduced |
 | Promoter | `promoter`, tied to one deal (`promoterDealId`) | a desk-created login | `/founder` |
 | Analyst | `analyst` | invited by the super admin | `/desk` (phone) or `/admin` |
 | Super admin | `admin` | the first account, from env | `/desk` or `/admin` |
@@ -40,6 +41,7 @@ the public site with `?site=1`.
 | Call | `calls` | A call an office asked for, or a group session the desk set |
 | Allocation request | `interests` | An office's non-binding indication for a deal, and what was finally allotted |
 | Pass | `passes` | An office saying no to a deal, with a reason |
+| Partner target | `partner_targets` | What the desk asks a partner firm to bring to one issue (introductions, ₹ Cr), per leg: `pre_ipo` or `ipo` |
 | Transfer details | `transfer_kyc`, `kyc_files` | What a share transfer needs from an office, given once for every deal |
 | Desk note, file, task | `desk_notes`, `desk_files`, `tasks` | The desk's own working material; never investor-facing |
 | Funnel event | `events` | One step an office took (deck opened, NDA signed, allocation requested …) |
@@ -119,8 +121,11 @@ named fields, never whole rows.
 ¹ Only in phases `coming` (title and structure) and later. ² A promoter sees counts and, if the desk ticks it, the total
 indicated; never which office. ³ Except desk-added investors another analyst added.
 
-A broker sees, for offices it introduced, which companies they signed NDAs for and the allocations they asked for;
-never their documents, questions, notes or log.
+A partner firm sees, for offices it introduced, which companies they signed NDAs for and the allocations they asked
+for; never their documents, questions, notes or log. Inside the firm, a principal (commit rights) sees every client and
+every relationship manager; anyone else sees only the clients who registered through their own link
+(`offices.referredByUserId`). The rule is `visibleClients` in `lib/partner-math.ts`; the dashboard, the partner desk and
+the statement download all read through it. A firm sees its own targets, never another firm's.
 
 ## 5. Rules the site keeps
 
@@ -157,6 +162,12 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 - **Round fill**: the desk sets committed ₹ Cr and whether the anchor is in; the room shows a bar.
 - **Referrals**: an approved office's code (`?ref=`) is remembered for 90 days and credited on registration. A broker's
   introduced offices appear under its Clients.
+- **Partners**: an office of type broker. Each person there has their own invite code (`users.refCode`, nine
+  characters; an office's is eight), so a client is credited to the person whose link it used, or to the firm. The link
+  for one issue is the public overview with that code (`/deals/<slug>?ref=`): anonymised until the desk approves the
+  client. An introduction is a client that signed that company's NDA. The desk sets a target per firm per issue
+  (`/admin/partners`); progress is the better of introductions and amount requested. Fees and commissions are never
+  shown: "your terms are in your partner agreement".
 - **Teasers**: built only from public fields; the company name is stripped as a last check.
 - **Transfer readiness**: PAN, demat, CML, cancelled cheque, and authority for entities. Ready = all given; checked =
   all accepted by the desk.
@@ -169,6 +180,7 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 |---|---|
 | Public pages | `app/(page)` at the top level: `/`, `/deals`, `/raise`, `/ipo-calendar`, `/articles` … |
 | Investor product | `/dashboard`, `/deals/[slug]` (signed in), `/room/[slug]`, `/notifications` |
+| Partner desk | `/dashboard/partner`, `lib/partner.ts`, `lib/partner-math.ts`; the desk's side at `/admin/partners` |
 | Founder portal | `/founder` |
 | Desk on the phone | `/desk` |
 | Desk console | `/admin` |
@@ -179,4 +191,4 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 | UI kit | `components/ui.tsx` |
 
 Tests that hold the rules: `tests/listed-guard*.test.ts` (listed deals), `tests/investor-privacy.test.ts` (desk data),
-`tests/phase.test.ts` (lifecycle), plus feature tests.
+`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), plus feature tests.

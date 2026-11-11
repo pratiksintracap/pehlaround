@@ -50,6 +50,7 @@ export const offices = pgTable("offices", {
   source: jsonb("source").$type<Source>(),
   refCode: text("ref_code"),
   referredBy: integer("referred_by"),
+  referredByUserId: integer("referred_by_user_id"),   // at a partner firm: the person (relationship manager) whose link brought this office
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("offices_ref_code_uq").on(t.refCode)]);
 
@@ -69,7 +70,8 @@ export const users = pgTable("users", {
   sessionVersion: integer("session_version").notNull().default(0), // bump to sign the user out everywhere
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
-}, (t) => [uniqueIndex("users_email_uq").on(t.email)]);
+  refCode: text("ref_code"),                              // a person's own invite code, made for people at a partner firm
+}, (t) => [uniqueIndex("users_email_uq").on(t.email), uniqueIndex("users_ref_code_uq").on(t.refCode)]);
 
 // Viewers an office has invited; they join the office when they register with that email.
 export const invites = pgTable("invites", {
@@ -383,6 +385,8 @@ export const deskInvites = pgTable("desk_invites", {
   usedAt: timestamp("used_at", { withTimezone: true }),
   officeId: integer("office_id"),
   referrerOfficeId: integer("referrer_office_id"),        // an approved office referred this one
+  referrerUserId: integer("referrer_user_id"),            // the person there who made the referral (a partner firm's relationship manager)
+  investorType: text("investor_type"),                    // "broker": the desk invited this office as a partner firm
   known: boolean("known").notNull().default(false),       // already in touch with the desk: the email says so
   emailedAt: timestamp("emailed_at", { withTimezone: true }), // when the invitation email was accepted for delivery
   followedUpAt: timestamp("followed_up_at", { withTimezone: true }), // the one reminder, sent 3+ days later if still unused
@@ -406,6 +410,20 @@ export const dealLinks = pgTable("deal_links", {
   registeredOfficeId: integer("registered_office_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("deal_links_token_uq").on(t.token), index("deal_links_deal_idx").on(t.dealId)]);
+
+// What the desk asks of a partner firm (an office of type "broker") for one issue: how many clients to introduce and how
+// much to bring. leg: pre_ipo (the round on the desk) | ipo (the public issue that follows). Shown to that firm only.
+export const partnerTargets = pgTable("partner_targets", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id").notNull(),
+  dealId: integer("deal_id").notNull(),
+  leg: text("leg").notNull().default("pre_ipo"),
+  intros: integer("intros"),
+  amountCr: doublePrecision("amount_cr"),
+  note: text("note"),
+  setBy: text("set_by"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("partner_targets_uq").on(t.officeId, t.dealId, t.leg)]);
 
 // Self-serve password reset links (stored hashed, valid for a short time, used once).
 export const passwordResets = pgTable("password_resets", {

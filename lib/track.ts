@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { getDb } from "@/lib/db";
-import { events, offices } from "@/db/schema";
+import { events, offices, users } from "@/db/schema";
 import { REF_COOKIE, SRC_COOKIE, REF_RE, type Source } from "@/lib/source";
 
 export type EventKind = "register_started" | "register_completed" | "office_approved" | "nda_signed" | "room_opened"
@@ -55,10 +55,30 @@ export async function officeRefCode(officeId: number, current?: string | null) {
   return null;
 }
 
-/** The approved office behind an invite code, for the register page and the register route. */
+/** A person's own invite code at a partner firm, created on first use. Nine characters, so it never matches an office's eight. */
+export async function userRefCode(userId: number, current?: string | null) {
+  if (current) return current;
+  const db = await getDb();
+  for (let i = 0; i < 5; i++) {
+    const code = newRefCode(9);
+    try {
+      await db.update(users).set({ refCode: code }).where(eq(users.id, userId));
+      return code;
+    } catch { /* collision: try another */ }
+  }
+  return null;
+}
+
+/** The office behind an invite code, for the register page and the register route. The code is an office's own, or
+ *  that of one person at a partner firm: then `rmId` says who, so the new office is credited to them. */
 export async function referrerByCode(code: string | null) {
   if (!code) return null;
   const db = await getDb();
-  const [o] = await db.select({ id: offices.id, name: offices.name, approval: offices.approval, refCode: offices.refCode, investorType: offices.investorType }).from(offices).where(eq(offices.refCode, code));
-  return o ?? null;
+  const cols = { id: offices.id, name: offices.name, approval: offices.approval, refCode: offices.refCode, investorType: offices.investorType };
+  const [o] = await db.select(cols).from(offices).where(eq(offices.refCode, code));
+  if (o) return { ...o, rmId: null as number | null, code };
+  const [u] = await db.select({ id: users.id, officeId: users.officeId, disabled: users.disabled }).from(users).where(eq(users.refCode, code));
+  if (!u?.officeId || u.disabled) return null;
+  const [uo] = await db.select(cols).from(offices).where(eq(offices.id, u.officeId));
+  return uo ? { ...uo, rmId: u.id as number | null, code } : null;
 }
