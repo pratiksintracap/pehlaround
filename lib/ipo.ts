@@ -35,6 +35,12 @@ export function categoriesFor(o: { investorType?: string | null; category?: stri
 
 export const IPO_STATUS = ["Indicated", "With the lead manager", "Applied", "Allotted", "Withdrawn"] as const;
 export type IpoStatus = (typeof IPO_STATUS)[number];
+/** Entered for a client by its partner firm and not yet confirmed by the client. Not interest until it is. */
+export const AWAITING = "Awaiting client";
+/** Interest that counts: confirmed by the office itself and not withdrawn. */
+export const counts = (b: { status: string }) => b.status !== "Withdrawn" && b.status !== AWAITING;
+/** The public issues to show: deals on the shelf plus IPO-only deals, from the prospectus until the listing. */
+export const ipoVisible = <T extends { published: boolean; ipoOnly: boolean; ipo: IpoProgress }>(all: T[], now = new Date()) => all.filter((d) => (d.published || d.ipoOnly) && ipoLive(d.ipo, now));
 
 /** Amounts are typed in ₹ lakh (individual applications are small) and kept in ₹ crore like every other amount. */
 export const lakhToCr = (lakh: number) => Math.round(lakh * 100) / 10000;

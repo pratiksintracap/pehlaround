@@ -18,7 +18,7 @@ export default async function Partners() {
   const [firms, apps, ds, waiting] = await Promise.all([
     db.select().from(offices).where(eq(offices.investorType, "broker")).orderBy(desc(offices.createdAt)),
     db.select().from(leads).where(eq(leads.kind, "partner")).orderBy(desc(leads.createdAt)),
-    db.select({ id: deals.id, company: deals.company, phase: deals.phase, ipo: deals.ipo }).from(deals).where(eq(deals.listed, false)).orderBy(deals.sort),
+    db.select({ id: deals.id, company: deals.company, phase: deals.phase, ipo: deals.ipo, ipoOnly: deals.ipoOnly }).from(deals).where(eq(deals.listed, false)).orderBy(deals.sort),
     db.select().from(deskInvites).where(and(eq(deskInvites.investorType, "broker"), isNull(deskInvites.usedAt))).orderBy(desc(deskInvites.createdAt)),
   ]);
   const fIds = firms.map((f) => f.id);
@@ -33,7 +33,7 @@ export default async function Partners() {
     db.select({ officeId: interests.officeId, dealId: interests.dealId, amountCr: interests.amountCr, status: interests.status }).from(interests).where(inArray(interests.officeId, cIds)),
   ]) : [[], []];
   const dealName = new Map(ds.map((d) => [d.id, d.company]));
-  const live = ds.filter((d) => d.phase !== "preparing");
+  const live = ds.filter((d) => d.phase !== "preparing" || d.ipoOnly);
   const openApps = apps.filter((a) => a.status === "New");
 
   return (
@@ -78,7 +78,7 @@ export default async function Partners() {
                   <td><small className="fine">{t.setBy} · {fmtD(t.updatedAt)}</small></td></tr>); })}
             </tbody></table></div> : <p className="fine">No targets set.</p>}
             {setTargets && <form action={savePartnerTarget} className="form" style={{ marginTop: 8 }}><input type="hidden" name="officeId" value={f.id} />
-              <div className="row3"><label>Issue<select name="dealId" required defaultValue="">{[<option key="" value="" disabled>Select</option>, ...live.map((d) => <option key={d.id} value={d.id}>{d.company}</option>)]}</select></label>
+              <div className="row3"><label>Issue<select name="dealId" required defaultValue="">{[<option key="" value="" disabled>Select</option>, ...live.map((d) => <option key={d.id} value={d.id}>{d.company}{d.ipoOnly ? " (IPO only)" : ""}</option>)]}</select></label>
                 <label>Leg<select name="leg" defaultValue="pre_ipo"><option value="pre_ipo">Pre-IPO round</option><option value="ipo">IPO</option></select></label>
                 <label>Introductions (clients)<input name="intros" inputMode="numeric" placeholder="e.g. 5" /></label></div>
               <div className="row"><label>Amount, ₹ Cr<input name="amountCr" inputMode="decimal" placeholder="e.g. 2.5" /></label><label>Note to the firm (optional)<input name="note" maxLength={300} placeholder="e.g. by 30 November" /></label></div>

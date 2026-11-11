@@ -11,6 +11,7 @@ const GROUPS: [string, [string, string, string][]][] = [
     ["/admin/invites", "Invite offices", "M4 4h16v16H4zM4 6l8 7 8-7"],
     ["/admin/partners", "Partners", "M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20a6 6 0 0 1 12 0M14 20a6 6 0 0 1 8-5.6"],
     ["/admin/ipo", "IPO book", "M3 17l6-6 4 4 8-8M15 7h6v6"],
+    ["/admin/sellers", "Sellers", "M7 17l-4-4 4-4M3 13h13M17 7l4 4-4 4"],
     ["/admin/pipeline", "Investor pipeline", "M3 5h4v14H3zM10 5h4v9h-4zM17 5h4v5h-4z"],
     ["/admin/activity", "Requests and Q&A", "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"],
     ["/admin/tickets", "Support tickets", "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.9 4.9l4.3 4.3M14.8 14.8l4.3 4.3M14.8 9.2l4.3-4.3M4.9 19.1l4.3-4.3"],

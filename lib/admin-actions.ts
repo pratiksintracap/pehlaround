@@ -226,7 +226,7 @@ export async function saveDeal(f: FormData) {
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
     score: total ?? manual, scoreParts: Object.keys(parts).length ? parts : null,
     roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null, minTicket: s(f, "minTicket", 80) || null,
-    phase: pub && isPhase(f.get("phase")) ? (f.get("phase") as Phase) : cur.phase, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
+    phase: cur.ipoOnly ? "preparing" : pub && isPhase(f.get("phase")) ? (f.get("phase") as Phase) : cur.phase, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
     publicRisks: fromText.list(s(f, "publicRisks", 6000)),
     roundCr: (() => { const v = parseFloat(s(f, "roundCr", 20).replace(/,/g, "")); return isFinite(v) && v > 0 ? v : null; })(),
@@ -271,8 +271,9 @@ export async function setDealPhase(f: FormData) {
   const id = n(f, "id"), to = f.get("phase");
   if (!isPhase(to)) return refuse("/admin/deals", "Choose a phase.");
   const db = await getDb();
-  const [d] = await db.select({ company: deals.company, phase: deals.phase }).from(deals).where(investorWhere(eq(deals.id, id)));
+  const [d] = await db.select({ company: deals.company, phase: deals.phase, ipoOnly: deals.ipoOnly }).from(deals).where(investorWhere(eq(deals.id, id)));
   if (!d || d.phase === to) return refuse("/admin/deals", "Nothing to change.");
+  if (d.ipoOnly) return refuse("/admin/deals", `${d.company} is an IPO-only issue: it never goes on the shelf. It shows under IPOs once its price band has a date.`);
   await db.update(deals).set({ phase: to, updatedAt: new Date() }).where(eq(deals.id, id));
   await log(admin, `Desk moved ${d.company} to ${phaseInfo(to).label.toLowerCase()}`, id, { entity: "deal", entityId: id, detail: { changes: { phase: [d.phase, to] } } });
   revalidatePath("/", "layout");
@@ -494,7 +495,7 @@ export async function saveSiteSettings(f: FormData) {
     requireApproval: f.get("requireApproval") === "on", requirePan: false,
     announcement: s(f, "announcement", 300), announcementLink: s(f, "announcementLink", 500), notifyDeskEmail: s(f, "notifyDeskEmail", 200),
     promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on", aiBudget: String(Math.max(0, Math.round(Number(s(f, "aiBudget", 10)) || 0))),
-    analystContacts: f.get("analystContacts") === "on",
+    analystContacts: f.get("analystContacts") === "on", partnerDigest: f.get("partnerDigest") === "on",
     referrals: f.get("referrals") === "on", approvalTime: s(f, "approvalTime", 120) || "usually within a few minutes",
     hniMinCr: (() => { const v = parseFloat(s(f, "hniMinCr", 10)); return isFinite(v) && v >= 0.05 && v <= 5 ? String(v) : "0.25"; })(),
     callTargetHours: (() => { const v = parseInt(s(f, "callTargetHours", 4)); return isFinite(v) && v >= 1 && v <= 168 ? String(v) : "24"; })(),

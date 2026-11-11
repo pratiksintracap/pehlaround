@@ -7,10 +7,11 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { PUBLIC_TAG } from "@/lib/cache";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { deals, deskFiles, deskNotes, ipoBids, kycFiles, offices, tasks, users, type ListedInfo } from "@/db/schema";
+import { deals, deskFiles, deskNotes, ipoBids, kycFiles, leads, offices, tasks, users, type ListedInfo } from "@/db/schema";
 import { requirePerm, requireAdmin, log, changes } from "@/lib/auth";
 import { notifyOffices } from "@/lib/notify";
 import { IPO_STATUS, type IpoStatus } from "@/lib/ipo";
+import type { RoomContent } from "@/lib/types";
 import { can } from "@/lib/perm";
 import { asStage, stageLabel } from "@/lib/stages";
 import { investorRows, investorType } from "@/lib/csv";
@@ -376,4 +377,36 @@ export async function saveIpoBid(f: FormData) {
   if (prev.status !== status && d) await notifyOffices([prev.officeId], { title: `${d.company} IPO: your interest is ${status === "With the lead manager" ? "with the lead manager" : status.toLowerCase()}`, body: note, link: "/dashboard#IPOs" });
   await log(admin, `Desk set IPO interest #${prev.id} to ${status}`, prev.dealId, { entity: "deal", entityId: prev.dealId, officeId: prev.officeId, detail: { changes: changes(prev, { status, note }, ["status", "note"]) } });
   back(f, "/admin/ipo", prev.status !== status ? "Saved; the office is told." : "Saved.");
+}
+
+/** An IPO for a company that never had a round on the desk (say, a lead manager's own mandate). It is kept off the
+ *  shelf for good and shows to investors and partners only as a public issue, once its price band has a date. */
+export async function createIpoIssue(f: FormData) {
+  const me = await requirePerm("deals.edit");
+  const company = s(f, "company", 200), title = s(f, "title", 200), exchange = s(f, "exchange", 40);
+  if (!company || !title) return refuse(f, "/admin/ipo", "The company's name and a one-line description are needed.");
+  const db = await getDb();
+  const base = company.toLowerCase().replace(/\b(private|pvt|limited|ltd)\b\.?/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "issue";
+  let slug = `${base}-ipo`;
+  for (let i = 2; (await db.select({ id: deals.id }).from(deals).where(eq(deals.slug, slug))).length; i++) slug = `${base}-ipo-${i}`;
+  const room: RoomContent = { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [],
+    interest: { min: 0.5, max: 10, step: 0.5, def: 1, note: "" }, alerts: [], passReasons: [] };
+  const [row] = await db.insert(deals).values({ slug, company, title, category: "IPO", headline: "", listingLabel: "To be set", phase: "preparing", ipoOnly: true, sort: 900,
+    room, ipo: exchange ? { exchange } : {}, ownerId: me.id }).returning({ id: deals.id });
+  await log(me, `Desk added an IPO-only issue: ${company}`, row.id, { entity: "deal", entityId: row.id, detail: { note: "IPO only: never on the shelf" } });
+  revalidateTag(PUBLIC_TAG);
+  redirect(resultUrl(`/admin/deals/${row.id}#issue`, "Added. Fill in the public issue below; it shows to investors and partners once Price band announced has a date."));
+}
+
+// ---------------------------------------------------------------- sellers
+/** What the desk adds to a "wants to sell" lead so it can be matched: the company's sector, a status and a note. */
+export async function saveSeller(f: FormData) {
+  const me = await requirePerm("leads");
+  const db = await getDb();
+  const [l] = await db.select().from(leads).where(and(eq(leads.id, n(f, "id")), eq(leads.kind, "seller")));
+  if (!l) return refuse(f, "/admin/sellers", "That lead no longer exists.");
+  const data = { ...(l.data || {}), sector: s(f, "sector", 60), deskNote: s(f, "deskNote", 600) };
+  await db.update(leads).set({ data, status: s(f, "status", 40) || l.status }).where(eq(leads.id, l.id));
+  await log(me, `Desk updated the seller lead for ${l.company || l.name}`, null, { detail: { note: [data.sector, s(f, "status", 40)].filter(Boolean).join(" · ") } });
+  back(f, `/admin/sellers#s${l.id}`, "Saved. The matches below follow the sector.");
 }

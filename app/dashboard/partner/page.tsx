@@ -4,9 +4,10 @@ import { requireUser } from "@/lib/auth";
 import { listDeals, canSeeNames } from "@/lib/deals";
 import { partnerBook } from "@/lib/partner";
 import { fmtCr, progress, tally } from "@/lib/partner-math";
+import { fmtAmount } from "@/lib/ipo";
 import { officeRefCode, userRefCode } from "@/lib/track";
 import { SITE_URL } from "@/lib/site";
-import { ipoLive } from "@/lib/ipo";
+import { AWAITING, IPO_CATEGORY, counts, ipoStage, ipoVisible, type IpoCategory } from "@/lib/ipo";
 import { fmtIso } from "@/lib/closing";
 import { getDb } from "@/lib/db";
 import { ipoBids } from "@/db/schema";
@@ -18,7 +19,8 @@ const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numer
 const AP: Record<string, [string, string]> = { approved: ["Approved", "ok"], rejected: ["On hold", ""], pending: ["Awaiting approval", "mid"] };
 
 /** The partner desk: a partner firm's issues, targets, relationship managers and clients (MODEL.md §6, Partners). */
-export default async function PartnerDesk() {
+export default async function PartnerDesk({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
+  const { msg, error } = await searchParams;
   const user = await requireUser("/dashboard/partner");
   const book = await partnerBook(user);
   if (!book || !user.office) redirect("/dashboard");
@@ -35,9 +37,11 @@ export default async function PartnerDesk() {
   const target = (dealId: number, leg: string) => book.targets.find((t) => t.dealId === dealId && t.leg === leg);
   const rmName = new Map(book.people.map((p) => [p.id, p.name]));
   // IPO leg: issues whose prospectus is filed, with what this book's clients have indicated.
-  const ipoDeals = (await listDeals()).filter((d) => ipoLive(d.ipo));
+  const ipoDeals = ipoVisible(await listDeals(true));
   const ids = book.clients.map((c) => c.id);
   const bids = ids.length && ipoDeals.length ? await (await getDb()).select({ officeId: ipoBids.officeId, dealId: ipoBids.dealId, amountCr: ipoBids.amountCr, status: ipoBids.status, category: ipoBids.category }).from(ipoBids).where(inArray(ipoBids.officeId, ids)) : [];
+  const clientName = new Map(book.clients.map((c) => [c.id, c.name]));
+  const openIpos = ipoDeals.filter((d) => ipoStage(d.ipo) === "open"), okClients = book.clients.filter((c) => c.approval === "approved");
   const share = (url: string, text: string) => (
     <div className="dl-acts"><input readOnly value={url} aria-label="Link" /><button type="button" className="btn sm" data-copy={url}>Copy</button>
       <a className="btn sm" href={`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`} target="_blank" rel="noopener">WhatsApp</a></div>);
@@ -80,15 +84,27 @@ export default async function PartnerDesk() {
       <p className="fine">The link opens the anonymised overview; the company&apos;s name and deck open once the desk approves the client. Never send a company&apos;s name or documents yourself: each company may be offered to a limited number of identified people.</p>
 
       {ipoDeals.length > 0 && <>
-        <h2 style={{ fontSize: 22, marginTop: 28 }}>IPOs</h2>
-        <p className="fine">Issues whose price-band prospectus is filed. Your clients register interest from their own dashboard; the application itself goes through their broker.</p>
-        <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Issue</th><th>Target</th><th>Clients interested</th><th>Indicated</th></tr></thead><tbody>
-          {ipoDeals.map((d) => { const t = target(d.id, "ipo"); const b = bids.filter((x) => x.dealId === d.id && x.status !== "Withdrawn"); const amt = Math.round(b.reduce((s, x) => s + Number(x.amountCr), 0) * 100) / 100; const p = progress(t, { intros: b.length, indicatedCr: amt }); return (
-            <tr key={d.id}><th scope="row">{names ? d.company : d.title}<br /><small className="fine">{[d.ipo.priceBand && `Price band ${d.ipo.priceBand}`, d.ipo.opens && `opens ${fmtIso(d.ipo.opens)}`, d.ipo.closes && `closes ${fmtIso(d.ipo.closes)}`].filter(Boolean).join(" · ")}</small></th>
+        <h2 style={{ fontSize: 22, marginTop: 28 }} id="ipo">IPOs</h2>
+        <p className="fine">Issues whose price-band prospectus is filed. A client registers interest from its own dashboard, or you enter it and the client confirms it from a link we send; it counts only once confirmed. The application itself goes through the client&apos;s broker.</p>
+        {(msg || error) && <p className="notice" role="status" style={error ? { borderColor: "var(--warn, #c0392b)" } : undefined}>{msg || error}</p>}
+        <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Issue</th><th>Target</th><th>Clients interested</th><th>Indicated</th><th>Awaiting the client</th></tr></thead><tbody>
+          {ipoDeals.map((d) => { const t = target(d.id, "ipo"); const all = bids.filter((x) => x.dealId === d.id), b = all.filter(counts), w = all.filter((x) => x.status === AWAITING); const amt = Math.round(b.reduce((s, x) => s + Number(x.amountCr), 0) * 10000) / 10000; const p = progress(t, { intros: b.length, indicatedCr: amt }); return (
+            <tr key={d.id}><th scope="row">{names ? d.company : d.title}<br /><small className="fine">{[d.ipo.exchange, d.ipo.priceBand && `price band ${d.ipo.priceBand}`, d.ipo.opens && `opens ${fmtIso(d.ipo.opens)}`, d.ipo.closes && `closes ${fmtIso(d.ipo.closes)}`, ipoStage(d.ipo) === "closed" && "issue closed"].filter(Boolean).join(" · ")}</small></th>
               <td>{t ? <>{[t.intros ? `${t.intros} clients` : "", t.amountCr ? fmtCr(t.amountCr) : ""].filter(Boolean).join(" · ") || "—"}
                 {p !== null && <i className="as-meter" style={{ marginTop: 6, minWidth: 90 }}><i style={{ width: `${Math.round(p * 100)}%` }} /></i>}</> : <small className="fine">Not set</small>}</td>
-              <td>{b.length}</td><td>{amt ? fmtCr(amt) : "—"}</td></tr>); })}
-        </tbody></table></div></>}
+              <td>{b.length ? b.map((x) => clientName.get(x.officeId)).filter(Boolean).join(", ") : "—"}</td><td>{amt ? fmtAmount(amt) : "—"}</td>
+              <td>{w.length ? w.map((x) => `${clientName.get(x.officeId)} (${fmtAmount(x.amountCr)})`).join(", ") : "—"}</td></tr>); })}
+        </tbody></table></div>
+        {approved && names && openIpos.length > 0 && okClients.length > 0 && <details className="chart" style={{ marginTop: 12 }}><summary><b>Enter interest for a client</b></summary>
+          <form method="post" action="/api/office/partner/ipo" className="form" style={{ marginTop: 10 }}>
+            <div className="row"><label>Client<select name="clientId" required defaultValue="">{[<option key="" value="" disabled>Select</option>, ...okClients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)]}</select></label>
+              <label>Issue<select name="slug" required>{openIpos.map((d) => <option key={d.id} value={d.slug}>{d.company}</option>)}</select></label></div>
+            <div className="row3"><label>Category the client will apply in<select name="category" defaultValue="hni">{(Object.keys(IPO_CATEGORY) as IpoCategory[]).map((c) => <option key={c} value={c}>{IPO_CATEGORY[c].label}</option>)}</select></label>
+              <label>Amount, ₹ lakh<input name="amountLakh" inputMode="decimal" required /></label>
+              <label>Broker they will apply through (optional)<input name="broker" maxLength={120} /></label></div>
+            <div><button className="btn primary sm" type="submit">Send to the client to confirm</button></div>
+            <p className="fine">The client gets an email and a notification with a personal link, and can confirm or decline without signing in. Enter only what the client has asked you to. Anchor and QIB categories are open only to funds registered as AIFs.</p></form></details>}
+      </>}
 
       {book.admin && <>
         <h2 style={{ fontSize: 22, marginTop: 28 }}>Relationship managers</h2>

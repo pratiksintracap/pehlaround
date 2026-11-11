@@ -4,9 +4,9 @@ import { isSuper, can, mask } from "@/lib/perm";
 import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/db";
 import { deals, ipoBids, offices, partnerTargets, users } from "@/db/schema";
-import { saveIpoBid } from "@/lib/desk-actions";
+import { saveIpoBid, createIpoIssue } from "@/lib/desk-actions";
 import { hiddenOffices } from "@/lib/desk";
-import { IPO_CATEGORY, IPO_STATUS, fmtAmount, ipoStage, type IpoCategory } from "@/lib/ipo";
+import { AWAITING, IPO_CATEGORY, IPO_STATUS, counts, fmtAmount, ipoStage, type IpoCategory } from "@/lib/ipo";
 import { fmtIso } from "@/lib/closing";
 
 const STAGE: Record<string, [string, string]> = { open: ["Open for interest", "ok"], closed: ["Issue closed, listing awaited", "mid"], listed: ["Listed", ""], none: ["Prospectus not filed", ""] };
@@ -18,8 +18,8 @@ export default async function IpoBook() {
   const me = await requireDesk();
   const move = isSuper(me), seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const db = await getDb();
-  const all = await db.select({ id: deals.id, company: deals.company, slug: deals.slug, ipo: deals.ipo }).from(deals).where(eq(deals.listed, false)).orderBy(deals.sort);
-  const issues = all.filter((d) => d.ipo?.rhp);
+  const all = await db.select({ id: deals.id, company: deals.company, slug: deals.slug, ipo: deals.ipo, ipoOnly: deals.ipoOnly, pipelineStage: deals.pipelineStage }).from(deals).where(eq(deals.listed, false)).orderBy(deals.sort);
+  const issues = all.filter((d) => (d.ipo?.rhp || d.ipoOnly) && d.pipelineStage !== "archived");
   const ids = issues.map((d) => d.id);
   const hidden = await hiddenOffices(me);
   const bids = ids.length ? (await db.select().from(ipoBids).where(inArray(ipoBids.dealId, ids)).orderBy(desc(ipoBids.createdAt))).filter((b) => !hidden.has(b.officeId)) : [];
@@ -39,7 +39,7 @@ export default async function IpoBook() {
       <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>IPO book</h1>
       <p className="fine" style={{ marginBottom: 16 }}>Interest registered by offices in each company&apos;s public issue. An issue appears here, and to approved offices and partners, once &ldquo;Price band announced&rdquo; has a date on the deal. These are indications, not applications: each office applies through its own broker, and anchor allocation is the lead manager&apos;s decision.</p>
       {issues.length ? issues.map((d) => {
-        const stage = ipoStage(d.ipo), mine = bids.filter((b) => b.dealId === d.id), live = mine.filter((b) => b.status !== "Withdrawn");
+        const stage = ipoStage(d.ipo), mine = bids.filter((b) => b.dealId === d.id), live = mine.filter(counts), waiting = mine.filter((b) => b.status === AWAITING).length;
         const byCat = (Object.keys(IPO_CATEGORY) as IpoCategory[]).map((c) => [c, live.filter((b) => b.category === c)] as const).filter(([, xs]) => xs.length);
         const byFirm = new Map<number | null, typeof live>();
         for (const b of live) { const r = office.get(b.officeId)?.referredBy ?? null; const k = r && firm.has(r) ? r : null; byFirm.set(k, [...(byFirm.get(k) ?? []), b]); }
@@ -47,11 +47,11 @@ export default async function IpoBook() {
         return (
           <section key={d.id} className="adm-card" id={`i${d.id}`}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "baseline" }}>
-              <h2 style={{ margin: 0, fontSize: 20 }}>{d.company} <span className={`pill ${STAGE[stage][1]}`}>{STAGE[stage][0]}</span></h2>
+              <h2 style={{ margin: 0, fontSize: 20 }}>{d.company} <span className={`pill ${STAGE[stage][1]}`}>{STAGE[stage][0]}</span>{d.ipoOnly ? <> <span className="pill" title="No pre-IPO round on the desk; never on the shelf">IPO only</span></> : null}</h2>
               <span style={{ display: "flex", gap: 8 }}><a className="btn sm" href={`/admin/deals/${d.id}#issue`}>Edit the issue</a>{live.length > 0 && <a className="btn sm" href={`/admin/ipo/export?deal=${d.id}`}>Export for the lead manager (CSV)</a>}</span>
             </div>
             <p className="fine">{[d.ipo.exchange, d.ipo.priceBand && `price band ${d.ipo.priceBand}`, d.ipo.issueCr && `issue ₹${d.ipo.issueCr} Cr`, d.ipo.opens && `opens ${fmtIso(d.ipo.opens)}`, d.ipo.closes && `closes ${fmtIso(d.ipo.closes)}`, d.ipo.listing && `lists ${fmtIso(d.ipo.listing)}`].filter(Boolean).join(" · ") || "Add the issue's dates and price band on the deal."}</p>
-            <p><b>{fmtAmount(sum(live))}</b> indicated by {live.length} {live.length === 1 ? "office" : "offices"}{d.ipo.issueCr && live.length ? ` · ${(sum(live) / d.ipo.issueCr * 100).toFixed(1)}% of the issue` : ""}
+            <p><b>{fmtAmount(sum(live))}</b> indicated by {live.length} {live.length === 1 ? "office" : "offices"}{d.ipo.issueCr && live.length ? ` · ${(sum(live) / d.ipo.issueCr * 100).toFixed(1)}% of the issue` : ""}{waiting ? ` · ${waiting} entered by a partner, awaiting the client` : ""}
               {byCat.length ? <small className="fine"> · {byCat.map(([c, xs]) => `${IPO_CATEGORY[c].label}: ${fmtAmount(sum(xs))} (${xs.length})`).join(" · ")}</small> : null}</p>
             {(byFirm.size > 1 || [...byFirm.keys()].some((k) => k !== null) || tg.length > 0) && <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Brought by</th><th>Target</th><th>Clients</th><th>Indicated</th></tr></thead><tbody>
               {[...new Set([...byFirm.keys(), ...tg.map((t) => t.officeId)])].map((k) => { const xs = byFirm.get(k) ?? [], t = tg.find((x) => x.officeId === k); return (
@@ -63,13 +63,18 @@ export default async function IpoBook() {
                 <tr key={b.id}><td><a href={`/admin/offices#o${b.officeId}`}>{o?.name}</a><br /><small className="fine">{u?.name} · {em(u?.email)} · {em(u?.phone)}</small></td>
                   <td>{IPO_CATEGORY[b.category as IpoCategory]?.label ?? b.category}</td><td>{fmtAmount(b.amountCr)}</td><td>{b.broker || "—"}</td>
                   <td>{o?.referredBy && firm.has(o.referredBy) ? firm.get(o.referredBy) : "—"}</td>
-                  <td>{move ? <form action={saveIpoBid} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}><input type="hidden" name="id" value={b.id} /><input type="hidden" name="back" value={`/admin/ipo#i${d.id}`} />
+                  <td>{b.status === AWAITING ? <><span className="pill mid">Awaiting client</span><br /><small className="fine">Entered by its partner firm; counts once the client confirms.</small></> : move ? <form action={saveIpoBid} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}><input type="hidden" name="id" value={b.id} /><input type="hidden" name="back" value={`/admin/ipo#i${d.id}`} />
                     <select name="status" defaultValue={b.status}>{IPO_STATUS.map((s) => <option key={s}>{s}</option>)}</select>
                     <input name="note" defaultValue={b.note ?? ""} placeholder="Note to the office" style={{ maxWidth: 170 }} /><button className="btn sm" type="submit">Save</button></form>
                     : <><span className="pill">{b.status}</span><br /><small className="fine">A super admin moves this.</small></>}</td></tr>); })}
             </tbody></table></div> : <p className="fine">No interest registered yet.</p>}
           </section>); })
-        : <p className="fine">No issue yet. On a deal, under Road to listing, give &ldquo;Price band announced&rdquo; a date and fill in the public issue; it then appears here and on investors&apos; dashboards.</p>}
+: <p className="fine">No issue yet. On a deal, under Road to listing, give &ldquo;Price band announced&rdquo; a date and fill in the public issue; or add an IPO-only issue below.</p>}
+      {can(me, "deals.edit") && <details className="adm-card" style={{ marginTop: 16 }} id="add"><summary><b>Add an IPO for a company that is not a deal on the desk</b></summary>
+        <form action={createIpoIssue} className="form"><input type="hidden" name="back" value="/admin/ipo#add" />
+          <div className="row3"><label>Company<input name="company" required maxLength={200} placeholder="Acme Industries Ltd" /></label><label>One line on what it does<input name="title" required maxLength={200} placeholder="Auto components maker, Pune" /></label><label>Exchange<input name="exchange" maxLength={40} placeholder="BSE SME" /></label></div>
+          <div><button className="btn sm" type="submit">Add the issue</button></div>
+          <p className="fine">For a lead manager&apos;s own mandate, or any IPO the group is distributing. It never appears on the shelf or the public site. Investors and partners see it under IPOs only once its price band has a date.</p></form></details>}
     </>
   );
 }

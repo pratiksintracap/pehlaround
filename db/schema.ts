@@ -122,6 +122,9 @@ export const deals = pgTable("deals", {
   // A database check keeps such a deal unpublished, closed and out of "coming to the desk"; lib/deal-guard.ts keeps it out of every investor query.
   listed: boolean("listed").notNull().default(false),
   listedInfo: jsonb("listed_info").$type<ListedInfo>(),
+  // An IPO the desk works on for a company that never had a round here. Never on the shelf (a database check keeps it
+  // in preparation); it shows only as a public issue, once its price-band prospectus is filed (lib/ipo.ts).
+  ipoOnly: boolean("ipo_only").notNull().default(false),
   // The desk's own pipeline (never shown to investors): sourced > diligence > live > interest > docs > escrow > closed. See lib/stages.ts.
   pipelineStage: text("pipeline_stage").notNull().default("sourced"),
   stageAt: timestamp("stage_at", { withTimezone: true }),
@@ -438,12 +441,18 @@ export const ipoBids = pgTable("ipo_bids", {
   userId: integer("user_id").notNull(),
   category: text("category").notNull(),          // anchor | qib | hni | individual (lib/ipo.ts)
   amountCr: numeric("amount_cr").notNull(),
-  status: text("status").notNull().default("Indicated"), // Indicated | With the lead manager | Applied | Allotted | Withdrawn
+  status: text("status").notNull().default("Indicated"), // Awaiting client | Indicated | With the lead manager | Applied | Allotted | Withdrawn
   broker: text("broker"),                        // who the office will apply through, if it said
   note: text("note"),                            // the desk's note, shown to the office
+  // Entered for the office by a person at its partner firm: status "Awaiting client" until the office confirms it,
+  // from the link emailed to it (confirmToken) or its dashboard. Until then it counts nowhere.
+  proposedByUserId: integer("proposed_by_user_id"),
+  proposedByOfficeId: integer("proposed_by_office_id"),
+  confirmToken: text("confirm_token"),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [uniqueIndex("ipo_bids_office_deal_uq").on(t.officeId, t.dealId), index("ipo_bids_deal_idx").on(t.dealId)]);
+}, (t) => [uniqueIndex("ipo_bids_office_deal_uq").on(t.officeId, t.dealId), index("ipo_bids_deal_idx").on(t.dealId), uniqueIndex("ipo_bids_token_uq").on(t.confirmToken)]);
 
 // What the desk asks of a partner firm (an office of type "broker") for one issue: how many clients to introduce and how
 // much to bring. leg: pre_ipo (the round on the desk) | ipo (the public issue that follows). Shown to that firm only.

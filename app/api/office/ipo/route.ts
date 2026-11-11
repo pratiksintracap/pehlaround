@@ -8,7 +8,8 @@ import { getDeal, canSeeNames } from "@/lib/deals";
 import { notifyDesk } from "@/lib/notify";
 import { track } from "@/lib/track";
 import { allowIp, TOO_MANY } from "@/lib/rate";
-import { IPO_CATEGORY, amountRange, categoriesFor, fmtAmount, ipoStage, lakhToCr, type IpoCategory } from "@/lib/ipo";
+import { answerProposal } from "@/lib/ipo-proposal";
+import { AWAITING, IPO_CATEGORY, amountRange, categoriesFor, fmtAmount, ipoStage, lakhToCr, type IpoCategory } from "@/lib/ipo";
 
 const to = (req: NextRequest, q: string) => NextResponse.redirect(new URL(`/dashboard?${q}#IPOs`, req.url), 303);
 const err = (req: NextRequest, m: string) => to(req, "error=" + encodeURIComponent(m));
@@ -24,11 +25,17 @@ export async function POST(req: NextRequest) {
   if (!(await allowIp("ipo", 30, 3600))) return err(req, TOO_MANY);
   const { data } = await readBody(req);
   const d = await getDeal(str(data.slug, 120));
-  if (!d || !d.published) return err(req, "That issue is not on the desk.");
+  if (!d || !(d.published || d.ipoOnly)) return err(req, "That issue is not on the desk.");
   const stage = ipoStage(d.ipo);
   const db = await getDb();
   const [prev] = await db.select().from(ipoBids).where(and(eq(ipoBids.dealId, d.id), eq(ipoBids.officeId, u.office.id)));
 
+  // Interest its partner firm entered for it: the office confirms or declines.
+  if (data.action === "confirm" || data.action === "decline") {
+    if (!prev || prev.status !== AWAITING) return err(req, "There is nothing waiting for your answer on this issue.");
+    const r = await answerProposal(prev.id, data.action === "confirm", u);
+    return r.ok ? ok(req, r.msg) : err(req, r.msg);
+  }
   if (data.action === "withdraw") {
     if (!prev || prev.status === "Withdrawn") return ok(req, "Nothing to withdraw.");
     if (prev.status === "Allotted") return err(req, "This interest is already marked allotted.");
@@ -45,8 +52,8 @@ export async function POST(req: NextRequest) {
   const [min, max] = amountRange(category);
   if (!isFinite(lakh) || lakh < min || lakh > max) return err(req, `Enter an amount between ₹${min} lakh and ₹${max.toLocaleString("en-IN")} lakh for this category.`);
   const amountCr = String(lakhToCr(lakh)), broker = str(data.broker, 120) || null;
-  if (prev && !["Indicated", "Withdrawn"].includes(prev.status)) return err(req, `Your interest is already ${prev.status.toLowerCase()}; ask the desk to change it.`);
-  if (prev) await db.update(ipoBids).set({ category, amountCr, broker, status: "Indicated", userId: u.id, updatedAt: new Date() }).where(eq(ipoBids.id, prev.id));
+  if (prev && !["Indicated", "Withdrawn", AWAITING].includes(prev.status)) return err(req, `Your interest is already ${prev.status.toLowerCase()}; ask the desk to change it.`);
+  if (prev) await db.update(ipoBids).set({ category, amountCr, broker, status: "Indicated", userId: u.id, updatedAt: new Date(), confirmToken: null, confirmedAt: null, proposedByUserId: null, proposedByOfficeId: null }).where(eq(ipoBids.id, prev.id));
   else await db.insert(ipoBids).values({ dealId: d.id, officeId: u.office.id, userId: u.id, category, amountCr, broker });
   await log(u, `Registered IPO interest of ${fmtAmount(amountCr)} as ${IPO_CATEGORY[category].label.toLowerCase()}: ${d.company}`, d.id);
   await track("ipo_interest", { officeId: u.office.id, userId: u.id, dealId: d.id, meta: { amountCr: Number(amountCr), category } });

@@ -103,10 +103,21 @@ The same record as the road to listing. `ipoStage` (`lib/ipo.ts`) reads it: `non
 then `listed`. Nothing about the issue is shown to investors or partners while it is `none`. Offices register, change
 or withdraw interest only while it is `open`.
 
+**IPO-only issues** (`deals.ipoOnly`): an IPO for a company that never had a round on the desk, added from the IPO
+book. Like a listed deal, it is not a phase: a database check keeps it in `preparing` for good, so it is never on the
+shelf, the public site or any round surface. It is shown only as a public issue, by `ipoVisible`, under the same
+`ipoStage` rule.
+
 ### IPO interest: `ipo_bids.status`
 
 `Indicated → With the lead manager → Applied → Allotted`, or `Withdrawn`. One row per office per issue. The office
 moves it only between Indicated and Withdrawn; a super admin moves the rest, and the office is told.
+
+`Awaiting client` comes before all of these when a person at the office's partner firm entered the interest for it
+(`/api/office/partner/ipo`, only for a client that person may see). It is not interest yet: `counts()` leaves it out
+of every total, target and export. The office confirms or declines, signed in or from the personal link it is sent
+(`/ipo/confirm/<token>`: no sign-in, a button press only, works once). Confirming makes it `Indicated`; declining,
+`Withdrawn`. The partner firm and the desk are told either way.
 
 ### Holders' update: `deal_updates.status`
 
@@ -203,8 +214,14 @@ Product and wording rules agreed with the founder. They apply to every page, ema
   Every surface says the same thing (`IPO_DISCLAIMER`): interest is not an application or a bid and reserves nothing;
   the office applies through its own broker on the terms of the prospectus; anchor allocation is the lead manager's.
   The desk's IPO book (`/admin/ipo`) totals interest by category and by partner firm and exports it for the lead
-  manager (super admin). A partner firm sees how many of its clients are interested and for how much, against its
-  `ipo` target; never which category or broker. Offices that signed the company's NDA are told when the issue opens.
+  manager (super admin). A partner firm sees which of its clients are interested and for how much, against its
+  `ipo` target, and may enter interest for a client, which waits for that client's confirmation. Offices that signed the company's NDA are told when the issue opens.
+- **Sellers**: a "wants to sell" lead is matched to approved offices on `/admin/sellers` (`lib/seller-match.ts`):
+  already in that company's room, buys pre-IPO secondaries, invests in the sector the desk set, ticket against the
+  size of the holding. Partner firms are never matched. Desk only: nothing is sent and no office sees a holding.
+- **Monday note to partners** (`lib/partner-digest.ts`, Settings switch): each approved partner firm's principals get
+  progress against targets, clients who joined, IPO interest awaiting a client and what is open. Only firms with
+  clients or targets; once a Monday; never fees or another firm's numbers.
 - **Teasers**: built only from public fields; the company name is stripped as a last check.
 - **Transfer readiness**: PAN, demat, CML, cancelled cheque, and authority for entities. Ready = all given; checked =
   all accepted by the desk.
@@ -229,4 +246,4 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 | UI kit | `components/ui.tsx` |
 
 Tests that hold the rules: `tests/listed-guard*.test.ts` (listed deals), `tests/investor-privacy.test.ts` (desk data),
-`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), `tests/closing.test.ts` (closing steps), `tests/ipo.test.ts` (when an issue is shown and who may choose which category), plus feature tests.
+`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), `tests/closing.test.ts` (closing steps), `tests/ipo.test.ts` (when an issue is shown and who may choose which category), `tests/four-more.test.ts` (IPO-only issues, client confirmation, seller matching), plus feature tests.

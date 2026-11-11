@@ -20,8 +20,9 @@ export type Settings = {
   approvalTime: string;       // what new offices are told about the wait for approval
   hniMinCr: string;           // the smallest allocation an individual investor (HNI) may request, in ₹ crore; below a room's own minimum
   callTargetHours: string;    // the desk's target for setting up a requested management call
+  partnerDigest: boolean;     // the Monday email to each partner firm's principals: progress against targets, open issues
 };
-const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false, referrals: true, approvalTime: "usually within a few minutes", hniMinCr: "0.25", callTargetHours: "24" };
+const DEFAULTS: Settings = { requireApproval: true, requirePan: false, announcement: "", announcementLink: "", notifyDeskEmail: process.env.ADMIN_EMAIL || "", onboardingEmails: true, promises: DEFAULT_PROMISES, aiAnalyst: true, aiBudget: "100", analystContacts: false, referrals: true, partnerDigest: true, approvalTime: "usually within a few minutes", hniMinCr: "0.25", callTargetHours: "24" };
 
 const settingRows = cachedPublic(async () => { const db = await getDb(); return db.select().from(settings); }, "settings");
 export async function getSettings(): Promise<Settings> {

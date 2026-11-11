@@ -288,6 +288,13 @@
       "when": 1794320000000,
       "tag": "0040_ipo_bids",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794330000000,
+      "tag": "0041_ipo_only_and_proposals",
+      "breakpoints": true
     }
   ]
 }

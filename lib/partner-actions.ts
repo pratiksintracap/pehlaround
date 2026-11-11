@@ -35,15 +35,16 @@ export async function invitePartner(f: FormData) {
 export async function savePartnerTarget(f: FormData) {
   const me = await requirePerm("workflow");
   const officeId = Number(f.get("officeId")), dealId = Number(f.get("dealId"));
-  const leg = str(f, "leg", 10) === "ipo" ? "ipo" : "pre_ipo";
+  let leg = str(f, "leg", 10) === "ipo" ? "ipo" : "pre_ipo";
   const back = `${HERE}#p${officeId}`;
   const pos = (k: string) => { const v = parseFloat(str(f, k, 20).replace(/,/g, "")); return isFinite(v) && v > 0 ? v : null; };
   const intros = pos("intros") ? Math.round(pos("intros")!) : null, amountCr = pos("amountCr"), note = str(f, "note", 300) || null;
   const db = await getDb();
   const [o] = await db.select({ id: offices.id, name: offices.name, investorType: offices.investorType }).from(offices).where(eq(offices.id, officeId));
   if (!o || o.investorType !== "broker") fail(HERE, "That office is not a partner firm.");
-  const [d] = await db.select({ id: deals.id, company: deals.company }).from(deals).where(investorWhere(eq(deals.id, dealId)));
+  const [d] = await db.select({ id: deals.id, company: deals.company, ipoOnly: deals.ipoOnly }).from(deals).where(investorWhere(eq(deals.id, dealId)));
   if (!d) fail(back, "Choose an issue.");
+  if (d!.ipoOnly) leg = "ipo"; // an IPO-only issue has no round on the desk
   const where = and(eq(partnerTargets.officeId, officeId), eq(partnerTargets.dealId, dealId), eq(partnerTargets.leg, leg));
   const [prev] = await db.select().from(partnerTargets).where(where);
   if (!intros && !amountCr) {
