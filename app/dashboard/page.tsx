@@ -24,6 +24,7 @@ import { visibleClients } from "@/lib/partner-math";
 import { closingSteps, isClosing, fmtIso } from "@/lib/closing";
 import { AWAITING, IPO_CATEGORY, IPO_DISCLAIMER, amountRange, categoriesFor, fmtAmount, ipoVisible, ipoStage } from "@/lib/ipo";
 import { DeckPanel } from "@/components/DeckPanel";
+import { HoldingsPanel, holdingsData } from "@/components/HoldingsPanel";
 import { officeTransfer, readiness, KYC_KINDS, fmtSize, needsAuthority, type KycKind } from "@/lib/transfer";
 
 export const metadata: Metadata = { title: "Your office", robots: { index: false } };
@@ -111,6 +112,8 @@ export default async function Dashboard({ searchParams }: P) {
   const myBids = ipoDeals.length ? await db.select().from(ipoBids).where(eq(ipoBids.officeId, office.id)) : [];
   const proposerFirm = new Map((await Promise.all([...new Set(myBids.filter((x) => x.status === AWAITING && x.proposedByOfficeId).map((x) => x.proposedByOfficeId!))].map(async (id) => [id, (await db.select({ name: offices.name }).from(offices).where(eq(offices.id, id)))[0]?.name ?? "your adviser's firm"] as const))));
   const ipoCats = categoriesFor(office);
+  const hold = await holdingsData(office.id);
+  const deskWorth = { cost: holdings.reduce((t, x) => t + x.h.costRs, 0), value: holdings.reduce((t, x) => t + (x.h.value?.rs ?? x.h.costRs), 0), count: holdings.length };
   const pfCost = holdings.reduce((t, x) => t + x.h.costRs, 0);
   const marked = holdings.filter((x) => x.h.value);
   const pfMarked = marked.length, pfValue = marked.reduce((t, x) => t + x.h.value!.rs, 0), pfMarkedCost = marked.reduce((t, x) => t + x.h.costRs, 0);
@@ -177,6 +180,7 @@ export default async function Dashboard({ searchParams }: P) {
     ...(ready ? [["Transfer", "Ready to transfer", "M7 17l-4-4 4-4M3 13h13M17 7l4 4-4 4", trGap || null] as [string, string, string, number | null]] : []),
     ...(ipoDeals.length ? [["IPOs", "IPOs", "M3 17l6-6 4 4 8-8M15 7h6v6", (myBids.filter((x) => x.status === AWAITING).length || ipoDeals.filter((d) => ipoStage(d.ipo) === "open").length) || null] as [string, string, string, number | null]] : []),
     ["Portfolio", "Portfolio", "M4 19V9M10 19V5M16 19v-7M22 19H2", allotted.length + closing.length || null],
+    ["Holdings", "Everything you hold", "M3 3v18h18M7 14l4-4 3 3 5-6", hold.hs.length + hold.ws.length || null],
     ["Profile", "Investment profile", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", null],
     ["Team", "Team", "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8", team.length > 1 ? team.length : null],
     ["Log", "Activity log", "M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z", null],
@@ -368,6 +372,8 @@ export default async function Dashboard({ searchParams }: P) {
           </article>); })}</div>
         <p className="fine">{IPO_DISCLAIMER} The desk takes no view on the price.</p>
       </section>}
+
+      <HoldingsPanel data={hold} canCommit={canCommit} desk={deskWorth} />
 
       <section className="panel" data-panel="Portfolio" hidden>
         {closing.length > 0 && <div className="pf-list" style={{ marginBottom: 14 }}>{closing.map(({ a, d, steps }) => { const next = steps.find((x) => x.now); return (

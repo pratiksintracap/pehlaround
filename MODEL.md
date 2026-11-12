@@ -134,6 +134,10 @@ Portfolio, marked as written by the company and not audited by the desk. Those o
 
 `open → done`; snoozing moves `dueOn`.
 
+### Holdings outside the desk and followed companies
+- `outside_holdings`: an office's unlisted holdings bought elsewhere (added by hand) and listed holdings (imported from a broker's .xlsx/.csv; a new import replaces the last). Values are the office's own price, or the price in the broker's file; none means at cost. The desk takes no view on any price. Only the office sees these: no desk screen reads them. Editing needs commit rights.
+- `watches`: companies an office follows (max 100; one per normalised name). Adding an unlisted holding follows it. A daily cron (`watch`) matches names to the public IPO calendar and tells the office once per stage (dates announced, open, closed, listed, with the lock-in end on listing). A company followed late is told only where it stands. `lib/outside.ts`, `lib/watch-alerts.ts`.
+
 ## 4. Who sees what
 
 The rule for every investor-facing read: go through `investorWhere` (deals), filter by the signed-in office, and select

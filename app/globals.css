@@ -1620,6 +1620,21 @@ button[data-busy]{opacity:.6;cursor:progress}
 .pt-form .form{max-width:none}
 @media (max-width:900px){.pt-hero-in,.pt-apply{grid-template-columns:1fr}.pt-mock{transform:none}.pt-grid{grid-template-columns:1fr 1fr}.pt-steps{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){.pt-grid,.pt-steps{grid-template-columns:1fr}.pt-mock-kpi b{font-size:17px}}
+/* Holdings tab */
+.hd-block{margin-top:14px}
+.hd-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.hd-table td,.hd-table th{vertical-align:top}
+.hd-table .up{color:var(--live)}.hd-table .down{color:var(--bad)}
+.hd-add{margin-top:12px}.hd-add>summary{list-style:none;display:inline-flex;cursor:pointer}.hd-add>summary::-webkit-details-marker{display:none}
+.hd-add[open]>summary{margin-bottom:10px}
+.hd-edit>summary{cursor:pointer;color:var(--accent);font-size:13px}
+.hd-edit[open]{min-width:min(560px,80vw)}
+.hd-import{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.hd-watch{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}
+.hd-watch li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;border:1px solid var(--line);border-radius:10px;padding:8px 8px 8px 12px}
+.hd-watch li form{margin-left:auto}
+.hd-watch li small{flex-basis:100%}
+.hd-follow .row{align-items:end}
 
 /* Footer: operated-by under the brand */
 footer .ft-brand p.ft-op{margin:18px 0 0;font-size:12.5px;line-height:1.55;color:var(--ink3)}

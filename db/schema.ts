@@ -454,6 +454,41 @@ export const ipoBids = pgTable("ipo_bids", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("ipo_bids_office_deal_uq").on(t.officeId, t.dealId), index("ipo_bids_deal_idx").on(t.dealId), uniqueIndex("ipo_bids_token_uq").on(t.confirmToken)]);
 
+// What an office holds outside the desk, recorded by the office itself: unlisted shares bought elsewhere (kind
+// "unlisted") and listed shares imported from a broker's holdings file (kind "listed", source "import"). Valued at
+// the office's own price, never the desk's. Private to the office: no desk screen reads this table.
+export const outsideHoldings = pgTable("outside_holdings", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id").notNull(),
+  userId: integer("user_id"),
+  kind: text("kind").notNull().default("unlisted"),    // unlisted | listed
+  company: text("company").notNull(),
+  symbol: text("symbol"),
+  isin: text("isin"),
+  shares: doublePrecision("shares"),
+  costPerShare: doublePrecision("cost_per_share"),
+  boughtOn: text("bought_on"),                          // YYYY-MM-DD
+  valuePerShare: doublePrecision("value_per_share"),   // the office's own current value a share
+  valuedOn: text("valued_on"),
+  via: text("via"),                                     // where it was bought: a platform, a broker, a round
+  note: text("note"),
+  source: text("source").notNull().default("manual"),  // manual | import
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("outside_holdings_office_idx").on(t.officeId)]);
+
+// Companies an office follows for IPO news. Matched by name against the IPO calendar (lib/ipo-calendar.ts); `told`
+// lists the stages the office has been told about, so each is told once.
+export const watches = pgTable("watches", {
+  id: serial("id").primaryKey(),
+  officeId: integer("office_id").notNull(),
+  userId: integer("user_id"),
+  name: text("name").notNull(),
+  norm: text("norm").notNull(),
+  told: jsonb("told").$type<string[]>().notNull().default([]),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("watches_office_norm_uq").on(t.officeId, t.norm)]);
+
 // What the desk asks of a partner firm (an office of type "broker") for one issue: how many clients to introduce and how
 // much to bring. leg: pre_ipo (the round on the desk) | ipo (the public issue that follows). Shown to that firm only.
 export const partnerTargets = pgTable("partner_targets", {
