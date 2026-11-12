@@ -42,7 +42,7 @@ export default async function DeskDeal({ params }: P) {
   const L = d.listedInfo ?? {};
   const facts: [string, string | null | undefined][] = d.listed
     ? [["Deal", L.dealType], ["Side", L.side], ["Exchange", [L.exchange, L.ticker].filter(Boolean).join(": ")], ["Size", d.roundCr ? `₹${d.roundCr} Cr` : null], ["Price", L.price], ["Counterparty", L.counterparty]]
-    : [["Round", d.roundLabel], ["Pre-money", d.preMoney], ["P/E", d.peLabel], ["Listing", d.listingLabel], ["Min ticket", d.minTicket], ["On the site", d.published ? (d.open ? "Published, room open" : "Published, closed") : d.preview ? "Coming soon" : "Not published"]];
+    : [["Round", d.roundLabel], ["Pre-money", d.preMoney], ["P/E", d.peLabel], ["Listing", d.listingLabel], ["On the site", d.published ? (d.open ? "Published, room open" : "Published, closed") : d.preview ? "Coming soon" : "Not published"]];
   return (
     <>
       <a className="dk-back" href={`/desk/pipeline#d${d.id}`}><Ico d="M15 6l-6 6 6 6" size={18} /> Pipeline</a>

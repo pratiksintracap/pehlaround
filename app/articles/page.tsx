@@ -6,6 +6,13 @@ import { Cover } from "@/components/Cover";
 const D = "Notes from the desk on Indian IPOs, pre-IPO rounds, SME listings and the market, for family offices, funds and serious investors.";
 export const metadata: Metadata = pageMeta({ path: "/articles", title: "Articles on IPOs and pre-IPO rounds", description: D });
 
+const GUIDES: [string, string, string, string][] = [
+  ["/pre-ipo-investing", "Guide", "Pre-IPO investing", "How rounds work, lock-ins, tax and what to check before you invest."],
+  ["/ipo-calendar", "Tracker", "IPO calendar", "Every main-board and SME issue: dates, price bands, listing."],
+  ["/raise", "For promoters", "Raising before an IPO", "Who invests in a pre-IPO round, at what price, and how it is run."],
+  ["/sell", "For shareholders", "Selling pre-IPO shares", "How a secondary sale works and what buyers look for."],
+];
+
 export default async function Articles({ searchParams }: { searchParams: Promise<{ subscribed?: string; error?: string }> }) {
   const { subscribed, error } = await searchParams;
   const list = await listArticles();
@@ -14,6 +21,7 @@ export default async function Articles({ searchParams }: { searchParams: Promise
       <div className="wrap phead"><span className="eyebrow">Articles</span><h1>From the desk</h1>
         <p>Short reads on IPOs, private rounds and the market, written for family offices.</p></div>
       <section className="sec tight"><div className="wrap">
+        <nav className="guides" aria-label="Guides">{GUIDES.map(([h, k, t, d]) => <a key={h} href={h}><span className="eyebrow">{k}</span><b>{t}</b><small>{d}</small></a>)}</nav>
         <div className="art-list">{list.map((a) => (
           <a key={a.id} className="art-card rv inview" href={artHref(a)} {...(a.externalUrl ? { target: "_blank", rel: "noopener" } : {})}>
             <Cover a={a} />

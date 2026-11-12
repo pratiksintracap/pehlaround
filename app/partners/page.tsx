@@ -57,7 +57,7 @@ export default async function Partners() {
             <ul className="pt-proof">
               <li><b>{open.length || live.length}</b><span>{open.length ? (open.length === 1 ? "round open now" : "rounds open now") : "companies on the desk"}</span></li>
               <li><b>8.0+</b><span>Desk Score on every deal shown</span></li>
-              <li><b>₹25 lakh</b><span>tickets from</span></li>
+              <li><b>Pre-IPO + IPO</b><span>one relationship, to listing day</span></li>
             </ul>
           </div>
           <div className="pt-mock" aria-label="An illustration of the partner desk">

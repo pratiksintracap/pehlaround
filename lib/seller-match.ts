@@ -10,7 +10,7 @@ export type Match = { officeId: number; name: string; score: number; why: string
 /** The size bands on the Sell page, in ₹ crore. */
 export const SIZE_CR: Record<string, [number, number]> = { "Under ₹1 Cr": [0, 1], "₹1–5 Cr": [1, 5], "₹5–25 Cr": [5, 25], "Above ₹25 Cr": [25, 1e6] };
 /** The ticket bands an office picks in its profile, in ₹ crore. */
-export const TICKET_CR: Record<string, [number, number]> = { "₹50 lakh – 1 crore": [0.5, 1], "₹1–2 crore": [1, 2], "₹2–5 crore": [2, 5], "₹5–25 crore": [5, 25], "Above ₹25 crore": [25, 1e6] };
+export const TICKET_CR: Record<string, [number, number]> = { "Under ₹50 lakh": [0, 0.5], "₹50 lakh – 1 crore": [0.5, 1], "₹1–2 crore": [1, 2], "₹2–5 crore": [2, 5], "₹5–25 crore": [5, 25], "Above ₹25 crore": [25, 1e6] };
 
 /** Company names compared without their legal endings, so "Acme Industries Pvt. Ltd." matches "Acme Industries Limited". */
 export const normCompany = (s: string) => s.toLowerCase().replace(/\b(private|pvt|limited|ltd|india|the)\b\.?/g, " ").replace(/[^a-z0-9]+/g, " ").trim();

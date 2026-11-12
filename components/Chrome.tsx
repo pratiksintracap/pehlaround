@@ -85,21 +85,25 @@ export function Footer({ user = null }: { user?: SessionUser | null }) {
             <a className="logo" href="/"><Mark />Before the Bell</a>
             <p><b>A front-row seat to India’s next listings.</b> IPO-bound companies for family offices, funds and qualified investors, vetted before you see them.</p>
             <a className="mail" href={`mailto:${DESK_EMAIL}`}>{DESK_EMAIL}</a>
+            <p className="ft-op"><b>Operated by SintraCap Advisors LLP</b>LLPIN ACL-6334 · <a href="https://sintracap.in" target="_blank" rel="noopener">sintracap.in</a><br />602 Lodha Supremus, Lower Parel, Mumbai 400013<br /><span className="addr">Registered office: B/3501, World View, Lodha World Towers, S.B. Marg, Lower Parel, Mumbai 400013</span></p>
           </div>
-          <div className="ft-col"><h4>Explore</h4><ul>
-            {NAV.map(([h, t]) => <li key={h}><a href={h}>{t}</a></li>)}
-            <li><a href="/articles">Articles</a></li>
-            <li><a href="/pre-ipo-investing">Pre-IPO investing guide</a></li>
+          <div className="ft-col"><h4>Invest</h4><ul>
+            <li><a href="/deals">Deals</a></li>
+            <li><a href="/how-it-works">How it works</a></li>
             <li><a href="/ipo-calendar">IPO calendar</a></li>
-            <li><a href="/raise">Raising before an IPO</a></li>
-            <li><a href="/sell">Sell your pre-IPO shares</a></li>
-            <li><a href="/partners">Partner with the desk</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
             <li><a href="/app">Get the app</a></li>
           </ul></div>
-          <div className="ft-col"><h4>Operated by</h4><ul>
-            <li className="kv"><b>SintraCap Advisors LLP</b>LLPIN ACL-6334 · <a href="https://sintracap.in" target="_blank" rel="noopener">sintracap.in</a></li>
-            <li className="kv"><b>Office</b>602 Lodha Supremus, Lower Parel, Mumbai 400013</li>
-            <li className="kv addr"><b>Registered office</b>B/3501, World View, Lodha World Towers, S.B. Marg, Lower Parel, Mumbai 400013</li>
+          <div className="ft-col"><h4>Companies and advisers</h4><ul>
+            <li><a href="/founders">List your company</a></li>
+            <li><a href="/raise">Raise before an IPO</a></li>
+            <li><a href="/sell">Sell pre-IPO shares</a></li>
+            <li><a href="/partners">Partner with the desk</a></li>
+          </ul></div>
+          <div className="ft-col"><h4>Learn</h4><ul>
+            <li><a href="/articles">Articles</a></li>
+            <li><a href="/pre-ipo-investing">Pre-IPO investing guide</a></li>
+            <li><a href="/about">About us</a></li>
           </ul></div>
           <div className="ft-col"><h4>Legal</h4><ul>
             <li><a href="/legal">Terms and privacy</a></li>

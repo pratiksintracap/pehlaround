@@ -31,9 +31,9 @@ export async function POST(req: NextRequest, { params }: P) {
   switch (action) {
     case "interest": {
       const it = d.room.interest;
-      const min = minTicket(it, user.office?.investorType, (await getSettings()).hniMinCr);
+      const min = minTicket();
       const amount = Number(data.amount);
-      if (!isFinite(amount) || amount < min - 1e-9 || amount > it.max) return jerr(`Choose an amount between ${min < 1 ? `₹${Math.round(min * 100)} lakh` : `₹${min} Cr`} and ₹${it.max} Cr.`);
+      if (!isFinite(amount) || amount < min - 1e-9 || amount > it.max) return jerr(`Choose an amount up to ₹${it.max} Cr.`);
       if (!/commit/i.test(user.rights)) return jerr("Your access is view-only. Ask your office's principal to request an allocation.", 403);
       await db.insert(interests).values({ ...base, amountCr: String(amount), colead: !!data.colead });
       await log(user, `Requested an allocation of ₹${amount} Cr${data.colead ? " (co-lead interest)" : ""}: ${d.company}`, d.id);

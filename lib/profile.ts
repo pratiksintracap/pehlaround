@@ -2,7 +2,7 @@
 // and whether a deal fits it. Shared by the dashboard, the profile form and the admin.
 export const CATEGORY = ["Individual", "HUF", "Private company", "LLP", "Trust", "Family-office AIF", "Other"];
 export const RESIDENCY = ["Resident in India", "Non-resident (FEMA route applies)"];
-export const TICKET = ["₹50 lakh – 1 crore", "₹1–2 crore", "₹2–5 crore", "₹5–25 crore", "Above ₹25 crore"];
+export const TICKET = ["Under ₹50 lakh", "₹50 lakh – 1 crore", "₹1–2 crore", "₹2–5 crore", "₹5–25 crore", "Above ₹25 crore"];
 export const AUM = ["Under ₹50 Cr", "₹50–250 Cr", "₹250–1,000 Cr", "₹1,000–5,000 Cr", "Above ₹5,000 Cr", "Prefer not to say"];
 export const HORIZON = ["Exit at listing", "1–3 years", "3–5 years", "5 years or more"];
 export const STRUCTURES = ["Pre-IPO primary", "Pre-IPO secondary", "Growth round", "SME IPO-bound"];

@@ -72,9 +72,9 @@ export default async function Register({ searchParams }: P) {
             <label>Family office, fund or investor<input required autoComplete="organization" name="entity" defaultValue={office} placeholder="e.g. Mehta Family Office" /></label>
             <label>You are investing as<select name="itype" required defaultValue=""><option value="" disabled>Select</option><option value="family_office">A family office</option><option value="fund">A fund (AIF, PMS or other)</option><option value="individual">An individual investor</option></select></label>
             <fieldset className="only-ind"><legend>Individual investors</legend>
-              <p className="fine">The desk shows companies to individuals who are accredited investors or who invest at least ₹25 lakh per company.</p>
+              <p className="fine">Pre-IPO shares are illiquid until the company lists and can lose their entire value. Please confirm one of these.</p>
               <label className="chk"><input type="radio" name="decl" value="accredited" />I am an accredited investor under SEBI&apos;s framework, or will be by the time I invest.</label>
-              <label className="chk"><input type="radio" name="decl" value="min_ticket_25l" />I will invest at least ₹25 lakh in any company I request an allocation in.</label>
+              <label className="chk"><input type="radio" name="decl" value="risk_ack" />I understand these are private, illiquid investments that can lose their entire value, and I invest only what I can hold until listing.</label>
             </fieldset>
             {pend ? null : mail
               ? <label>Password (optional)<input type="password" minLength={8} autoComplete="new-password" name="password" /><span className="hint">Leave it empty to sign in with a code we email you.</span></label>
@@ -142,12 +142,12 @@ export default async function Register({ searchParams }: P) {
             <div className="row"><label>Your role<select name="role" required defaultValue=""><option value="" disabled>Select</option><option>Principal / family member</option><option>Investing in my own name</option><option>CIO, fund manager or investment head</option><option>CFO, CA or adviser</option><option>Analyst or associate</option></select></label>
               <label>Investing entity<select name="category" required defaultValue=""><option value="" disabled>Select</option><option>Individual</option><option>HUF</option><option>Private company</option><option>LLP</option><option>Trust</option><option>AIF Category I</option><option>AIF Category II</option><option>AIF Category III</option><option>PMS</option><option>Other</option></select></label></div>
             <fieldset className="only-ind"><legend>Individual investors</legend>
-              <p className="fine">The desk shows companies to individuals who are accredited investors or who invest at least ₹25 lakh per company.</p>
+              <p className="fine">Pre-IPO shares are illiquid until the company lists and can lose their entire value. Please confirm one of these.</p>
               <label className="chk"><input type="radio" name="decl" value="accredited" />I am an accredited investor under SEBI&apos;s framework, or will be by the time I invest.</label>
-              <label className="chk"><input type="radio" name="decl" value="min_ticket_25l" />I will invest at least ₹25 lakh in any company I request an allocation in.</label>
+              <label className="chk"><input type="radio" name="decl" value="risk_ack" />I understand these are private, illiquid investments that can lose their entire value, and I invest only what I can hold until listing.</label>
             </fieldset>
             <div className="row"><label>Residency<select name="residency" required defaultValue=""><option value="" disabled>Select</option><option>Resident in India</option><option>Non-resident (FEMA route applies)</option></select></label>
-              <label>Typical ticket per deal<select name="ticket" required defaultValue=""><option value="" disabled>Select</option><option>₹50 lakh – 1 crore</option><option>₹1–2 crore</option><option>₹2–5 crore</option><option>₹5–25 crore</option><option>Above ₹25 crore</option></select></label></div>
+              <label>Typical ticket per deal<select name="ticket" required defaultValue=""><option value="" disabled>Select</option><option>Under ₹50 lakh</option><option>₹50 lakh – 1 crore</option><option>₹1–2 crore</option><option>₹2–5 crore</option><option>₹5–25 crore</option><option>Above ₹25 crore</option></select></label></div>
             <label className="chk"><input type="checkbox" required name="privacy" /><span>I consent to the use of my details as set out in the <a href="/legal" target="_blank">privacy notice</a>, to identify me and prepare documents, kept while I am registered and as the law requires. Questions or deletion: <a href={`mailto:${GRIEVANCE.email}`}>{GRIEVANCE.email}</a>.</span></label>
             <label className="chk"><input type="checkbox" required name="risk" /><span>I have read the <a href="#" data-show-disclaimer="">site disclaimer</a> and understand that unlisted investments are illiquid and can lose their entire value, that Before the Bell does not give investment advice, and that I decide on the documents and my own advice.</span></label>
             <label className="chk"><input type="checkbox" name="contact" /><span>Optional: Before the Bell may call, email or WhatsApp me about deals on the desk. I can withdraw this at any time.</span></label>

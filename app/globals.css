@@ -64,7 +64,7 @@ body.disc-open{overflow:hidden}
 
 /* v28 */
 
-footer .ft-grid{display:grid;grid-template-columns:1.4fr 1fr 1.3fr 1fr;gap:32px;padding:8px 0 28px;border-bottom:1px solid var(--line)}
+footer .ft-grid{display:grid;grid-template-columns:1.6fr 1fr 1.15fr 1fr 1.1fr;gap:32px;padding:8px 0 28px;border-bottom:1px solid var(--line)}
 footer .ft-brand .logo{display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:17px;color:var(--ink);text-decoration:none}
 footer .ft-brand p{margin:12px 0 14px;font-size:14px;line-height:1.55;color:var(--ink2);max-width:32ch}
 footer .ft-brand a.mail{font-size:14px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line2,var(--line))}
@@ -78,7 +78,7 @@ footer .ft-col li.kv.addr,footer .ft-col li.kv.addr b{color:var(--ink3);opacity:
 footer .ft-disc{padding:22px 0;font-size:12.5px;line-height:1.65;color:var(--ink3);max-width:110ch;margin:0}
 footer .ft-bottom{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 0 4px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink3)}
 footer .ft-bottom a{color:var(--ink3)}
-@media (max-width:900px){footer .ft-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:900px){footer .ft-grid{grid-template-columns:1fr 1fr}footer .ft-brand{grid-column:1/-1}}
 @media (max-width:560px){footer .ft-grid{grid-template-columns:1fr;gap:24px}}
 
 /* v31: live site (forms, admin) */
@@ -1620,3 +1620,17 @@ button[data-busy]{opacity:.6;cursor:progress}
 .pt-form .form{max-width:none}
 @media (max-width:900px){.pt-hero-in,.pt-apply{grid-template-columns:1fr}.pt-mock{transform:none}.pt-grid{grid-template-columns:1fr 1fr}.pt-steps{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){.pt-grid,.pt-steps{grid-template-columns:1fr}.pt-mock-kpi b{font-size:17px}}
+
+/* Footer: operated-by under the brand */
+footer .ft-brand p.ft-op{margin:18px 0 0;font-size:12.5px;line-height:1.55;color:var(--ink3)}
+footer .ft-brand p.ft-op b{display:block;font-weight:500;color:var(--ink2);font-size:13px}
+footer .ft-brand p.ft-op a{color:inherit}
+footer .ft-brand p.ft-op .addr{opacity:.75}
+/* Articles: guides strip */
+.guides{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 28px}
+.guides a{display:block;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--card,var(--bg));text-decoration:none;color:var(--ink)}
+.guides a:hover{border-color:var(--ink3)}
+.guides b{display:block;font-size:15px;margin:4px 0}
+.guides small{color:var(--ink3);font-size:13px;line-height:1.45}
+@media (max-width:900px){.guides{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.guides{grid-template-columns:1fr}}

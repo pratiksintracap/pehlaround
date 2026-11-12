@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const inviteToken = str(data.invite, 100), linkToken = str(data.link, 100);
   const back = "/register?" + new URLSearchParams({ ...(data.next ? { next } : {}), ...(inviteToken ? { invite: inviteToken } : {}), ...(linkToken ? { link: linkToken } : {}) }).toString();
   const itype = (["family_office", "fund", "individual"] as const).find((t) => t === str(data.itype, 20)) ?? "family_office";
-  const decl = (["accredited", "min_ticket_25l"] as const).find((t) => t === str(data.decl, 20)) ?? null;
+  const decl = (["accredited", "risk_ack"] as const).find((t) => t === str(data.decl, 20)) ?? null;
   const name = str(data.name, 120), entity = str(data.entity, 160), email = str(data.email, 200).toLowerCase(), phone = str(data.phone, 40);
   const password = typeof data.password === "string" ? data.password : "";
   if (isBot(data)) return done(req, json, "/");
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     await db.update(invites).set({ acceptedAt: new Date() }).where(eq(invites.id, inv.id));
   } else {
     if (!entity) return fail(req, json, "Please enter the name of the family office, fund or investor.", back);
-    if (itype === "individual" && !decl) return fail(req, json, "Individual investors: please confirm you are an accredited investor or will invest at least ₹25 lakh per company.", back);
+    if (itype === "individual" && !decl) return fail(req, json, "Individual investors: please confirm you are an accredited investor, or that you understand the risks of pre-IPO investing.", back);
     // An invitation from the desk, a personal deal link, or (when switched on) a referral by an approved office
     // registers the office already approved.
     const st = await getSettings();

@@ -31,7 +31,7 @@ export const GUIDES: Guide[] = [
 <ul>
 <li><b>Family offices</b>, the largest and most patient pool. They write ₹1–25 Cr cheques, decide quickly once they trust the source, and usually hold through the listing.</li>
 <li><b>Category II AIFs</b> with a pre-IPO or special-situations mandate. Larger and more process-driven; they will want a term sheet and full diligence.</li>
-<li><b>Portfolio managers and wealthy individuals</b>, often through a family office or adviser, with tickets from ₹25 lakh.</li>
+<li><b>Portfolio managers and wealthy individuals</b>, often through a family office or adviser.</li>
 <li><b>Strategic investors</b> such as a customer or supplier, occasionally, when the business case is clear.</li>
 </ul>
 <p>Who you take money from shows up in the prospectus. Recognised names before the IPO help the book later; a long list of small unknown holders does not.</p>

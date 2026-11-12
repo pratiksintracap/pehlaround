@@ -225,7 +225,7 @@ export async function saveDeal(f: FormData) {
     company: s(f, "company", 200), title: s(f, "title", 200), category: s(f, "category", 80),
     headline: s(f, "headline", 600), listingLabel: s(f, "listingLabel", 80), listingMonth: s(f, "listingMonth", 7) || null, listingNote: s(f, "listingNote", 200) || null,
     score: total ?? manual, scoreParts: Object.keys(parts).length ? parts : null,
-    roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null, minTicket: s(f, "minTicket", 80) || null,
+    roundLabel: s(f, "roundLabel", 80) || null, preMoney: s(f, "preMoney", 80) || null, peLabel: s(f, "peLabel", 80) || null,
     phase: cur.ipoOnly ? "preparing" : pub && isPhase(f.get("phase")) ? (f.get("phase") as Phase) : cur.phase, sort: n(f, "sort") || 100, asOf: s(f, "asOf", 40) || null,
     ndaVersion: s(f, "ndaVersion", 40) || cur.ndaVersion,
     publicRisks: fromText.list(s(f, "publicRisks", 6000)),
@@ -236,7 +236,7 @@ export async function saveDeal(f: FormData) {
     room, updatedAt: new Date(),
   };
   await db.update(deals).set(vals).where(eq(deals.id, id));
-  const diff = changes(cur, vals, ["company", "title", "category", "headline", "listingLabel", "listingMonth", "score", "roundLabel", "preMoney", "peLabel", "minTicket",
+  const diff = changes(cur, vals, ["company", "title", "category", "headline", "listingLabel", "listingMonth", "score", "roundLabel", "preMoney", "peLabel",
     "phase", "roundCr", "dataRoomUrl", "ndaVersion", "sort", "asOf"]);
   if (JSON.stringify(cur.room) !== JSON.stringify(room)) diff.room = ["…", "room content edited"];
   if (JSON.stringify(cur.ipo) !== JSON.stringify(ipo)) diff.ipo = [cur.ipo, ipo];
@@ -497,7 +497,6 @@ export async function saveSiteSettings(f: FormData) {
     promises: s(f, "promises", 3000) || DEFAULT_PROMISES, aiAnalyst: f.get("aiAnalyst") === "on", aiBudget: String(Math.max(0, Math.round(Number(s(f, "aiBudget", 10)) || 0))),
     analystContacts: f.get("analystContacts") === "on", partnerDigest: f.get("partnerDigest") === "on",
     referrals: f.get("referrals") === "on", approvalTime: s(f, "approvalTime", 120) || "usually within a few minutes",
-    hniMinCr: (() => { const v = parseFloat(s(f, "hniMinCr", 10)); return isFinite(v) && v >= 0.05 && v <= 5 ? String(v) : "0.25"; })(),
     callTargetHours: (() => { const v = parseInt(s(f, "callTargetHours", 4)); return isFinite(v) && v >= 1 && v <= 168 ? String(v) : "24"; })(),
   });
   await log(admin, "Desk changed the site settings");

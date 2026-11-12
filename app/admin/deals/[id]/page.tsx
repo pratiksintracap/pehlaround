@@ -96,7 +96,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><IN name="listingNote" label="Listing note" value={d.listingNote} ph="main board" /><IN name="sort" label="Order on the shelf" value={d.sort} /></div>
         <div className="row"><IN name="roundLabel" label="Round (registered offices)" value={d.roundLabel} /><IN name="preMoney" label="Pre-money" value={d.preMoney} /></div>
         <div className="row"><IN name="roundCr" label="Round size, ₹ crore (allocation book)" value={d.roundCr ?? ""} ph="50" hint="Used for coverage in the Pipeline; read from the round label when empty" /><span /></div>
-        <div className="row"><IN name="peLabel" label="P/E trailing · forward" value={d.peLabel} /><IN name="minTicket" label="Minimum ticket" value={d.minTicket} /></div>
+        <div className="row"><IN name="peLabel" label="P/E trailing · forward" value={d.peLabel} /></div>
         <IN name="dataRoomUrl" label="Data bank: Google Drive folder link (layer 3, opens only from the NDA room)" value={d.dataRoomUrl} ph="https://drive.google.com/drive/folders/…" hint="Share the folder as 'Anyone with the link · Viewer' with downloading, printing and copying switched off (Drive: Share → Settings). Offices reach it only through the room, and every open is logged by name and office. Leave empty to show 'coming'." />
         <div className="row"><label>Card illustration<select name="artKey" defaultValue={artKey}>{Object.keys(ART).map((k) => <option key={k} value={k}>{k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
@@ -106,7 +106,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <TA name="lede" label="Lede under the company name" value={r.lede} rows={2} />
         <TA name="why" label="Why it is on the desk" value={r.why} rows={2} />
         <TA name="founders" label="Founders and management: name | role | LinkedIn URL" value={toText.founders(r.founders)} rows={3} hint="One person per line, e.g. Anil Mehta | Founder and MD | https://www.linkedin.com/in/anilmehta. Shown with the company name to approved investors, on the overview and in the room. The link is optional." />
-        <div className="row"><IN name="round" label="Round line" value={r.round} /><IN name="ticket" label="Family office ticket" value={r.ticket} /></div>
+        <div className="row"><IN name="round" label="Round line" value={r.round} /><input type="hidden" name="ticket" value={r.ticket ?? ""} /></div>
         <IN name="committed" label="Committed so far (optional)" value={r.committed} />
         <div className="row"><IN name="fillCr" label="Round fill: ₹ Cr committed (shows a bar in the room; blank for none)" value={r.fill ? String(r.fill.committedCr) : ""} ph="12" />
           <label className="chk" style={{ alignSelf: "end" }}><input type="checkbox" name="fillAnchor" defaultChecked={!!r.fill?.anchor} /> The lead (anchor) investor is in</label></div>

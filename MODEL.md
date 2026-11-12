@@ -188,7 +188,7 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 **Always**
 - "Operated by SintraCap" (not "backed by" or "run by").
 - Desk Scores shown are 8.0 or above.
-- HNI minimum ticket: ₹25 lakh per company (Settings, `hniMinCr`).
+- No minimum ticket anywhere on the site or product, and no mention of one. Individuals declare they are accredited or acknowledge the risks (`risk_ack`; older rows `min_ticket_25l` show neutrally). Room lines that state a minimum are filtered out (`NO_FLOOR`).
 - Emails go from desk@beforethebell.in as HTML, signed "Investment Team, Before the Bell", never sent late at night
   (queued for 9 AM IST).
 - Public deal pages are "Overview", anonymised until the office is approved.
@@ -198,7 +198,7 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 - **NDA**: per company, signed on screen by a person with commit rights in an approved office, with an emailed code.
   Signing opens that room at once (unless `REQUIRE_PAN_VERIFIED`).
 - **Desk Score**: weighted rubric (`lib/score.ts`); a total below 8.0 is not saved.
-- **Allocation requests**: minimum ticket from the deal, or the HNI minimum for individuals; step from `lib/ticket.ts`.
+- **Allocation requests**: any amount from the slider's smallest step (₹5 lakh) up to the room's maximum; no minimum is stated. `lib/ticket.ts`.
   A call request creates a task for the deal owner due within the target hours.
 - **Round fill**: the desk sets committed ₹ Cr and whether the anchor is in; the room shows a bar.
 - **Referrals**: an approved office's code (`?ref=`) is remembered for 90 days and credited on registration. A broker's

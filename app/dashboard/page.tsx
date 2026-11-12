@@ -249,7 +249,6 @@ export default async function Dashboard({ searchParams }: P) {
               <div><dt>Pre-money</dt><dd>{d.preMoney || "—"}</dd></div>
               <div><dt>P/E</dt><dd>{d.peLabel || "—"}</dd></div>
               <div><dt>Listing</dt><dd>{d.listingLabel}{d.listingNote ? ` · ${d.listingNote}` : ""}</dd></div>
-              <div><dt>Min ticket</dt><dd>{d.minTicket || "—"}</dd></div>
               {d.score != null && <div><dt>Desk Score</dt><dd>{d.score.toFixed(1)}</dd></div>}
             </dl>
             <div className="dr-acts">
@@ -586,7 +585,7 @@ export default async function Dashboard({ searchParams }: P) {
               <div className="row">
                 {!office.category && <label>The office invests as<select name="category" required defaultValue=""><option value="" disabled>Select</option><option>Individual</option><option>HUF</option><option>Private company</option><option>LLP</option><option>Trust</option><option>Family-office AIF</option><option>Other</option></select></label>}
                 {!office.residency && <label>Residency<select name="residency" required defaultValue=""><option value="" disabled>Select</option><option>Resident in India</option><option>Non-resident (FEMA route applies)</option></select></label>}
-                {!office.ticket && <label>Typical ticket per deal<select name="ticket" required defaultValue=""><option value="" disabled>Select</option><option>₹50 lakh – 1 crore</option><option>₹1–2 crore</option><option>₹2–5 crore</option><option>₹5–25 crore</option><option>Above ₹25 crore</option></select></label>}
+                {!office.ticket && <label>Typical ticket per deal<select name="ticket" required defaultValue=""><option value="" disabled>Select</option><option>Under ₹50 lakh</option><option>₹50 lakh – 1 crore</option><option>₹1–2 crore</option><option>₹2–5 crore</option><option>₹5–25 crore</option><option>Above ₹25 crore</option></select></label>}
               </div>
               <div><button className="btn" type="submit">Save</button></div>
             </form>

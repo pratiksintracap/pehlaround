@@ -101,7 +101,6 @@ export const SEED_DEALS: SeedDeal[] = [
         { k: "Primary component", v: "None; no new money to the company in this transaction" },
         { k: "Lock-in", v: LOCKIN },
         { k: "Demat and ISIN", v: "Equity shares held in demat with an active ISIN; transferred through the depository and credited to your demat against payment" },
-        { k: "Family office ticket", v: "₹1 Cr minimum; co-lead positions available" },
         { k: "Documentation", v: "Share purchase agreement, transfer deed, demat transfer; payment to the seller against transfer" },
       ],
       path: [
@@ -220,7 +219,6 @@ export const SEED_DEALS: SeedDeal[] = [
         { k: "Conditions", v: "Audited FY26 accounts and the desk's diligence" },
         { k: "Lock-in", v: LOCKIN },
         { k: "Demat and ISIN", v: DEMAT },
-        { k: "Family office ticket", v: "₹50 L minimum" },
         { k: "Documentation", v: "PAS-4 private placement offer letter, shareholders' agreement, PAS-3 on allotment" },
       ],
       path: [
@@ -337,7 +335,6 @@ export const SEED_DEALS: SeedDeal[] = [
         { k: "Documentation", v: "Diligence, then the subscription and shareholders' agreement; PAS-4 offer letter and PAS-3 on allotment" },
         { k: "Lock-in", v: LOCKIN },
         { k: "Demat and ISIN", v: DEMAT },
-        { k: "Family office ticket", v: "₹50 L minimum" },
       ],
       path: [
         { status: "done", title: "Receivables financing line sanctioned", note: "Oct 2026" },
@@ -447,7 +444,6 @@ export const SEED_DEALS: SeedDeal[] = [
         { k: "IPO plan", v: "Main board by July 2027, on FY27 numbers; the memorandum assumes a ₹250 Cr+ primary issue" },
         { k: "Lock-in", v: LOCKIN },
         { k: "Demat and ISIN", v: DEMAT },
-        { k: "Family office ticket", v: "₹1 Cr minimum" },
       ],
       path: [
         { status: "done", title: "Capacity to 245 KLPD", note: "Running at 100%" },
@@ -549,7 +545,6 @@ export const SEED_DEALS: SeedDeal[] = [
         { k: "Promoter dilution at IPO", v: "Promoters are open to 20–25% at listing" },
         { k: "Lock-in", v: LOCKIN },
         { k: "Demat and ISIN", v: DEMAT },
-        { k: "Family office ticket", v: "₹1 Cr minimum" },
       ],
       path: [
         { status: "done", title: "Business moved into the public company", note: "1 Oct 2025" },
@@ -649,7 +644,6 @@ export const SEED_DEALS: SeedDeal[] = [
         { k: "IPO plan", v: "SME IPO, targeted for September 2027" },
         { k: "Lock-in", v: "Pre-IPO shares are locked in after listing under SEBI ICDR; confirm the period in the documents" },
         { k: "Demat and ISIN", v: DEMAT },
-        { k: "Family office ticket", v: "₹50 L minimum" },
       ],
       path: [
         { status: "done", title: "FY25 audit signed", note: "Sep 2025" },

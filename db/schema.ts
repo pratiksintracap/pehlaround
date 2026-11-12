@@ -14,7 +14,7 @@ export const offices = pgTable("offices", {
   name: text("name").notNull(),                 // "Mehta Family Office"
   category: text("category"),                   // Individual, HUF, Private company, LLP, Trust, ...
   investorType: text("investor_type").notNull().default("family_office"), // family_office | fund | individual
-  declaration: text("declaration"),             // individuals: "accredited" or "min_ticket_25l", as declared at registration
+  declaration: text("declaration"),             // individuals: "accredited" or "risk_ack" (older rows: "min_ticket_25l"), as declared at registration
   residency: text("residency"),
   ticket: text("ticket"),
   entityName: text("entity_name"),              // investing entity, as on PAN

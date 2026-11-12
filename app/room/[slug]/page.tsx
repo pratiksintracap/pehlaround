@@ -16,7 +16,7 @@ import { isDesk } from "@/lib/perm";
 import { Founders } from "@/components/Founders";
 import { PeerCompare } from "@/components/PeerCompare";
 import { peerCompareFor } from "@/lib/peers";
-import { minTicket, stepFor } from "@/lib/ticket";
+import { NO_FLOOR, minTicket, stepFor } from "@/lib/ticket";
 
 type P = { params: Promise<{ slug: string }> };
 export const metadata: Metadata = { title: "Deal room", robots: { index: false } };
@@ -74,8 +74,7 @@ export default async function Room({ params }: P) {
   // the office's latest word: a pass counts unless it asked for an allocation afterwards
   const passedNow = passed && (!inter || inter.createdAt < passed.createdAt) ? passed : null;
   const it = r.interest;
-  const st = await getSettings();
-  const tMin = minTicket(it, user!.office?.investorType, st.hniMinCr), tStep = stepFor(tMin, it.step), hni = tMin < it.min;
+  const tMin = minTicket(), tStep = stepFor(tMin, it.step);
   const fmtAmt = (a: number) => a < 1 ? `₹${Math.round(a * 100)} L` : `₹${a} Cr`;
   const def = inter ? Number(inter.amountCr) : Math.max(tMin, Math.min(it.def, it.max));
   const stakeLine = it.price && it.sharesCr
@@ -109,7 +108,6 @@ export default async function Room({ params }: P) {
             </div>
             <div className="roomside">
               <div className="kv"><span>Round</span><b>{r.round}</b></div>
-              <div className="kv"><span>Family office ticket</span><b>{r.ticket}</b></div>
               {r.committed && <div className="kv"><span>Committed</span><b>{r.committed}</b></div>}
               {r.fill && d.roundCr ? (() => { const tot = Number(d.roundCr), c = Math.min(r.fill.committedCr, tot), left = Math.max(0, tot - c); return (
                 <div className="fillbar" role="img" aria-label={`₹${c} Cr of ₹${tot} Cr committed, ₹${+left.toFixed(2)} Cr left`}>
@@ -176,7 +174,7 @@ export default async function Room({ params }: P) {
           {pc && <section className="panel" data-panel="Peers" hidden><PeerCompare c={pc} /></section>}
 
           <section className="panel" data-panel="Terms" hidden>
-            <dl className="terms">{r.terms.map((t, i) => <div key={i}><dt>{t.k}</dt><dd>{t.v}</dd></div>)}</dl>
+            <dl className="terms">{r.terms.filter((t) => !NO_FLOOR.test(t.k + " " + t.v)).map((t, i) => <div key={i}><dt>{t.k}</dt><dd>{t.v}</dd></div>)}</dl>
           </section>
 
           <section className="panel" data-panel="IPO path" hidden>
@@ -252,8 +250,7 @@ export default async function Room({ params }: P) {
             <div className="amt" data-price={it.price ?? ""} data-shares={it.sharesCr ?? ""} data-post={it.postCr ?? ""}>
               <label>Amount <b id="amtval">{fmtAmt(def)}</b></label>
               <input type="range" data-ticket="" min={tMin} max={it.max} step={tStep} defaultValue={def} />
-              <div className="amtrow"><span>{fmtAmt(tMin)}</span><span>{fmtAmt(it.max)}</span></div>
-              {hni && <p className="fine" style={{ marginTop: 6 }}>As an individual investor you can request from {fmtAmt(tMin)}; the room&apos;s usual minimum is {fmtAmt(it.min)}. Individual tickets fill the balance of the round once the lead investor is in.</p>}
+              <div className="amtrow"><span /><span>Up to {fmtAmt(it.max)}</span></div>
               {stakeLine && <p className="fine" id="amtstake" style={{ marginTop: 8 }}>{stakeLine}</p>}
             </div>
             <div style={{ display: "grid", gap: 8 }}>
@@ -300,7 +297,7 @@ function Scenario({ d, ticket }: { d: Deal; ticket: number }) {
         <div className="scen-inputs">
           <label><span>Projected PAT actually achieved <b data-out="ach">100%</b></span><input type="range" min="50" max="130" step="5" name="ach" defaultValue="100" /><small><span>50%</span><span>130%</span></small></label>
           <label><span>Exit P/E at listing <b data-out="pe">{s.peDefault}x</b></span><input type="range" min="6" max="45" step="1" name="pe" defaultValue={s.peDefault} /><small><span>6x</span><span>45x</span></small></label>
-          <label><span>Your ticket <b data-out="amt">{fmtAmt(ticket)}</b></span><input type="range" data-ticket="" min={Math.min(it.min, ticket)} max={it.max} step={stepFor(Math.min(it.min, ticket), it.step)} name="amt" defaultValue={ticket} /><small><span>{fmtAmt(Math.min(it.min, ticket))}</span><span>{fmtAmt(it.max)}</span></small></label>
+          <label><span>Your ticket <b data-out="amt">{fmtAmt(ticket)}</b></span><input type="range" data-ticket="" min={minTicket()} max={it.max} step={stepFor(minTicket(), it.step)} name="amt" defaultValue={ticket} /><small><span /><span>Up to {fmtAmt(it.max)}</span></small></label>
         </div>
         <div className="scen-out">
           <div className="snapcell"><span className="k">Implied value at exit</span><b data-out="value">—</b><small data-out="vsub" /></div>

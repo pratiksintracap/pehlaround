@@ -16,7 +16,7 @@ export const BOILERPLATE = {
 /** Facts a journalist can use without a call. Keep these true to the site; figures come from /about. */
 export const FACTS: [string, string][] = [
   ["What it is", "A pre-IPO deal desk for family offices, funds and qualified investors, by approval. Not a trading platform: shares are never bought or sold on the site, and no unlisted shares are listed for sale."],
-  ["Who it is for", "Family offices; AIFs, PMS and other funds with an unlisted mandate; and individual investors who are accredited or invest at least ₹25 lakh per company. MFs, insurers and FIIs are covered by SintraCap directly."],
+  ["Who it is for", "Family offices; AIFs, PMS and other funds with an unlisted mandate; and individual investors who understand the risks of unlisted shares. MFs, insurers and FIIs are covered by SintraCap directly."],
   ["How a deal reaches an office", "Each company's round is a private placement under the Companies Act, shown only to registered and approved investors after they sign that company's NDA on screen."],
   ["What the desk checks", "Audited numbers, the round and valuation against listed peers, the path to listing, the promoter's answers, and the risks the desk sees, set out the same way for every company."],
   ["Cadence", "About one new company a fortnight; articles from the desk about once a week."],

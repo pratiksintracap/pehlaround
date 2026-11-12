@@ -1,4 +1,5 @@
 import "server-only";
+import { NO_FLOOR } from "@/lib/ticket";
 import Anthropic from "@anthropic-ai/sdk";
 import { and, asc, eq, gte, or, sql, ne } from "drizzle-orm";
 import { getDb } from "@/lib/db";
@@ -48,7 +49,7 @@ type Section = (typeof SECTIONS)[number];
 
 export const TOOLS: Anthropic.Messages.ToolUnion[] = [
   { name: "list_deals", description: "Every company on the desk's shelf, with what this office may see: the anonymised sector, structure, target listing and Desk Score for all; company name, round size, pre-money and P/E once the office is approved; and whether this office has signed that company's NDA (only then can its room be read).", input_schema: { type: "object", properties: {} } },
-  { name: "get_room", description: "Read a deal room this office has opened (signed NDA). Sections: overview (company, why it is on the desk, snapshot, stake on offer), financials (P&L table, P/E, scenario inputs), valuation_and_peers (multiples, listed peer set), round_and_terms (terms, price, shares, post-money, ticket range, commitments), risks, ipo_path (listing milestones), diligence (the desk's checks and status). Ask for only the sections you need.", input_schema: { type: "object", properties: { slug: { type: "string", description: "The deal's slug from list_deals" }, sections: { type: "array", items: { type: "string", enum: [...SECTIONS] } } }, required: ["slug"] } },
+  { name: "get_room", description: "Read a deal room this office has opened (signed NDA). Sections: overview (company, why it is on the desk, snapshot, stake on offer), financials (P&L table, P/E, scenario inputs), valuation_and_peers (multiples, listed peer set), round_and_terms (terms, price, shares, post-money, largest allocation, commitments), risks, ipo_path (listing milestones), diligence (the desk's checks and status). Ask for only the sections you need.", input_schema: { type: "object", properties: { slug: { type: "string", description: "The deal's slug from list_deals" }, sections: { type: "array", items: { type: "string", enum: [...SECTIONS] } } }, required: ["slug"] } },
   { name: "get_questions", description: "Questions offices asked in a room this office has opened, with the promoter's or desk's answers.", input_schema: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "get_documents", description: "Documents listed in a room this office has opened (titles and types; the analyst cannot read their contents).", input_schema: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "get_office_profile", description: "This family office's investment profile: how it invests, ticket size, AUM band, sectors, structures, horizon, thesis, and the allocations it has requested on the desk.", input_schema: { type: "object", properties: {} } },
@@ -61,8 +62,8 @@ function room(d: Deal, sections: Section[]) {
   if (want("overview")) Object.assign(out, { sector: d.title, structure: d.category, targetListing: `${d.listingLabel}${d.listingNote ? `, ${d.listingNote}` : ""}`, deskScore: d.score, asOf: d.asOf, lede: r.lede, whyOnTheDesk: r.why, snapshot: r.snapshot, highlight: r.highlight, stakeOnOffer: r.stake });
   if (want("financials")) Object.assign(out, { financials: r.fin, pe: r.pe, scenario: r.scenario });
   if (want("valuation_and_peers")) Object.assign(out, { multiples: r.multiples, pe: r.pe, peers: r.peers, preMoney: d.preMoney, peLabel: d.peLabel, peerComparison: peerCompareFor(d.slug, r.compare) });
-  if (want("round_and_terms")) Object.assign(out, { round: r.round, minTicket: r.ticket, committed: r.committed, terms: r.terms, stakeOnOffer: r.stake,
-    allocation: { minCr: r.interest.min, maxCr: r.interest.max, pricePerShare: r.interest.price, sharesCr: r.interest.sharesCr, postMoneyCr: r.interest.postCr, coLeadOpen: r.interest.colead, note: r.interest.note } });
+  if (want("round_and_terms")) Object.assign(out, { round: r.round, committed: r.committed, terms: r.terms.filter((t) => !NO_FLOOR.test(t.k + " " + t.v)), stakeOnOffer: r.stake,
+    allocation: { maxCr: r.interest.max, pricePerShare: r.interest.price, sharesCr: r.interest.sharesCr, postMoneyCr: r.interest.postCr, coLeadOpen: r.interest.colead, note: r.interest.note } });
   if (want("risks")) out.risks = r.risks;
   if (want("ipo_path")) out.ipoPath = r.path;
   if (want("diligence")) out.diligence = r.checks;
@@ -75,7 +76,7 @@ async function runTool(c: Ctx, name: string, input: Record<string, unknown>): Pr
   if (name === "list_deals") {
     return { label: "Looking at the shelf", text: JSON.stringify(c.deals.map((d) => ({
       slug: d.slug, sector: d.title, structure: d.category, targetListing: d.listingLabel, deskScore: d.score, roomOpenToThisOffice: canOpen(c, d),
-      ...(c.names ? { company: d.company, round: d.roundLabel, preMoney: d.preMoney, peTrailingForward: d.peLabel, minTicket: d.minTicket } : { company: "(shown once the desk approves the office)" }),
+      ...(c.names ? { company: d.company, round: d.roundLabel, preMoney: d.preMoney, peTrailingForward: d.peLabel } : { company: "(shown once the desk approves the office)" }),
     }))) };
   }
   if (name === "get_office_profile") {
@@ -122,6 +123,7 @@ Where answers come from
 - The data bank comes first for anything about a company on the desk: list_deals, get_room, get_questions, get_documents. Read only the sections you need. You can only read rooms this office has signed the NDA for; if a room is closed, say so and suggest signing that company's NDA from the dashboard. Never guess what a closed room contains.
 - Use web_search for listed peers, their prices and P/E, sector and industry data, IPO market conditions, regulation (SEBI, exchanges, RBI) and news. Prefer primary or reputable sources (NSE, BSE, SEBI, company filings, rating agencies, established financial media). Never search the web for a company that is on the desk by its name; if you need context on it, rely on the room.
 - get_office_profile tells you the office's ticket size, sectors, horizon and thesis; use it when the question is about fit or sizing.
+- There is no minimum ticket on the desk. Never state or imply one; if asked, say the size that fits is agreed with the desk.
 - Say where each fact came from: "from the room" (name the section) or the web source. If the room and the web disagree, show both. If you do not know, say so.
 
 Cap tables and valuation

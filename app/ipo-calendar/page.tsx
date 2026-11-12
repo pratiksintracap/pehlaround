@@ -17,7 +17,7 @@ const FAQ: [string, string][] = [
   ["How do I apply for an IPO in India?", "Through your broker's app or your bank's net banking, using UPI or ASBA, while the issue is open. The money is blocked, not debited, until allotment. You bid in lots; the price band and lot size are set by the company before the issue opens."],
   ["What is the difference between a main-board and an SME IPO?", "Main-board issues list on the NSE and BSE main boards. SME issues list on NSE Emerge or BSE SME, are smaller, and carry larger minimum applications, typically two lots for an individual. SME shares trade in lots and can be less liquid."],
   ["When do IPO shares reach my demat?", "Allotment is usually finalised the working day after the issue closes, shares are credited the day after, and listing follows on the third working day after closing (T+3)."],
-  ["Can I invest before the IPO?", "Yes, in a pre-IPO round: a private placement or a secondary purchase while the company is still unlisted. These are arranged privately, usually with higher minimum tickets, and the shares are typically locked in for six months after listing."],
+  ["Can I invest before the IPO?", "Yes, in a pre-IPO round: a private placement or a secondary purchase while the company is still unlisted. These are arranged privately with identified investors, and the shares are typically locked in for six months after listing."],
 ];
 
 function Table({ rows, cols }: { rows: Ipo[]; cols: ("dates" | "listing" | "terms")[] }) {

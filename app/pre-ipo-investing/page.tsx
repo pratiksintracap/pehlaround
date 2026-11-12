@@ -31,7 +31,7 @@ const BODY = `
 <p>Neither is better in itself. A primary tells you the company needs capital and what for; a secondary tells you someone is selling, and the useful question is why.</p>
 
 <h2>Who can invest, and how many</h2>
-<p>A private placement can be offered to at most 200 persons in a financial year, not counting qualified institutional buyers and employees under an ESOP. The offer has to be made to identified people; a company cannot advertise it to the public. That is why genuine pre-IPO rounds are arranged privately, and why their minimum tickets are usually ₹25 lakh or more: a round has to fill within that 200-person limit.</p>
+<p>A private placement can be offered to at most 200 persons in a financial year, not counting qualified institutional buyers and employees under an ESOP. The offer has to be made to identified people; a company cannot advertise it to the public. That is why genuine pre-IPO rounds are arranged privately, with identified investors.</p>
 <p>Family offices, AIFs with an unlisted mandate, PMS and individual investors all take part. Non-residents can invest too, subject to the foreign exchange rules for the company's sector.</p>
 
 <h2>What to check before you sign</h2>
