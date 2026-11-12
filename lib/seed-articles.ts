@@ -1,6 +1,152 @@
 // The desk's opening articles. Edit or add more in /admin/articles.
 export const SEED_ARTICLES = [
   {
+    slug: "october-2026-ipo-month-listing-pop",
+    title: "₹44,610 Cr in one month: what October's IPOs say about where the return is made",
+    dek: "Fourteen main-board issues closed in October and 14 of 18 listings opened above their price. The average first-day gain was 15.8%. For anyone with real money to put to work, that number matters less than it looks.",
+    publishedAt: "2026-11-10T09:00:00+05:30",
+    body: `October was the busiest month of the year for India's primary market. Fourteen main-board issues closed and raised ₹44,610 Cr between them. Eighteen companies listed, and 14 of them opened above their issue price, for an average listing gain of 15.8%.
+
+The SME board was busier still by count: 22 issues closed, raising ₹1,173 Cr, and 27 companies listed. Only 12 of those opened above their price, but the average gain was 12.12%, pulled up by debuts such as Vans Electroengineerings, which listed 90% above its price after bids of 584 times the shares on offer.
+
+## The books were rationed, as usual
+
+The most sought-after issues were the ones hardest to buy in size.
+
+- BLS Polymers was bid 241.22 times.
+- Tonbo Imaging India was bid 135.9 times, then opened 65.71% above its price.
+- HD Fire Protect was bid 132.21 times.
+
+At those levels, a fund or family office gets a sliver of what it asks for. The 65% gain on Tonbo is real, but it was earned on allotments too small to move a portfolio.
+
+## Not every debut was a gain
+
+Orient Cables (65.44%) and Moneyview (61.76%) joined Tonbo at the top. At the other end, Acevector opened 11.5% below its price, and two other issues opened flat or slightly below. A listing-day average hides a wide spread, and it measures only the opening tick, not where the shares trade six months later, when pre-IPO holders are free to sell.
+
+## Most of the money went to sellers
+
+The first week of November followed the same pattern. EAAA India Alternatives' ₹1,200 Cr issue was entirely an offer for sale: none of it went to the company. Bombay Coated and Special Steels' ₹183 Cr issue, by contrast, was all fresh capital. When most of an IPO is existing shareholders selling, the question for a buyer is simple: what do they know about the price that you do not?
+
+## What to take from the month
+
+- The listing pop belongs to whoever was allotted shares, and in the popular issues that is very few people.
+- The bigger return in a company that lists at a premium went to the investors who were in before the book opened, at a price set against listed peers, in size.
+- Read who is selling in each offer and at what price they entered. It tells you more than the subscription figure does.`,
+    sources: [
+      { title: "IPO market October 2026: listings and money raised (IPO Guru, 1 November 2026)", url: "https://www.ipoguru.in/news/ipo-market-october-2026-listings-money-raised" },
+      { title: "Upcoming IPOs this week, 2–6 November 2026 (IPO Guru, 1 November 2026)", url: "https://www.ipoguru.in/news/upcoming-ipos-this-week-2-6-november-2026" },
+    ],
+  },
+  {
+    slug: "35-billion-lock-in-expiry-pre-ipo-exit",
+    title: "$35 billion of shares unlock by February. What a lock-in expiry means if you bought before the IPO",
+    dek: "Lock-ins end at 116 recently listed companies between now and late February, from Shiprocket and Zetwerk to Jio Platforms and SBI Funds Management. For a pre-IPO investor, the end of the lock-in is the real exit date, and it rarely arrives alone.",
+    publishedAt: "2026-11-11T09:00:00+05:30",
+    body: `About $35 billion of shares in 116 recently listed companies become free to trade between 9 November 2026 and 26 February 2027, according to Nuvama Alternative and Quantitative Research. The list reads like this year's IPO calendar.
+
+- Shiprocket: 37 million shares on 16 November.
+- Horizon Industrial Parks: 97 million shares on 18 November.
+- Zetwerk Manufacturing: 75 million shares on 20 November.
+- Jio Platforms: 36 million shares on 25 November.
+- CMR Green Technologies: 142 million shares on 9 December.
+- Turtlemint Fintech Solutions: 160 million shares on 28 December.
+- SBI Funds Management: 1.43 billion shares on 18 January.
+
+An unlock is not a sale. Holders can keep their shares, and many will. But it is the first day they can sell, and the market prices that in.
+
+## What happened last time
+
+The last big wave came in March. On 16 March, as lock-ins ended, Fractal Analytics fell as much as 4.35% and traded about 12% below its ₹900 IPO price, with about 4% of its equity freed. Aye Finance fell 7.42% the same day as about 7% of its equity became tradable, and was down 24% over the month. Nuvama counted 88 companies with lock-ins ending between March and June.
+
+## Why it matters before you invest
+
+If you buy shares before a company lists, the IPO is not your exit. Shares held before the IPO are locked in after listing, typically for six months for investors on the main board and longer on the SME platforms. Your realistic exit is the end of that lock-in, and on that date you will be selling alongside every other pre-IPO holder who wants out.
+
+That changes how a pre-IPO deal should be judged.
+
+- Model your return at the end of the lock-in, not on listing day. The listing price is a number you cannot sell at.
+- Look at how much of the company is held by investors like you. If half the equity unlocks on one day, expect pressure on that day.
+- The cushion is your entry price. A round priced well below listed peers can absorb a soft patch after the unlock. A round priced at the IPO multiple cannot.
+- Know who else is in. Founders and long-term holders rarely sell at the unlock; short-term buyers of unlisted shares often do.
+
+The companies unlocking this winter will show again how much of a pre-IPO return depends on the price you paid, not on the listing.`,
+    sources: [
+      { title: "$35 billion worth of shares set to unlock: NSE, Jio Platforms, Shiprocket among 116 companies (ETV Bharat, 10 November 2026)", url: "https://www.etvbharat.com/en/business/share-unlock-nse-jio-platforms-zetwerk-shiprocket-among-116-companies-enn26111004231" },
+      { title: "IPO lock-in expiry 2026: 91 companies face share unlocks by December (Kotak Neo, 6 October 2026)", url: "https://www.kotakneo.com/news/ipos/ipo-lock-in-expiry-91-companies-14-billion-share-unlock-december/" },
+      { title: "Fractal Analytics, Aye Finance among four stocks that slip after IPO lock-in expiry (Lokmat Times, 16 March 2026)", url: "https://www.lokmattimes.com/business/fractal-analytics-aye-finance-among-4-stocks-that-slip-up-to-74-pc-after-ipo-lock-in-expiry/amp" },
+    ],
+  },
+  {
+    slug: "mutual-funds-barred-pre-ipo-rounds-who-fills-gap",
+    title: "Mutual funds can't buy pre-IPO rounds. That is why family offices can",
+    dek: "Since SEBI's letter to AMFI, mutual fund schemes may buy only in the anchor book or the IPO itself. The largest pool of domestic equity money arrives at the price everyone else pays. The round before it is left to AIFs, family offices and private investors.",
+    publishedAt: "2026-11-12T09:00:00+05:30",
+    body: `In October 2025, SEBI wrote to the Association of Mutual Funds in India and told fund houses that their schemes may not take part in pre-IPO placements. For an IPO, a mutual fund may now buy only in the anchor investor portion or in the public issue itself.
+
+The reasoning was narrow. Mutual fund rules require a scheme's equity holdings to be listed or about to be listed. If a fund bought in a pre-IPO placement and the IPO was then delayed or pulled, the scheme would be left holding unlisted shares. SEBI said fund houses "may end up holding unlisted equity shares in case the issue or listing cannot be concluded for any reason."
+
+## What it changed
+
+Mutual funds manage tens of lakhs of crores, and the monthly SIP flow alone is more than ₹30,000 Cr. All of that money now meets a new listing at the IPO price or the anchor price, which is the top of the band. As one fund house executive put it at the time, an anchor allocation offers no pricing advantage over the IPO itself.
+
+The round before the IPO, usually priced at a discount to where the company expects to list, is closed to them. AIFs, family offices and private investors remain free to take part.
+
+## Why that matters to a family office
+
+- Less competition for allocations. The deepest domestic buyer is absent from pre-IPO rounds by rule, not by choice.
+- A built-in buyer at listing. The same funds that cannot buy before the IPO often buy in the anchor book and the open market after it. A pre-IPO investor is selling into that demand, not competing with it.
+- The discount has to be earned. A pre-IPO round carries the very risk SEBI named: the IPO may slip or not happen, and the shares stay unlisted. The entry price should pay you for that.
+
+## What to check in a pre-IPO round
+
+- How far the round is priced below listed peers, on today's numbers, not next year's.
+- How credible the listing path is: auditors, board, merchant banker, the state of the offer document.
+- What happens to you if the IPO is delayed by a year: the company's cash, its debt and who else holds the shares.
+
+The rule leaves a gap between the private round and the public book. Investors who can carry the listing risk are the ones positioned to fill it.`,
+    sources: [
+      { title: "SEBI restricts MFs from investing in pre-IPO placements, limits participation to anchor and public issues (Business Today, 24 October 2025)", url: "https://www.businesstoday.in/mutual-funds/story/sebi-restricts-mfs-from-investing-in-pre-ipo-placements-limits-participation-to-anchor-public-issues-499491-2025-10-24" },
+      { title: "SEBI prohibits mutual funds' participation in pre-IPO placements; allows investment in anchor rounds (Outlook Business)", url: "https://www.outlookbusiness.com/markets/sebi-prohibits-mutual-funds-participation-in-pre-ipo-placements-allows-investment-in-anchor-rounds" },
+    ],
+  },
+  {
+    slug: "unlisted-premium-trap-tata-capital-hdb",
+    title: "₹1,125 in the unlisted market, ₹326 at the IPO: the premium trap in pre-IPO shares",
+    dek: "Tata Capital's IPO was priced about 70% below what some unlisted buyers had paid. HDB Financial, Tata Technologies and Nazara told the same story. The lesson is not to avoid pre-IPO shares; it is to know who set the price you are paying.",
+    publishedAt: "2026-11-12T12:00:00+05:30",
+    body: `Some investors paid as much as ₹1,125 a share for Tata Capital in the unlisted market. When the company set its IPO price band in September 2025, it was ₹310 to ₹326. That is roughly 70% below the peak unlisted price, and below the ₹343 at which the company had run its own rights issue. About 37,000 public shareholders held shares going into the IPO.
+
+Tata Capital was not an exception.
+
+- HDB Financial Services traded above ₹1,200 in the unlisted market. Its IPO band was ₹700 to ₹740.
+- Tata Technologies, HDB Financial and Nazara Technologies were all priced at less than half their peak unlisted prices.
+- NSDL ended more than 37% below its grey-market peak.
+
+Some buyers were rescued by strong trading after listing. Many were not.
+
+## Why the unlisted price was wrong
+
+The unlisted market is a dealers' market in shares that already exist. Employees, early investors and intermediaries sell; buyers pay whatever the last trade was. As one investment banker put it, those trades "often happen without any interaction with the company." No new information is disclosed, nobody checks the valuation against listed peers, and the price drifts with sentiment. Then the company and its bankers set an IPO price against the market, and the gap closes in one step.
+
+## A round is a different thing
+
+A primary pre-IPO round is the company raising capital from identified investors, at a price it negotiates and documents. A secondary from a known shareholder can be the same, if the price is set against the company's numbers and its listed peers. Neither is the same as buying from a dealer's price list.
+
+## What to ask before you buy pre-IPO shares
+
+- Who set the price, and against what? A price you cannot trace to earnings and to listed peers is a guess.
+- How does it compare with the company's own last fundraise? Paying far above a recent rights issue or round is a warning.
+- Have you seen the company's numbers, audited, and spoken to it? If not, you are buying a quote, not a business.
+- When can you sell? Shares held before the IPO are locked in after listing, and unlisted liquidity before then is thin.
+- How much of your portfolio is it? Advisers commonly suggest keeping unlisted exposure to a small slice.
+
+The opportunity before an IPO is real. It belongs to investors who buy at a price that leaves the company and its bankers room to price the IPO higher, not to those who buy at a price the IPO will never reach.`,
+    sources: [
+      { title: "Tata Capital IPO price: unlisted investors face losses (Business Standard, 29 September 2025)", url: "https://www.business-standard.com/markets/ipo/tata-capital-ipo-price-unlisted-investors-loss-125092900849_1.html" },
+      { title: "Thinking unlisted shares will give big IPO gains? Experts say think again (Business Standard, 24 November 2025)", url: "https://www.business-standard.com/finance/personal-finance/thinking-unlisted-shares-will-give-big-ipo-gains-experts-say-think-again-125112400629_1.html" },
+    ],
+  },
+  {
     slug: "oversubscribed-132-times-ipo-allocation",
     title: "Oversubscribed 132 times: why the IPO book is the hardest place to build a position",
     dek: "This week a ₹712 Cr offer drew bids 132 times its size, and 99 funds took 45% of the week's largest issue before the public could bid. What reaches an ordinary applicant is a sliver.",
