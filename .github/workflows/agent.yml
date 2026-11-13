@@ -1,0 +1,38 @@
+name: Agent
+# Relays the desk assistant's sealed requests on the "agent" branch to beforethebell.in and commits the sealed answers.
+# Authenticated by GitHub OIDC: no secrets. Only ids appear in the log; requests and answers are sealed (scripts/agent.mjs).
+on:
+  push:
+    branches: [agent]
+    paths: ["agent/requests/**"]
+  workflow_dispatch:
+permissions:
+  contents: write
+  id-token: write
+concurrency:
+  group: agent
+  cancel-in-progress: false
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Relay requests
+        id: relay
+        run: node scripts/agent.mjs relay
+        continue-on-error: true
+      - name: Record answers
+        run: |
+          git config user.name "btb-agent"
+          git config user.email "desk@beforethebell.in"
+          git add -A agent
+          git diff --cached --quiet || (git commit -q -m "agent: answers [skip ci]" && git pull -q --rebase origin agent && git push -q origin HEAD:agent)
+      - name: Fail if any request failed
+        if: steps.relay.outcome == 'failure'
+        run: exit 1
