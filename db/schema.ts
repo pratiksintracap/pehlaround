@@ -5,6 +5,9 @@ import type { RoomContent, IpoProgress } from "@/lib/types";
 import type { Source } from "@/lib/source";
 
 /** What the desk records about a listed company (After the Bell). */
+/** A debt deal (desk only): a loan, NCD, CP or other facility the desk arranges for a borrower. */
+export type DebtInfo = { borrowerType?: string; sector?: string; facility?: string; amountCr?: number | null; tenorMonths?: number | null; rateBand?: string;
+  security?: string; purpose?: string; side?: string; lenders?: string; counterparty?: string; source?: string; rating?: string };
 export type ListedInfo = { exchange?: string; ticker?: string; isin?: string; sector?: string; dealType?: string; side?: string;
   sizeCr?: number | null; price?: string; marketCap?: string; counterparty?: string; source?: string };
 
@@ -122,6 +125,10 @@ export const deals = pgTable("deals", {
   // A database check keeps such a deal unpublished, closed and out of "coming to the desk"; lib/deal-guard.ts keeps it out of every investor query.
   listed: boolean("listed").notNull().default(false),
   listedInfo: jsonb("listed_info").$type<ListedInfo>(),
+  // A debt deal (loan, NCD, CP, structured credit) the desk arranges. Desk only, like a listed deal: a database check keeps
+  // it in preparation and lib/deal-guard.ts keeps it out of every investor query.
+  debt: boolean("debt").notNull().default(false),
+  debtInfo: jsonb("debt_info").$type<DebtInfo>(),
   // An IPO the desk works on for a company that never had a round here. Never on the shelf (a database check keeps it
   // in preparation); it shows only as a public issue, once its price-band prospectus is filed (lib/ipo.ts).
   ipoOnly: boolean("ipo_only").notNull().default(false),

@@ -76,7 +76,7 @@ export default async function Today() {
         <h2>Your deals</h2>
         {d.mine.length ? <ul className="dk-list">{d.mine.map((x) => (
           <li key={x.id}><a className="dk-row" href={`/desk/deals/${x.id}`}>
-            <span className="dk-row-main"><b>{x.company}</b><small>{x.listed ? "Listed company" : "Pre-IPO"}</small></span>
+            <span className="dk-row-main"><b>{x.company}</b><small>{x.listed ? "Listed company" : x.debt ? "Debt" : "Pre-IPO"}</small></span>
             <span className="dk-stage">{stageLabel(x.pipelineStage)}</span>
           </a></li>))}</ul>
           : <DkEmpty>No deals are assigned to you. {d.unowned.length ? `${d.unowned.length} have no owner yet.` : ""}</DkEmpty>}

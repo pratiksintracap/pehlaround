@@ -1,3 +1,4 @@
+import { notListed } from "@/lib/deal-guard";
 import { NextResponse, type NextRequest } from "next/server";
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { getDb } from "@/lib/db";
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (!isSuper(me)) return NextResponse.json({ error: "Super admin only" }, { status: 403 });
   const dealId = Number(req.nextUrl.searchParams.get("deal"));
   const db = await getDb();
-  const [d] = await db.select({ id: deals.id, company: deals.company, slug: deals.slug }).from(deals).where(and(eq(deals.id, dealId), eq(deals.listed, false)));
+  const [d] = await db.select({ id: deals.id, company: deals.company, slug: deals.slug }).from(deals).where(and(eq(deals.id, dealId), notListed));
   if (!d) return NextResponse.json({ error: "No such issue" }, { status: 404 });
   const bids = await db.select().from(ipoBids).where(and(eq(ipoBids.dealId, d.id), ne(ipoBids.status, "Withdrawn")));
   const oIds = [...new Set(bids.map((b) => b.officeId))];

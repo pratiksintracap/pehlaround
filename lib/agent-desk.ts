@@ -2,7 +2,7 @@ import "server-only";
 import { and, desc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { audit, deals, leads, offices, questions, tasks, users } from "@/db/schema";
-import { asStage, istDay, stageLabel } from "@/lib/stages";
+import { asStage, dealKind, istDay, stageLabel } from "@/lib/stages";
 import { log } from "@/lib/auth";
 import { deskDeals, deskMembers } from "@/lib/desk";
 
@@ -25,7 +25,7 @@ export async function deskBrief() {
   const [open, dl, lastTouch, fresh, unanswered] = await Promise.all([
     db.select({ id: tasks.id, title: tasks.title, notes: tasks.notes, dueOn: tasks.dueOn, assigneeId: tasks.assigneeId, dealId: tasks.dealId }).from(tasks)
       .where(and(eq(tasks.status, "open"), lte(tasks.dueOn, today))).orderBy(tasks.dueOn),
-    deskDeals().then((all) => all.filter((d) => d.pipelineStage !== "archived").map((d) => ({ id: d.id, company: d.company, stage: d.pipelineStage, stageAt: d.stageAt, ownerId: d.ownerId, listed: d.listed, ipoOnly: d.ipoOnly, updatedAt: d.updatedAt }))),
+    deskDeals().then((all) => all.filter((d) => d.pipelineStage !== "archived").map((d) => ({ id: d.id, company: d.company, stage: d.pipelineStage, stageAt: d.stageAt, ownerId: d.ownerId, listed: d.listed, debt: d.debt, ipoOnly: d.ipoOnly, updatedAt: d.updatedAt }))),
     db.select({ dealId: audit.dealId, last: sql<Date>`max(${audit.at})` }).from(audit).groupBy(audit.dealId),
     db.select({ kind: leads.kind, name: leads.name, company: leads.company, at: leads.createdAt }).from(leads).where(gte(leads.createdAt, since24)).orderBy(desc(leads.createdAt)),
     db.select({ id: questions.id, dealId: questions.dealId }).from(questions).where(isNull(questions.answer)),
@@ -34,7 +34,7 @@ export async function deskBrief() {
   const company = (id: number | null) => dl.find((d) => d.id === id)?.company ?? null;
   const pipeline = dl.map((d) => {
     const touched = [last.get(d.id), d.updatedAt, d.stageAt].filter(Boolean).sort((a, b) => +b! - +a!)[0] as Date;
-    return { id: d.id, company: d.company, stage: d.stage, stageLabel: stageLabel(d.stage), owner: nameOf(d.ownerId), kind: d.listed ? "listed" : d.ipoOnly ? "ipo" : "pre-ipo",
+    return { id: d.id, company: d.company, stage: d.stage, stageLabel: stageLabel(d.stage), owner: nameOf(d.ownerId), kind: dealKind(d),
       lastActivity: touched.toISOString().slice(0, 10), quiet: d.stage !== "closed" && touched < quietSince };
   });
   const newOffices = await db.select({ name: offices.name, at: offices.createdAt }).from(offices).where(gte(offices.createdAt, since24));

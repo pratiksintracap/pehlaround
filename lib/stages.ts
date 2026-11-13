@@ -17,6 +17,13 @@ export const STAGE_IDS = DEAL_STAGES.map((s) => s.id) as DealStage[];
 export const stageLabel = (id: string | null | undefined) => DEAL_STAGES.find((s) => s.id === id)?.label ?? "Sourced";
 export const asStage = (v: string): DealStage | null => (STAGE_IDS as string[]).includes(v) ? (v as DealStage) : null;
 
+/** Facilities the desk arranges on the debt side. */
+export const DEBT_FACILITIES = ["Term loan", "Working capital", "NCD", "Commercial paper", "Loan against shares", "Loan against property", "Structured debt", "Acquisition finance", "Securitisation / PTC", "Other"];
+export const BORROWER_TYPES = ["NBFC", "Company", "Promoter / holding company", "Real estate developer", "Other"];
+/** Where a deal lives in the console, by kind. */
+export const dealHref = (d: { id: number; listed?: boolean | null; debt?: boolean | null }) => (d.listed ? `/admin/after-the-bell/${d.id}` : d.debt ? `/admin/debt/${d.id}` : `/admin/deals/${d.id}`);
+export const dealKind = (d: { listed?: boolean | null; debt?: boolean | null; ipoOnly?: boolean | null }) => (d.listed ? "listed" : d.debt ? "debt" : d.ipoOnly ? "ipo" : "pre-ipo");
+
 /** Deal types the desk sees in listed companies. */
 export const LISTED_TYPES = ["Block deal", "Bulk deal", "Preferential allotment", "QIP", "Promoter stake sale", "Rights issue", "OFS", "Warrants", "Other"];
 

@@ -1,3 +1,4 @@
+import { dealHref } from "@/lib/stages";
 import { requireDesk } from "@/lib/auth";
 import { isSuper } from "@/lib/perm";
 import { notFound, redirect } from "next/navigation";
@@ -27,7 +28,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
   const db = await getDb();
   const [d] = await db.select().from(deals).where(eq(deals.id, id));
   if (!d) notFound();
-  if (d.listed) redirect(`/admin/after-the-bell/${d.id}`); // listed companies have their own desk-only page
+  if (d.listed || d.debt) redirect(dealHref(d)); // listed companies and debt deals have their own desk-only pages
   const signedOffices = await db.select({ id: offices.id, name: offices.name }).from(ndas).innerJoin(offices, eq(offices.id, ndas.officeId)).where(eq(ndas.dealId, id));
   const [links, approvedOffices] = await Promise.all([
     db.select().from(dealLinks).where(eq(dealLinks.dealId, id)).orderBy(desc(dealLinks.createdAt)).limit(50),

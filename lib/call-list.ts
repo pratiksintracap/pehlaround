@@ -29,9 +29,9 @@ export async function callList(me: { id: number; role: string }, opts: { now?: D
     db.select({ id: offices.id, approvedAt: offices.approvedAt }).from(offices).where(and(eq(offices.approval, "approved"), gte(offices.approvedAt, since(10)))),
     db.select({ officeId: passes.officeId, dealId: passes.dealId, reason: passes.reason, at: passes.createdAt }).from(passes).where(gte(passes.createdAt, since(7))),
     db.select({ officeId: deskNotes.officeId, at: deskNotes.createdAt }).from(deskNotes).where(gte(deskNotes.createdAt, since(2))),
-    db.select({ id: deals.id, company: deals.company, listed: deals.listed }).from(deals),
+    db.select({ id: deals.id, company: deals.company, listed: deals.listed, debt: deals.debt }).from(deals),
   ]);
-  const co = new Map(ds.filter((d) => !d.listed).map((d) => [d.id, d.company]));
+  const co = new Map(ds.filter((d) => !d.listed && !d.debt).map((d) => [d.id, d.company]));
   const by = new Map<number, Reason[]>();
   const add = (officeId: number | null, r: Reason) => { if (!officeId || (r.dealId && !co.has(r.dealId))) return; (by.get(officeId) ?? by.set(officeId, []).get(officeId)!).push(r); };
   const name = (id?: number | null) => (id ? co.get(id) ?? "a deal" : "a deal");

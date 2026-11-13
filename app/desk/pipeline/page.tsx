@@ -32,7 +32,7 @@ export default async function Pipeline({ searchParams }: P) {
               <li key={d.id} id={`d${d.id}`} className="dk-card">
                 <a className="dk-card-top" href={`/desk/deals/${d.id}`}>
                   <b>{d.company}</b>
-                  <small>{[d.listed ? "Listed" : "Pre-IPO", d.ownerId ? owner.get(d.ownerId) : "No owner", d.stageAt ? `since ${shortDay(d.stageAt)}` : ""].filter(Boolean).join(" · ")}</small>
+                  <small>{[d.listed ? "Listed" : d.debt ? "Debt" : "Pre-IPO", d.ownerId ? owner.get(d.ownerId) : "No owner", d.stageAt ? `since ${shortDay(d.stageAt)}` : ""].filter(Boolean).join(" · ")}</small>
                 </a>
                 {work && (
                   <form action={setDealStage} className="dk-move">

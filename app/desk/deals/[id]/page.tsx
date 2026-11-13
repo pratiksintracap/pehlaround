@@ -5,7 +5,7 @@ import { getDb } from "@/lib/db";
 import { interests, ndas } from "@/db/schema";
 import { can } from "@/lib/perm";
 import { deskDeal, deskMembers, hiddenOffices, names, workspace } from "@/lib/desk";
-import { DEAL_STAGES, stageLabel } from "@/lib/stages";
+import { DEAL_STAGES, dealHref, stageLabel } from "@/lib/stages";
 import { saveDeskNote, setDealOwner, setDealStage, logCall } from "@/lib/desk-actions";
 import { readinessFor } from "@/lib/transfer";
 import { DkTask, DkAddTask, DkEmpty, DkLogCall, Ico, ICONS, ago, shortDay } from "@/components/DeskApp";
@@ -40,16 +40,19 @@ export default async function DeskDeal({ params }: P) {
   const indicated = live.reduce((s, b) => s + (Number(b.amountCr) || 0), 0);
   const open = ws.tasks.filter((t) => t.status === "open");
   const L = d.listedInfo ?? {};
-  const facts: [string, string | null | undefined][] = d.listed
+  const D = d.debtInfo ?? {};
+  const facts: [string, string | null | undefined][] = d.debt
+    ? [["Facility", D.facility], ["Borrower", D.borrowerType], ["Amount", D.amountCr ? `₹${D.amountCr} Cr` : null], ["Tenor", D.tenorMonths ? `${D.tenorMonths} months` : null], ["Rate", D.rateBand], ["Security", D.security], ["Lenders", D.lenders], ["Source", D.source]]
+    : d.listed
     ? [["Deal", L.dealType], ["Side", L.side], ["Exchange", [L.exchange, L.ticker].filter(Boolean).join(": ")], ["Size", d.roundCr ? `₹${d.roundCr} Cr` : null], ["Price", L.price], ["Counterparty", L.counterparty]]
     : [["Round", d.roundLabel], ["Pre-money", d.preMoney], ["P/E", d.peLabel], ["Listing", d.listingLabel], ["On the site", d.published ? (d.open ? "Published, room open" : "Published, closed") : d.preview ? "Coming soon" : "Not published"]];
   return (
     <>
       <a className="dk-back" href={`/desk/pipeline#d${d.id}`}><Ico d="M15 6l-6 6 6 6" size={18} /> Pipeline</a>
       <header className="dk-dealhead">
-        <span className="dk-pill">{d.listed ? "Listed company" : d.category}</span>
+        <span className="dk-pill">{d.listed ? "Listed company" : d.debt ? "Debt" : d.category}</span>
         <h1>{d.company}</h1>
-        <p>{d.listed ? d.headline : d.title}</p>
+        <p>{d.listed || d.debt ? d.headline : d.title}</p>
       </header>
 
       <ol className="dk-stagebar" aria-label={`Stage: ${stageLabel(d.pipelineStage)}`}>
@@ -69,7 +72,7 @@ export default async function DeskDeal({ params }: P) {
 
       <dl className="dk-facts">{facts.filter(([, v]) => v).map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
 
-      {!d.listed && (
+      {!d.listed && !d.debt && (
         <section className="dk-sec">
           <h2>Investors</h2>
           <div className="dk-stats two">
@@ -128,7 +131,7 @@ export default async function DeskDeal({ params }: P) {
           : <DkEmpty>No changes recorded yet.</DkEmpty>}
       </section>
 
-      <a className="dk-console" href={d.listed ? `/admin/after-the-bell/${d.id}` : `/admin/deals/${d.id}`}><Ico d={ICONS.grid} size={18} /> Edit the deal in the console</a>
+      <a className="dk-console" href={dealHref(d)}><Ico d={ICONS.grid} size={18} /> Edit the deal in the console</a>
     </>
   );
 }

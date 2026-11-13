@@ -7,13 +7,13 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { PUBLIC_TAG } from "@/lib/cache";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { deals, deskFiles, deskNotes, ipoBids, kycFiles, leads, offices, tasks, users, type ListedInfo } from "@/db/schema";
+import { deals, deskFiles, deskNotes, ipoBids, kycFiles, leads, offices, tasks, users, type DebtInfo, type ListedInfo } from "@/db/schema";
 import { requirePerm, requireAdmin, log, changes } from "@/lib/auth";
 import { notifyOffices } from "@/lib/notify";
 import { IPO_STATUS, type IpoStatus } from "@/lib/ipo";
 import type { RoomContent } from "@/lib/types";
 import { can } from "@/lib/perm";
-import { asStage, stageLabel } from "@/lib/stages";
+import { asStage, dealHref, stageLabel } from "@/lib/stages";
 import { investorRows, investorType } from "@/lib/csv";
 import { done, fail, deskBack, resultUrl } from "@/lib/form";
 import { deskMembers, canSeeOffice, officeScope } from "@/lib/desk";
@@ -30,7 +30,7 @@ async function dealRow(id: number) {
   const db = await getDb();
   return (await db.select().from(deals).where(eq(deals.id, id)))[0] ?? null;
 }
-const dealPage = (d: { id: number; listed: boolean }) => (d.listed ? `/admin/after-the-bell/${d.id}` : `/admin/deals/${d.id}`);
+const dealPage = (d: { id: number; listed: boolean; debt?: boolean }) => dealHref(d);
 
 // ---------------------------------------------------------------- stage and owner
 export async function setDealStage(f: FormData) {
@@ -228,6 +228,48 @@ export async function saveListedDeal(f: FormData) {
   const diff = { ...changes(d, vals, ["company", "headline", "status"]), ...changes((d.listedInfo || {}) as Record<string, unknown>, info as Record<string, unknown>) };
   await log(me, `Desk updated the listed company ${vals.company}`, d.id, { entity: "deal", entityId: d.id, detail: { changes: diff } });
   back(f, `/admin/after-the-bell/${d.id}`, "Saved.");
+}
+
+// ---------------------------------------------------------------- Debt deals: loans, NCDs, CP and structured credit
+const DEBT_KEYS: (keyof DebtInfo)[] = ["borrowerType", "sector", "facility", "rateBand", "security", "purpose", "side", "lenders", "counterparty", "source", "rating"];
+function debtFrom(f: FormData): DebtInfo {
+  const o: DebtInfo = {};
+  for (const k of DEBT_KEYS) { const v = s(f, k, 300); if (v) (o as Record<string, unknown>)[k] = v; }
+  const num = (k: string) => { const v = parseFloat(s(f, k, 20).replace(/[₹,\s]/g, "")); return isFinite(v) && v > 0 ? v : null; };
+  o.amountCr = num("amountCr"); o.tenorMonths = num("tenorMonths");
+  return o;
+}
+
+export async function createDebtDeal(f: FormData) {
+  const me = await requirePerm("deals.edit");
+  const company = s(f, "company", 200);
+  if (!company) return refuse(f, "/admin/debt", "Give the borrower's name.");
+  const info = debtFrom(f);
+  const db = await getDb();
+  // Debt deals have no public page; the slug is meaningless on purpose.
+  const slug = `debt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  const [row] = await db.insert(deals).values({
+    slug, company, title: info.sector || "Debt", category: info.facility || "Debt",
+    headline: s(f, "summary", 600), listingLabel: "Debt", phase: "preparing", debt: true, debtInfo: info, sort: 600,
+    pipelineStage: asStage(s(f, "stage", 20)) ?? "sourced", stageAt: new Date(), ownerId: n(f, "ownerId") || me.id,
+    room: { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [], interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] },
+  }).returning({ id: deals.id });
+  await log(me, `Desk added the debt deal ${company}${info.facility ? ` (${info.facility})` : ""}`, row.id, { entity: "deal", entityId: row.id, detail: { changes: changes(null, { company, ...info } as Record<string, unknown>) } });
+  redirect(resultUrl(`/admin/debt/${row.id}`, "Debt deal added. It is desk-only and never appears on the site."));
+}
+
+export async function saveDebtDeal(f: FormData) {
+  const me = await requirePerm("deals.edit");
+  const d = await dealRow(n(f, "id"));
+  if (!d || !d.debt) return refuse(f, "/admin/debt", "Not a debt deal.");
+  const info = debtFrom(f);
+  const vals = { company: s(f, "company", 200) || d.company, headline: s(f, "summary", 2000), status: s(f, "status", 200) || d.status,
+    title: info.sector || "Debt", category: info.facility || "Debt" };
+  const db = await getDb();
+  await db.update(deals).set({ ...vals, debtInfo: info, updatedAt: new Date() }).where(eq(deals.id, d.id));
+  const diff = { ...changes(d, vals, ["company", "headline", "status"]), ...changes((d.debtInfo || {}) as Record<string, unknown>, info as Record<string, unknown>) };
+  await log(me, `Desk updated the debt deal ${vals.company}`, d.id, { entity: "deal", entityId: d.id, detail: { changes: diff } });
+  back(f, `/admin/debt/${d.id}`, "Saved.");
 }
 
 // ---------------------------------------------------------------- investors the desk adds itself

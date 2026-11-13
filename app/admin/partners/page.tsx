@@ -1,3 +1,4 @@
+import { notListed } from "@/lib/deal-guard";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { requireDesk } from "@/lib/auth";
 import { can, isSuper } from "@/lib/perm";
@@ -18,7 +19,7 @@ export default async function Partners() {
   const [firms, apps, ds, waiting] = await Promise.all([
     db.select().from(offices).where(eq(offices.investorType, "broker")).orderBy(desc(offices.createdAt)),
     db.select().from(leads).where(eq(leads.kind, "partner")).orderBy(desc(leads.createdAt)),
-    db.select({ id: deals.id, company: deals.company, phase: deals.phase, ipo: deals.ipo, ipoOnly: deals.ipoOnly }).from(deals).where(eq(deals.listed, false)).orderBy(deals.sort),
+    db.select({ id: deals.id, company: deals.company, phase: deals.phase, ipo: deals.ipo, ipoOnly: deals.ipoOnly }).from(deals).where(notListed).orderBy(deals.sort),
     db.select().from(deskInvites).where(and(eq(deskInvites.investorType, "broker"), isNull(deskInvites.usedAt))).orderBy(desc(deskInvites.createdAt)),
   ]);
   const fIds = firms.map((f) => f.id);

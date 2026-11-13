@@ -1,3 +1,4 @@
+import { notListed } from "@/lib/deal-guard";
 import { desc, eq, inArray } from "drizzle-orm";
 import { requireDesk } from "@/lib/auth";
 import { isSuper, can, mask } from "@/lib/perm";
@@ -18,7 +19,7 @@ export default async function IpoBook() {
   const me = await requireDesk();
   const move = isSuper(me), seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const db = await getDb();
-  const all = await db.select({ id: deals.id, company: deals.company, slug: deals.slug, ipo: deals.ipo, ipoOnly: deals.ipoOnly, pipelineStage: deals.pipelineStage }).from(deals).where(eq(deals.listed, false)).orderBy(deals.sort);
+  const all = await db.select({ id: deals.id, company: deals.company, slug: deals.slug, ipo: deals.ipo, ipoOnly: deals.ipoOnly, pipelineStage: deals.pipelineStage }).from(deals).where(notListed).orderBy(deals.sort);
   const issues = all.filter((d) => (d.ipo?.rhp || d.ipoOnly) && d.pipelineStage !== "archived");
   const ids = issues.map((d) => d.id);
   const hidden = await hiddenOffices(me);

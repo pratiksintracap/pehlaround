@@ -7,7 +7,7 @@ import { getDb } from "@/lib/db";
 import { audit, calls, interests, leads, ndas, notifications, offices, questions, users } from "@/db/schema";
 import { markDeskRead } from "@/lib/admin-actions";
 import { myDesk, deskMembers, names } from "@/lib/desk";
-import { stageLabel } from "@/lib/stages";
+import { dealHref, stageLabel } from "@/lib/stages";
 import { TYPE_LABEL, type InvestorType } from "@/lib/investor";
 import { TaskRow } from "@/components/DeskBits";
 
@@ -44,7 +44,7 @@ export default async function AdminHome() {
         <span className="k">Your desk · {me.name} · {ROLE_LABEL[me.role as DeskRole]}</span>
         <div className="md-grid">
           <div><h3 className="md-h">Your open deals <em>{desk.mine.length}</em></h3>
-            <ul className="feed">{desk.mine.length ? desk.mine.map((d) => <li key={d.id}><a href={d.listed ? `/admin/after-the-bell/${d.id}` : `/admin/deals/${d.id}#desk`}><b>{d.company}</b></a> · {stageLabel(d.pipelineStage)}{d.listed ? " · listed" : ""}</li>)
+            <ul className="feed">{desk.mine.length ? desk.mine.map((d) => <li key={d.id}><a href={d.listed || d.debt ? dealHref(d) : `/admin/deals/${d.id}#desk`}><b>{d.company}</b></a> · {stageLabel(d.pipelineStage)}{d.listed ? " · listed" : ""}</li>)
               : <li className="empty-li">No deals in your name. Set yourself as owner on a deal, or see the <a href="/admin/board">deal pipeline</a>.</li>}</ul>
             {desk.unowned.length > 0 && <p className="fine">{desk.unowned.length} {desk.unowned.length === 1 ? "deal has" : "deals have"} no owner: <a href="/admin/board?who=none">assign</a>.</p>}</div>
           <div><h3 className="md-h">Waiting for approval <em>{desk.pending.length}</em></h3>

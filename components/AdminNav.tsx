@@ -20,6 +20,7 @@ const GROUPS: [string, [string, string, string][]][] = [
   ["Content", [
     ["/admin/deals", "Deals", "M3 7h18M3 12h18M3 17h12"],
     ["/admin/after-the-bell", "After the Bell", "M3 21V9l9-6 9 6v12M8 21v-6h8v6M12 9v.01"],
+    ["/admin/debt", "Debt deals", "M3 6h18v12H3zM3 10h18M7 15h4"],
     ["/admin/articles", "Articles", "M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"],
   ]],
   ["Reach", [

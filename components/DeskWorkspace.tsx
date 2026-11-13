@@ -57,7 +57,7 @@ export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back
 
       <div className="two ws-grid">
         <div className="chart" id="files"><span className="k">Desk files · {ws.files.length}</span>
-          <p className="fine" style={{ margin: "2px 0 8px" }}>Internal links (term sheets, KYC packs, CA notes). Never shown to investors{d.listed ? "" : "; investor documents are in Documents below"}.</p>
+          <p className="fine" style={{ margin: "2px 0 8px" }}>Internal links (term sheets, KYC packs, CA notes). Never shown to investors{d.listed || d.debt ? "" : "; investor documents are in Documents below"}.</p>
           <ul className="feed">{ws.files.length ? ws.files.map((x) => (
             <li key={x.id}>{x.url ? <a href={x.url} target="_blank" rel="noopener noreferrer"><b>{x.title}</b></a> : <b>{x.title}</b>}{x.kind ? <span className="fine"> · {x.kind}</span> : null}
               <span className="fine"> · {x.who || "Desk"}, {fmtT(x.createdAt)}</span>{x.note ? <small className="dt-notes">{x.note}</small> : null}

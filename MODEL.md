@@ -134,6 +134,10 @@ Portfolio, marked as written by the company and not audited by the desk. Those o
 
 `open → done`; snoozing moves `dueOn`.
 
+### Debt deals (desk only)
+- `deals.debt` + `deals.debtInfo` (borrower type, facility, amount, tenor, rate band, security, purpose, lenders, source, rating). Loans, NCDs, CP, structured credit and NBFC-to-NBFC raises the desk arranges.
+- Desk-only exactly like After the Bell: the database check `deals_debt_desk_only` keeps one in preparation, and `notListed` / `investorVisible` in lib/deal-guard.ts exclude debt deals from every investor read. Console: /admin/debt and /admin/debt/[id]; the pipeline's kind filter has "Debt".
+
 ### Holdings outside the desk and followed companies
 - `outside_holdings`: an office's unlisted holdings bought elsewhere (added by hand) and listed holdings (imported from a broker's .xlsx/.csv; a new import replaces the last). Values are the office's own price, or the price in the broker's file; none means at cost. The desk takes no view on any price. Only the office sees these: no desk screen reads them. Editing needs commit rights.
 - `watches`: companies an office follows (max 100; one per normalised name). Adding an unlisted holding follows it. A daily cron (`watch`) matches names to the public IPO calendar and tells the office once per stage (dates announced, open, closed, listed, with the lock-in end on listing). A company followed late is told only where it stands. `lib/outside.ts`, `lib/watch-alerts.ts`.

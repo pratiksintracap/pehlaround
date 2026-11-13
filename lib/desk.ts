@@ -16,9 +16,11 @@ export type DeskDeal = typeof deals.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 
 /** Every deal on the desk, pre-IPO and listed, in desk order. */
-export async function deskDeals(opts: { listed?: boolean } = {}) {
+/** Every deal on the desk. kind: "listed" (After the Bell), "debt", or "equity" (pre-IPO and unlisted: neither of those). */
+export async function deskDeals(opts: { listed?: boolean; kind?: "listed" | "debt" | "equity" } = {}) {
   const db = await getDb();
-  const where = opts.listed === undefined ? undefined : eq(deals.listed, opts.listed);
+  const kind = opts.kind ?? (opts.listed === true ? "listed" : opts.listed === false ? "equity" : undefined);
+  const where = kind === "listed" ? eq(deals.listed, true) : kind === "debt" ? eq(deals.debt, true) : kind === "equity" ? and(eq(deals.listed, false), eq(deals.debt, false)) : undefined;
   return db.select().from(deals).where(where).orderBy(asc(deals.sort), asc(deals.id));
 }
 
@@ -73,7 +75,7 @@ export async function workspace(dealId: number, me: Who) {
 export async function names(me: Who) {
   const db = await getDb();
   const [ds, os, us] = await Promise.all([
-    db.select({ id: deals.id, company: deals.company, listed: deals.listed }).from(deals),
+    db.select({ id: deals.id, company: deals.company, listed: deals.listed, debt: deals.debt }).from(deals),
     db.select({ id: offices.id, name: offices.name }).from(offices).where(officeScope(me)),
     db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.role, ["admin", "analyst"])),
   ]);
@@ -90,7 +92,7 @@ export async function myDesk(me: Who) {
     listTasks({ assigneeId: me.id, me: me as Who }),
     db.select({ n: sql<number>`count(*)::int` }).from(tasks).where(and(eq(tasks.status, "open"), sql`${tasks.dueOn} < ${istDay()}`)),
   ]);
-  const unowned = (await db.select({ id: deals.id, company: deals.company, listed: deals.listed, pipelineStage: deals.pipelineStage }).from(deals)
+  const unowned = (await db.select({ id: deals.id, company: deals.company, listed: deals.listed, debt: deals.debt, pipelineStage: deals.pipelineStage }).from(deals)
     .where(and(sql`${deals.ownerId} is null`, ne(deals.pipelineStage, "closed"))).orderBy(asc(deals.sort)));
   return { mine, pending, myTasks, overdueAll: overdueAll[0]?.n ?? 0, unowned };
 }
