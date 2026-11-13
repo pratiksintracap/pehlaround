@@ -496,6 +496,29 @@ export const watches = pgTable("watches", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("watches_office_norm_uq").on(t.officeId, t.norm)]);
 
+// Companies the sourcing agent found that may suit the desk: pre-IPO equity, a debt need, or both. Desk only.
+// status: new > calling > qualified | passed; "added" once it is on the pipeline (dealId).
+export const prospects = pgTable("prospects", {
+  id: serial("id").primaryKey(),
+  company: text("company").notNull(),
+  norm: text("norm").notNull(),                 // the name without legal endings, for one row per company
+  cin: text("cin"), city: text("city"), sector: text("sector"),
+  fy: text("fy"),                               // the year the figures are for, e.g. "FY26"
+  revenueCr: doublePrecision("revenue_cr"), patCr: doublePrecision("pat_cr"), growthPct: doublePrecision("growth_pct"),
+  rating: text("rating"),                       // e.g. "CRISIL BBB+/Stable (Oct 2026)"
+  kind: text("kind").notNull().default("equity"), // equity | debt | both
+  why: text("why"),
+  signals: jsonb("signals").$type<string[]>().notNull().default([]),
+  sources: jsonb("sources").$type<{ title: string; url: string }[]>().notNull().default([]),
+  status: text("status").notNull().default("new"),
+  assigneeId: integer("assignee_id"),
+  notes: text("notes"),
+  dealId: integer("deal_id"),
+  foundBy: text("found_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("prospects_norm_uq").on(t.norm), index("prospects_status_idx").on(t.status)]);
+
 // What the desk asks of a partner firm (an office of type "broker") for one issue: how many clients to introduce and how
 // much to bring. leg: pre_ipo (the round on the desk) | ipo (the public issue that follows). Shown to that firm only.
 export const partnerTargets = pgTable("partner_targets", {
