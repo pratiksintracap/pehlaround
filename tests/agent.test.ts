@@ -7,7 +7,7 @@ process.env.SESSION_SECRET ??= "test-session-secret-0123456789abcdef0123456789";
 import { open, rawPublic, seal } from "@/lib/agent-crypto";
 import { exchange, sitePublicRaw } from "@/lib/agent-exchange";
 
-const ask = async (actions: Record<string, string>[], at = new Date().toISOString()) => {
+const ask = async (actions: Record<string, unknown>[], at = new Date().toISOString()) => {
   const reply = generateKeyPairSync("x25519");
   const req = { v: 1, id: "t1", at, reply: rawPublic(reply.publicKey).toString("base64"), actions };
   const out = await exchange(seal(Buffer.from(JSON.stringify(req)), sitePublicRaw()));

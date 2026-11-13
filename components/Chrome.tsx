@@ -10,7 +10,7 @@ const NAV = [
 
 /** What a signed-in person sees in the header: their product, not the marketing site. */
 function productNav(user: SessionUser): (readonly [string, string])[] {
-  if (isDesk(user)) return [["/admin", "Console"], ["/admin/board", "Deal pipeline"], ["/admin/debt", "Debt desk"], ["/admin/tasks", "Tasks"], ["/deals", "Deals as investors see them"]];
+  if (isDesk(user)) return [["/admin", "Console"], ["/admin/board", "Deal pipeline"], ["/admin/debt", "Debt desk"], ["/admin/sourcing", "Sourcing"], ["/admin/tasks", "Tasks"], ["/deals", "Deals as investors see them"]];
   if (user.role === "promoter") return [["/founder", "My company"], ["/support", "Support"]];
   return [["/dashboard", user.office?.name ? "My office" : "Dashboard"], ["/deals", "Deals"], ["/support", "Support"]];
 }

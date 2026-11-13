@@ -497,7 +497,7 @@ export const watches = pgTable("watches", {
 }, (t) => [uniqueIndex("watches_office_norm_uq").on(t.officeId, t.norm)]);
 
 // Companies the sourcing agent found that may suit the desk: pre-IPO equity, a debt need, or both. Desk only.
-// status: new > calling > qualified | passed; "added" once it is on the pipeline (dealId).
+// status (lib/prospects.ts): new > drafted > emailed > interested > added, or declined / passed at any point.
 export const prospects = pgTable("prospects", {
   id: serial("id").primaryKey(),
   company: text("company").notNull(),
@@ -515,6 +515,12 @@ export const prospects = pgTable("prospects", {
   notes: text("notes"),
   dealId: integer("deal_id"),
   foundBy: text("found_by"),
+  // Outreach: the first email goes from the desk mailbox, drafted by the assistant and sent by a person.
+  contactName: text("contact_name"), contactRole: text("contact_role"), contactEmail: text("contact_email"), website: text("website"),
+  emailSubject: text("email_subject"),          // the subject of the outreach draft, to find its thread in the desk mailbox
+  draftedAt: timestamp("drafted_at", { withTimezone: true }), emailedAt: timestamp("emailed_at", { withTimezone: true }),
+  repliedAt: timestamp("replied_at", { withTimezone: true }),
+  taskId: integer("task_id"),                   // the call task made for the banker once the company shows interest
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("prospects_norm_uq").on(t.norm), index("prospects_status_idx").on(t.status)]);

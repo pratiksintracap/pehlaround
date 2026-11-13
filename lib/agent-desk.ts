@@ -5,6 +5,7 @@ import { audit, deals, leads, offices, questions, tasks, users } from "@/db/sche
 import { asStage, dealKind, istDay, stageLabel } from "@/lib/stages";
 import { log } from "@/lib/auth";
 import { deskDeals, deskMembers } from "@/lib/desk";
+import { addProspect, prospectNames, updateProspect } from "@/lib/prospects";
 
 // The desk's scheduled assistant (morning brief, meeting follow-ups, weekly pipeline review) reads the desk through this
 // endpoint and can make two small changes: add a task, or move a deal to another pipeline stage. Every change is logged
@@ -53,7 +54,9 @@ export async function deskBrief() {
 }
 
 // { action: "task", title, notes?, dueOn?: "YYYY-MM-DD", company?, assignee? } or { action: "stage", company, stage, note }
-export async function deskAction(b: Record<string, string>): Promise<Record<string, unknown>> {
+// or the sourcing actions: { action: "prospects" } | { action: "prospect", company, ... } | { action: "prospect_update", company, status?, note? }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function deskAction(b: Record<string, any>): Promise<Record<string, unknown>> {
   const db = await getDb();
   const s = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
   const findDeal = async (name: string) => {
@@ -82,6 +85,18 @@ export async function deskAction(b: Record<string, string>): Promise<Record<stri
     await log(WHO, `Assistant moved ${d.company} from ${stageLabel(d.stage)} to ${stageLabel(stage)}${b.note ? `: ${s(b.note, 300)}` : ""}`, d.id,
       { entity: "deal", entityId: d.id, detail: { changes: { pipelineStage: [d.stage, stage] } } });
     return ({ ok: true, company: d.company, from: d.stage, to: stage });
+  }
+  // Deal sourcing (lib/prospects.ts): list what is already logged, add a find, or move one along.
+  if (b.action === "prospects") return ({ ok: true, prospects: await prospectNames() });
+  if (b.action === "prospect") {
+    const r = await addProspect(b, WHO.name);
+    if ("ok" in r) await log(WHO, `Assistant found a prospect: ${s(b.company, 200)}`, null, { entity: "prospect", entityId: r.id });
+    return r;
+  }
+  if (b.action === "prospect_update") {
+    const r = await updateProspect(b, WHO.name);
+    if ("ok" in r && r.from !== r.to) await log(WHO, `Assistant moved the prospect ${r.company} to ${r.to}${"taskId" in r ? " and added a call task" : ""}`, null, { entity: "prospect" });
+    return r;
   }
   return ({ error: "Unknown action." });
 }

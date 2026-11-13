@@ -1812,3 +1812,6 @@ footer .ft-brand p.ft-op .addr{opacity:.75}
 @media (max-width:760px){.fund2-opts{grid-template-columns:minmax(0,1fr)}}
 .fund2 h2.tt{font-size:clamp(28px,3.4vw,42px)}
 .fund2-opt .k{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+/* Sourcing (console) */
+.src-f{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.src-f select,.src-f input{font-size:13px;padding:5px 7px;max-width:170px}
