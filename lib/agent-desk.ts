@@ -6,6 +6,7 @@ import { asStage, dealKind, istDay, stageLabel } from "@/lib/stages";
 import { log } from "@/lib/auth";
 import { deskDeals, deskMembers } from "@/lib/desk";
 import { addProspect, prospectNames, updateProspect } from "@/lib/prospects";
+import { debtBook, deskInbox, inboxAction, scorecard } from "@/lib/agent-inbox";
 
 // The desk's scheduled assistant (morning brief, meeting follow-ups, weekly pipeline review) reads the desk through this
 // endpoint and can make two small changes: add a task, or move a deal to another pipeline stage. Every change is logged
@@ -96,6 +97,16 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
   if (b.action === "prospect_update") {
     const r = await updateProspect(b, WHO.name);
     if ("ok" in r && r.from !== r.to) await log(WHO, `Assistant moved the prospect ${r.company} to ${r.to}${"taskId" in r ? " and added a call task" : ""}`, null, { entity: "prospect" });
+    return r;
+  }
+  // The inbox, the debt book and the weekly scorecard (lib/agent-inbox.ts).
+  if (b.action === "inbox") return deskInbox();
+  if (b.action === "debt") return debtBook();
+  if (b.action === "scorecard") return scorecard();
+  const r = await inboxAction(b);
+  if (r) {
+    const l = r.log as { text: string; dealId: number | null } | undefined;
+    if (l) { await log(WHO, l.text, l.dealId); delete r.log; }
     return r;
   }
   return ({ error: "Unknown action." });

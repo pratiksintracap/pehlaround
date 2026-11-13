@@ -27,7 +27,7 @@ export async function draftAnswer(f: FormData) {
   const [q] = await db.select().from(questions).where(and(eq(questions.id, id), eq(questions.dealId, d.id)));
   if (!q || q.answer || q.hidden) back("That question is no longer open.", "#qa");
   if (!text) back("Write an answer first.", "#qa");
-  await db.update(questions).set({ draftAnswer: text, draftAt: new Date() }).where(eq(questions.id, id));
+  await db.update(questions).set({ draftAnswer: text, draftAt: new Date(), draftBy: null }).where(eq(questions.id, id));
   await notifyDesk({ title: `${d.company}: the promoter drafted an answer`, body: q.question.slice(0, 200), link: "/admin/activity#qs" });
   await log(u, `Promoter drafted an answer for ${d.company}`, d.id);
   back("Sent to the desk. Offices see it once the desk posts it.", "#qa");

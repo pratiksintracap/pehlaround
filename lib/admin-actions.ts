@@ -357,7 +357,7 @@ export async function answerQuestion(f: FormData) {
   await db.update(questions).set({
     question: s(f, "question", 1000) || q.question, answer: answer || null, answeredBy: answer ? (s(f, "by", 80) || "Desk") : null,
     answeredAt: answer ? (q.answeredAt ?? new Date()) : null, hidden: f.get("hidden") === "on",
-    ...(answer ? { draftAnswer: null, draftAt: null } : {}),
+    ...(answer ? { draftAnswer: null, draftAt: null, draftBy: null } : {}),
   }).where(eq(questions.id, id));
   await log(admin, `Desk ${answer ? "answered" : "updated"} a question`, q.dealId);
   if (answer && !q.answer && f.get("hidden") !== "on") {

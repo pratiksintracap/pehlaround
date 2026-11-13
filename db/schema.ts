@@ -207,6 +207,7 @@ export const questions = pgTable("questions", {
   private: boolean("private").notNull().default(false),   // asked privately: only the asking office sees it and the answer
   draftAnswer: text("draft_answer"),            // the promoter's answer from the founder portal, waiting for the desk
   draftAt: timestamp("draft_at", { withTimezone: true }),
+  draftBy: text("draft_by"),                    // who wrote the draft when it was not the promoter, e.g. "Claude (assistant)"
 }, (t) => [index("questions_deal_idx").on(t.dealId)]);
 
 export const calls = pgTable("calls", {
