@@ -1804,3 +1804,11 @@ footer .ft-brand p.ft-op .addr{opacity:.75}
 .cr-facs h3{font-size:17px;margin-bottom:6px}.cr-facs p{font-size:14px;color:var(--ink2)}
 @media (max-width:1000px){.cr-facs{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.cr-facs{grid-template-columns:minmax(0,1fr)}}
 .cr-mini{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}.cr-mini a{color:var(--accent);text-decoration:none;font-weight:500}
+/* Home: one band for founders, two ways to raise */
+.fund2{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:clamp(22px,4vw,44px)}
+.fund2-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:26px}
+.fund2-opt{display:flex;flex-direction:column;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:24px;background:var(--bg)}
+.fund2-opt h3{font-size:22px}.fund2-opt p{color:var(--ink2);flex:1}.fund2-opt .btn{margin-top:6px}
+@media (max-width:760px){.fund2-opts{grid-template-columns:minmax(0,1fr)}}
+.fund2 h2.tt{font-size:clamp(28px,3.4vw,42px)}
+.fund2-opt .k{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
