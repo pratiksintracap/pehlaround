@@ -5,12 +5,12 @@ import { isDesk } from "@/lib/perm";
 
 const NAV = [
   ["/deals", "Deals"], ["/how-it-works", "How it works"], ["/about", "About us"],
-  ["/founders", "List your company"], ["/dashboard", "Dashboard"],
+  ["/founders", "List your company"], ["/private-credit", "Raise debt"], ["/dashboard", "Dashboard"],
 ] as const;
 
 /** What a signed-in person sees in the header: their product, not the marketing site. */
 function productNav(user: SessionUser): (readonly [string, string])[] {
-  if (isDesk(user)) return [["/admin", "Console"], ["/admin/deals", "Deal pipeline"], ["/admin/tasks", "Tasks"], ["/deals", "Deals as investors see them"]];
+  if (isDesk(user)) return [["/admin", "Console"], ["/admin/board", "Deal pipeline"], ["/admin/debt", "Debt desk"], ["/admin/tasks", "Tasks"], ["/deals", "Deals as investors see them"]];
   if (user.role === "promoter") return [["/founder", "My company"], ["/support", "Support"]];
   return [["/dashboard", user.office?.name ? "My office" : "Dashboard"], ["/deals", "Deals"], ["/support", "Support"]];
 }
