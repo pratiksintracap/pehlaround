@@ -1,17 +1,17 @@
-// Shared pieces of the Private credit pages: the section's sub-navigation, the call-to-action band and the guide layout.
+// Shared pieces of the debt desk pages: the section's sub-navigation, the call-to-action band and the guide layout.
 import { CREDIT_APP, CREDIT_BASE, CREDIT_GUIDES, creditGuide } from "@/lib/credit";
 import { ld } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 import { CreditReveal } from "@/components/credit/CreditReveal";
 
-const NAV: [string, string][] = [["", "Overview"], ["/lenders", "For lenders"], ["/borrowers", "For borrowers"], ["/how-it-works", "How it works"], ["/confidentiality", "Who sees what"], ["/guides", "Guides"]];
+const NAV: [string, string][] = [["", "Overview"], ["/how-it-works", "How it works"], ["/nbfcs", "For NBFCs"], ["/guides", "Guides"]];
 
 export function CreditNav({ here }: { here: string }) {
   return (
-    <nav className="cr-subnav" aria-label="Private credit">
-      <div className="wrap"><span className="eyebrow">Private credit</span>
+    <nav className="cr-subnav" aria-label="Debt desk">
+      <div className="wrap"><span className="eyebrow">Debt desk</span>
         <ul>{NAV.map(([p, l]) => <li key={p}><a href={`${CREDIT_BASE}${p}`} aria-current={here === p ? "page" : undefined}>{l}</a></li>)}</ul>
-        <a className="btn sm primary" href={`${CREDIT_BASE}/request-access`}>Request access</a></div>
+        <a className="btn sm primary" href={`${CREDIT_BASE}/request-access`}>Tell us what you need</a></div>
     </nav>
   );
 }
@@ -20,12 +20,12 @@ export function CreditShell({ here, children }: { here: string; children: React.
   return <main className="cr"><CreditNav here={here} />{children}<CreditReveal /></main>;
 }
 
-export function AccessBand({ side, title, body, cta }: { side?: "borrower" | "lender"; title: string; body: string; cta?: { href: string; label: string } }) {
+export function AccessBand({ side, title, body, cta }: { side?: "company" | "nbfc"; title: string; body: string; cta?: { href: string; label: string } }) {
   const href = cta?.href ?? `${CREDIT_BASE}/request-access${side ? `?as=${side}` : ""}`;
   return (
     <section className="cr-band"><div className="wrap cr-band-in">
       <div><h2>{title}</h2><p>{body}</p></div>
-      <a className="btn primary" href={href}>{cta?.label ?? "Request access"}</a>
+      <a className="btn primary" href={href}>{cta?.label ?? "Tell us what you need"}</a>
     </div></section>
   );
 }
@@ -50,7 +50,7 @@ export function GuideArticle({ slug, lede, children }: { slug: string; lede: Rea
         <div className="wrap cr-article">{children}</div>
       </article>
       <section className="cr-sec alt"><div className="wrap"><h2>More guides</h2><GuideList slugs={CREDIT_GUIDES.filter((x) => x.slug !== slug).map((x) => x.slug)} /></div></section>
-      <AccessBand side="borrower" title="Raise on your own cycle" body="Tell us about your NBFC. Our team will get in touch to set up a secure account. Please don't send financials or deal details in the request." />
+      <AccessBand side="nbfc" title="Raise on your own cycle" body="Tell the desk about your NBFC. It will get in touch to take your requirement further. Please don't send financials in the first message." />
     </CreditShell>
   );
 }

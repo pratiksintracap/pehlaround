@@ -1,5 +1,6 @@
-// Private credit: the NBFC Desk business under the Before the Bell brand (secured NBFC-to-NBFC lending and direct
-// lending to companies). The public pages live at /private-credit; the lender and admin console (with its own sign-in,
+// The debt desk under the Before the Bell brand: debt arranged for companies that need to borrow (term loans, working
+// capital, NCDs, CP, acquisition finance, refinancing, structured credit) and funding lines for NBFCs. The public pages
+// are for borrowers and live at /private-credit; the lender and admin console (with its own sign-in,
 // lender isolation and maker-checker) stays a separate app, at CREDIT_APP.
 export const CREDIT_APP = process.env.NEXT_PUBLIC_CREDIT_APP ?? "https://app.nbfcdesk.com";
 export const CREDIT_BASE = "/private-credit";

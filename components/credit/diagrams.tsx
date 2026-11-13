@@ -53,24 +53,24 @@ export function HeroNetwork() {
   return (
     <Frame
       viewBox="0 0 520 360"
-      title="How the credit desk sits between borrowers and lenders"
-      desc="Borrowing NBFCs on the left send raises into the credit desk, which screens them and matches each raise on thesis, rate band and risk appetite. Each raise goes only to the lending NBFCs on the right that it matches; one lender in the picture is not matched and receives nothing."
+      title="How the debt desk takes a company's requirement to the lenders that fit"
+      desc="A company's requirement on the left goes to the debt desk, which prepares the credit pack and checks sector fit, size and security. It then goes only to the lenders on the right that fit; one lender in the picture is not a fit and is not approached."
       className="dg-hero"
     >
-      <text x="10" y="20" className="dg-caption">Borrowing NBFCs</text>
-      <text x="510" y="20" textAnchor="end" className="dg-caption">Lending NBFCs</text>
+      <text x="10" y="20" className="dg-caption">Your requirement</text>
+      <text x="510" y="20" textAnchor="end" className="dg-caption">Lenders</text>
       {borrowers.map((y, i) => (
         <g key={y}>
-          <Box x={10} y={y - 22} w={112} h={44} label={`Borrower ${i + 1}`} />
+          <Box x={10} y={y - 22} w={112} h={44} label={["Term loan", "Working capital", "NCD or CP"][i]} />
           <path d={`M122 ${y} C 160 ${y}, 160 180, 188 180`} className="dg-flow" />
         </g>
       ))}
       {/* the desk */}
       <g className="dg-desk">
         <rect x="188" y="62" width="144" height="236" rx="6" />
-        <text x="260" y="88" textAnchor="middle" className="dg-label on-ink">The credit desk</text>
-        <text x="260" y="106" textAnchor="middle" className="dg-sub on-ink">Level 1 diligence</text>
-        {["Thesis", "Rate band", "Risk appetite"].map((g, i) => (
+        <text x="260" y="88" textAnchor="middle" className="dg-label on-ink">The debt desk</text>
+        <text x="260" y="106" textAnchor="middle" className="dg-sub on-ink">Credit pack, structure</text>
+        {["Sector fit", "Size", "Security"].map((g, i) => (
           <g key={g}>
             <rect x="204" y={128 + i * 52} width="112" height="38" rx="3" className="dg-gate" />
             <text x="260" y={152 + i * 52} textAnchor="middle" className="dg-label">{g}</text>
@@ -84,7 +84,7 @@ export function HeroNetwork() {
             className={l.matched ? "dg-flow" : "dg-unshared"}
             markerEnd={l.matched ? "url(#arrow-brass)" : undefined}
           />
-          <Box x={398} y={l.y} w={112} h={44} label={`Lender ${"ABCD"[i]}`} sub={l.matched ? "Matched" : "Not matched"} tone={l.matched ? "plain" : "muted"} />
+          <Box x={398} y={l.y} w={112} h={44} label={["Bank", "NBFC", "Credit fund", "Family office"][i]} sub={l.matched ? "A fit" : "Not a fit"} tone={l.matched ? "plain" : "muted"} />
         </g>
       ))}
       {/* One cycle every 6 s: raises travel into the desk, pass the three gates, and leave only for matched lenders. */}
@@ -95,7 +95,7 @@ export function HeroNetwork() {
             <animate attributeName="opacity" dur="6s" begin={`2s+${i * 0.18}s`} repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.03;0.18;0.21;1" />
           </circle>
         ))}
-        {["Thesis", "Rate band", "Risk appetite"].map((g, i) => (
+        {["Sector fit", "Size", "Security"].map((g, i) => (
           <rect key={`glow-${g}`} x="204" y={128 + i * 52} width="112" height="38" rx="3" className="dg-gate-glow" opacity="0">
             <animate attributeName="opacity" dur="6s" begin="2s" repeatCount="indefinite" values="0;0;0.9;0;0" keyTimes={`0;${(0.22 + i * 0.09).toFixed(2)};${(0.27 + i * 0.09).toFixed(2)};${(0.36 + i * 0.09).toFixed(2)};1`} />
           </rect>
@@ -344,32 +344,32 @@ export function FullFlow() {
   return (
     <Frame
       viewBox="0 0 580 640"
-      title="How a raise moves from proposal to funding"
-      desc="A borrower's funding proposal goes through Level 1 diligence by the platform, then matching on thesis, rate band and risk appetite. It is shared only with matched lenders, each of whom runs Level 2 diligence. The raise is then sold down across those lenders at parity, sanctioned and funded. The borrower's next drawdown starts from the same file."
+      title="How a company's requirement moves from first call to disbursement"
+      desc="A company's requirement is turned into a credit pack by the desk, matched to lenders on sector, size and security, and shared only with those that fit. Each runs its own credit review; term sheets are compared, then the chosen facility is sanctioned, documented and disbursed. The next tranche starts from the same file."
       className="dg-tall"
     >
-      <Box x={cx - 110} y={20} w={220} h={56} label="Funding proposal" sub="amount and security" tone="ink" />
+      <Box x={cx - 110} y={20} w={220} h={56} label="Your requirement" sub="amount, purpose, security" tone="ink" />
       <path d={`M${cx} 76 V112`} className="dg-flow" markerEnd="url(#arrow-brass)" />
-      <Box x={cx - 110} y={114} w={220} h={56} label="Level 1 diligence" sub="platform screening" />
+      <Box x={cx - 110} y={114} w={220} h={56} label="Credit pack" sub="the desk prepares and structures" />
       <path d={`M${cx} 170 V206`} className="dg-flow" markerEnd="url(#arrow-brass)" />
-      <Box x={cx - 110} y={208} w={220} h={56} label="Matching" sub="thesis, rate band, risk appetite" />
+      <Box x={cx - 110} y={208} w={220} h={56} label="Lender match" sub="sector, size, security" />
       {[0, 1, 2].map((i) => {
         const lx = 20 + i * 140;
         return (
           <g key={i}>
             <path d={`M${cx} 264 C ${cx} 300, ${lx + 60} 290, ${lx + 60} 322`} className="dg-flow" markerEnd="url(#arrow-brass)" />
-            <Box x={lx} y={324} w={120} h={56} label={`Lender ${"ABC"[i]}`} sub="Level 2 diligence" />
+            <Box x={lx} y={324} w={120} h={56} label={["Bank", "NBFC", "Credit fund"][i]} sub="its own credit review" />
             <path d={`M${lx + 60} 380 C ${lx + 60} 412, ${cx} 404, ${cx} 438`} className="dg-flow" markerEnd="url(#arrow-brass)" />
           </g>
         );
       })}
       <path d={`M${cx + 110} 236 C 440 236, 470 280, 470 322`} className="dg-unshared" />
-      <Box x={430} y={324} w={84} h={56} label="Lender D" sub="not matched" tone="muted" />
-      <Box x={cx - 110} y={440} w={220} h={56} label="Sell-down at parity" sub="same security, terms, rate" />
+      <Box x={430} y={324} w={84} h={56} label="Lender" sub="not a fit" tone="muted" />
+      <Box x={cx - 110} y={440} w={220} h={56} label="Term sheets compared" sub="rate, tenor, covenants" />
       <path d={`M${cx} 496 V532`} className="dg-flow" markerEnd="url(#arrow-brass)" />
-      <Box x={cx - 110} y={534} w={220} h={56} label="Sanction and funding" sub="each lender's part" tone="ink" />
+      <Box x={cx - 110} y={534} w={220} h={56} label="Sanction and disbursement" sub="documents, then drawdown" tone="ink" />
       <path d={`M${cx + 110} 562 H 530 Q 556 562 556 536 V 74 Q 556 48 530 48 H ${cx + 114}`} className="dg-loop" markerEnd="url(#arrow-ink)" />
-      <text x="544" y="470" className="dg-sub" transform="rotate(-90 544 470)">Next drawdown, same file</text>
+      <text x="544" y="470" className="dg-sub" transform="rotate(-90 544 470)">Next tranche, same file</text>
     </Frame>
   );
 }

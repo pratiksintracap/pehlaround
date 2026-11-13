@@ -383,7 +383,9 @@
     var rec = get(), fresh = rec && rec.v === VER && (Date.now() - rec.at) < 30 * 864e5;
     // Visitors see a slim notice bar instead of a pop-up; signed-in offices accepted the disclaimer when they registered.
     var bar = $("#disc-bar"), signedIn = !!document.body.getAttribute("data-user");
-    if (!fresh && !signedIn && bar) { bar.hidden = false; document.body.classList.add("disc-bar-on"); }
+    // The debt desk's pages are for companies that need to borrow: the investor notice does not apply there.
+    var credit = /^\/private-credit(\/|$)/.test(location.pathname);
+    if (!fresh && !signedIn && !credit && bar) { bar.hidden = false; document.body.classList.add("disc-bar-on"); }
     var okb = $("#disc-ok"); if (okb) okb.addEventListener("click", function () { set({ v: VER, at: Date.now() }); if (bar) bar.hidden = true; document.body.classList.remove("disc-bar-on"); });
     // welcome pop-up after approval: once per office, after the disclaimer
     var wl = $("#welcome");
