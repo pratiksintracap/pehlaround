@@ -55,3 +55,16 @@ test("a room draft fills only empty fields of a deal still in preparation", asyn
   assert.equal((await deskAction({ action: "file", company: "Quillon Prep Test", title: "Drive folder", url: "https://drive.google.com/drive/folders/x" })).ok, true);
   await db.update(deals).set({ phase: "preparing", pipelineStage: "archived" }).where(eq(deals.id, d.id));
 });
+
+test("the onboarding, listed and compliance reads answer and carry no PAN or contact details", async () => {
+  const o = await deskAction({ action: "offices_new" }) as { offices: unknown[]; openDeals: unknown[] };
+  assert.ok(Array.isArray(o.offices) && Array.isArray(o.openDeals));
+  const text = JSON.stringify(o);
+  for (const k of ["pan", "contactEmail", "contactPhone", "passwordHash"]) assert.equal(text.includes(`"${k}"`), false, k);
+  const l = await deskAction({ action: "listed" }) as { deals: unknown[] };
+  assert.ok(Array.isArray(l.deals));
+  const c = await deskAction({ action: "compliance" }) as { gaps: unknown[]; allocationsMoving: number };
+  assert.ok(Array.isArray(c.gaps));
+  assert.equal(typeof c.allocationsMoving, "number");
+  assert.ok((await deskAction({ action: "office_note", office: "No Such Office Anywhere", body: "A note that goes nowhere." })).error);
+});

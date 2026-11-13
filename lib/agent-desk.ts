@@ -7,11 +7,13 @@ import { log } from "@/lib/auth";
 import { deskDeals, deskMembers } from "@/lib/desk";
 import { addProspect, prospectNames, updateProspect } from "@/lib/prospects";
 import { debtBook, deskInbox, inboxAction, prepList, scorecard } from "@/lib/agent-inbox";
+import { booksAction, complianceGaps, listedBook, newOffices } from "@/lib/agent-books";
 
 // The desk's scheduled assistant (morning brief, meeting follow-ups, weekly pipeline review) reads the desk through this
 // endpoint and can make two small changes: add a task, or move a deal to another pipeline stage. Every change is logged
 // under "Claude (assistant)". Requests arrive sealed through the repository's agent workflow (lib/agent-exchange.ts).
-// It never returns investor documents, NDAs, allocations or anything about an office beyond its name.
+// It never returns investor documents, the NDAs or KYC files themselves, PAN or contact details. The onboarding and compliance
+// reads (lib/agent-books.ts) return an office's own profile and which steps are complete, nothing more.
 
 const WHO = { id: 0, name: "Claude (assistant)", officeId: null };
 
@@ -104,7 +106,10 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
   if (b.action === "debt") return debtBook();
   if (b.action === "scorecard") return scorecard();
   if (b.action === "prep") return prepList();
-  const r = await inboxAction(b);
+  if (b.action === "offices_new") return newOffices();
+  if (b.action === "listed") return listedBook();
+  if (b.action === "compliance") return complianceGaps();
+  const r = (await inboxAction(b)) ?? (await booksAction(b));
   if (r) {
     const l = r.log as { text: string; dealId: number | null } | undefined;
     if (l) { await log(WHO, l.text, l.dealId); delete r.log; }
