@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { audit, deskNotes, documents, leads, offices, prospects, questions, tasks, ticketMessages, tickets } from "@/db/schema";
+import { audit, deals, deskFiles, deskNotes, documents, leads, offices, prospects, questions, tasks, ticketMessages, tickets } from "@/db/schema";
 import { deskDeals } from "@/lib/desk";
 import { addMessage, ticketNo } from "@/lib/tickets";
 import { dealKind, istDay, stageLabel } from "@/lib/stages";
@@ -88,6 +88,23 @@ export async function scorecard() {
   };
 }
 
+/** Deals still being prepared (pre-IPO and debt, at Sourced or Diligence), with what is missing from each. */
+export async function prepList() {
+  const db = await getDb();
+  const list = (await deskDeals()).filter((d) => !d.listed && (d.pipelineStage === "sourced" || d.pipelineStage === "diligence"));
+  const ids = list.map((d) => d.id);
+  const [notes, files] = await Promise.all([
+    ids.length ? db.select({ dealId: deskNotes.dealId, body: deskNotes.body, who: deskNotes.who, at: deskNotes.createdAt }).from(deskNotes).where(inArray(deskNotes.dealId, ids)).orderBy(desc(deskNotes.createdAt)) : [],
+    ids.length ? db.select({ dealId: deskFiles.dealId, title: deskFiles.title, url: deskFiles.url }).from(deskFiles).where(inArray(deskFiles.dealId, ids)) : [],
+  ]);
+  return { today: istDay(), deals: list.map((d) => { const r = d.room; const mine = notes.filter((x) => x.dealId === d.id && x.who === BY && x.body.startsWith("Deal prep"));
+    return { company: d.company, book: dealKind(d), stage: stageLabel(d.pipelineStage), inPreparation: d.phase === "preparing", summary: d.headline, sector: d.debt ? d.debtInfo?.sector : d.title,
+      ...(d.debt ? { debt: d.debtInfo } : { roomEmpty: { lede: !r.lede, why: !r.why, round: !r.round, snapshot: !r.snapshot.length, risks: !r.risks.length, terms: !r.terms.length } }),
+      lastPrep: mine[0]?.at.toISOString().slice(0, 10) ?? null, files: files.filter((x) => x.dealId === d.id).map((x) => ({ title: x.title, url: x.url })) }; }) };
+}
+
+const oneDeal = async (name: string) => { const n = name.toLowerCase(); const hits = n ? (await deskDeals()).filter((d) => d.company.toLowerCase().includes(n)) : []; return hits.length === 1 ? hits[0] : null; };
+
 /** The inbox's writes: a draft answer on a question, a desk-only note on a ticket, a desk note on a deal. */
 export async function inboxAction(b: Record<string, unknown>): Promise<Record<string, unknown> | null> {
   const db = await getDb();
@@ -114,6 +131,34 @@ export async function inboxAction(b: Record<string, unknown>): Promise<Record<st
     if (hits.length !== 1 || text.length < 10) return { error: hits.length > 1 ? "More than one deal matches that company; use a fuller name." : "Name one deal and give the note." };
     await db.insert(deskNotes).values({ dealId: hits[0].id, body: text, who: BY });
     return { ok: true, company: hits[0].company, log: { text: `Assistant added a desk note on ${hits[0].company}`, dealId: hits[0].id } };
+  }
+  // A first draft of a deal room, only while the deal is in preparation (desk only) and only into fields that are still empty.
+  if (b.action === "room_draft") {
+    const d = await oneDeal(s(b.company, 200));
+    if (!d) return { error: "Name one deal." };
+    if (d.listed || d.debt || d.phase !== "preparing") return { error: "Only a pre-IPO deal still in preparation takes a room draft; use a note instead." };
+    const r = { ...d.room }, filled: string[] = [];
+    const rows = <T,>(v: unknown, f: (x: Record<string, unknown>) => T | null) => (Array.isArray(v) ? v : []).map((x) => f(x ?? {})).filter(Boolean).slice(0, 12) as T[];
+    for (const k of ["lede", "why", "round"] as const) if (!r[k] && s(b[k], 1200)) { r[k] = s(b[k], k === "why" ? 1200 : 300); filled.push(k); }
+    const snap = rows(b.snapshot, (x) => (s(x.k, 60) && s(x.v, 80) ? { k: s(x.k, 60), v: s(x.v, 80), ...(s(x.s, 120) ? { s: s(x.s, 120) } : {}) } : null));
+    if (!r.snapshot.length && snap.length) { r.snapshot = snap; filled.push("snapshot"); }
+    const risks = rows(b.risks, (x) => (s(x.t, 120) && s(x.d, 600) ? { t: s(x.t, 120), d: s(x.d, 600) } : null));
+    if (!r.risks.length && risks.length) { r.risks = risks; filled.push("risks"); }
+    const terms = rows(b.terms, (x) => (s(x.k, 80) && s(x.v, 300) ? { k: s(x.k, 80), v: s(x.v, 300) } : null));
+    if (!r.terms.length && terms.length) { r.terms = terms; filled.push("terms"); }
+    if (!filled.length) return { ok: true, skipped: "every field offered already has content" };
+    await db.update(deals).set({ room: r, updatedAt: new Date() }).where(eq(deals.id, d.id));
+    return { ok: true, company: d.company, filled, log: { text: `Assistant drafted the deal room for ${d.company} (${filled.join(", ")}); in preparation, desk only`, dealId: d.id } };
+  }
+  // A link the desk keeps on the deal, e.g. the company's Drive folder.
+  if (b.action === "file") {
+    const d = await oneDeal(s(b.company, 200));
+    const url = s(b.url, 500), title = s(b.title, 200);
+    if (!d || !title || !/^https:\/\/\S+$/.test(url)) return { error: "Name one deal, a title and an https link." };
+    const have = await db.select({ id: deskFiles.id }).from(deskFiles).where(and(eq(deskFiles.dealId, d.id), eq(deskFiles.url, url)));
+    if (have.length) return { ok: true, skipped: "already on the deal" };
+    await db.insert(deskFiles).values({ dealId: d.id, title, url, kind: s(b.kind, 40) || "Folder", who: BY });
+    return { ok: true, company: d.company, log: { text: `Assistant linked ${title} on ${d.company}`, dealId: d.id } };
   }
   return null;
 }

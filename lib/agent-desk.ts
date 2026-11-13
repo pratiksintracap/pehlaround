@@ -6,7 +6,7 @@ import { asStage, dealKind, istDay, stageLabel } from "@/lib/stages";
 import { log } from "@/lib/auth";
 import { deskDeals, deskMembers } from "@/lib/desk";
 import { addProspect, prospectNames, updateProspect } from "@/lib/prospects";
-import { debtBook, deskInbox, inboxAction, scorecard } from "@/lib/agent-inbox";
+import { debtBook, deskInbox, inboxAction, prepList, scorecard } from "@/lib/agent-inbox";
 
 // The desk's scheduled assistant (morning brief, meeting follow-ups, weekly pipeline review) reads the desk through this
 // endpoint and can make two small changes: add a task, or move a deal to another pipeline stage. Every change is logged
@@ -103,6 +103,7 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
   if (b.action === "inbox") return deskInbox();
   if (b.action === "debt") return debtBook();
   if (b.action === "scorecard") return scorecard();
+  if (b.action === "prep") return prepList();
   const r = await inboxAction(b);
   if (r) {
     const l = r.log as { text: string; dealId: number | null } | undefined;

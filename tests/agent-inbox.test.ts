@@ -36,3 +36,22 @@ test("the debt book and the scorecard answer; a note needs one deal", async () =
   assert.equal(typeof sc.tasks.overdue, "number");
   assert.ok((await deskAction({ action: "note", company: "no such company anywhere", body: "A note that goes nowhere." })).error);
 });
+
+test("a room draft fills only empty fields of a deal still in preparation", async () => {
+  const db = await getDb();
+  const room = { lede: "Kept as written", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [], interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] };
+  const [d] = await db.insert(deals).values({ slug: `prep-test-${Date.now()}`, company: "Quillon Prep Test Castings Ltd", title: "Castings", category: "Pre-IPO primary", headline: "", listingLabel: "To be set", phase: "preparing", pipelineStage: "sourced", room }).returning({ id: deals.id });
+  const prep = await deskAction({ action: "prep" }) as { deals: { company: string; roomEmpty?: { lede: boolean; why: boolean } }[] };
+  const row = prep.deals.find((x) => x.company.startsWith("Quillon"));
+  assert.deepEqual([row?.roomEmpty?.lede, row?.roomEmpty?.why], [false, true]);
+  const r = await deskAction({ action: "room_draft", company: "Quillon Prep Test", lede: "Overwrite attempt", why: "Profitable and growing.", snapshot: [{ k: "Revenue FY26", v: "₹210 Cr" }, { k: "", v: "x" }] });
+  assert.deepEqual(r.filled, ["why", "snapshot"]);
+  const [after] = await db.select().from(deals).where(eq(deals.id, d.id));
+  assert.equal(after.room.lede, "Kept as written");
+  assert.equal(after.room.snapshot.length, 1);
+  await db.update(deals).set({ phase: "announced" }).where(eq(deals.id, d.id));
+  assert.ok((await deskAction({ action: "room_draft", company: "Quillon Prep Test", round: "₹30 Cr" })).error);
+  assert.ok((await deskAction({ action: "file", company: "Quillon Prep Test", title: "Drive folder", url: "javascript:alert(1)" })).error);
+  assert.equal((await deskAction({ action: "file", company: "Quillon Prep Test", title: "Drive folder", url: "https://drive.google.com/drive/folders/x" })).ok, true);
+  await db.update(deals).set({ phase: "preparing", pipelineStage: "archived" }).where(eq(deals.id, d.id));
+});
