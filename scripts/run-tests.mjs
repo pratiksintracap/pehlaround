@@ -31,5 +31,8 @@ await build({
   banner: { js: "import { createRequire as __cr } from 'module'; const require = __cr(import.meta.url);" },
 });
 const r = spawnSync(process.execPath, ["--test", "--test-concurrency=1", ...files.map((f) => path.join(out, f.replace(/\.ts$/, ".mjs")))],
-  { stdio: "inherit", cwd: root, env: { ...process.env, PGLITE_DIR: "memory://", DATABASE_URL: "", POSTGRES_URL: "", NODE_ENV: "test" } });
+  { stdio: "inherit", cwd: root, env: { ...process.env, PGLITE_DIR: "memory://", DATABASE_URL: "", POSTGRES_URL: "", POSTGRES_URL_NON_POOLING: "", DATABASE_URL_UNPOOLED: "", NODE_ENV: "test",
+    // Tests also run inside the Vercel build (prebuild), where the real keys are set. Nothing a test does may reach
+    // anyone: no email, SMS, push or AI call goes out from a test run.
+    RESEND_API_KEY: "", TWILIO_ACCOUNT_SID: "", TWILIO_AUTH_TOKEN: "", TWILIO_FROM: "", TWILIO_MESSAGING_SERVICE_SID: "", SMS_PROVIDER: "", FCM_SERVICE_ACCOUNT: "", ANTHROPIC_API_KEY: "" } });
 process.exit(r.status ?? 1);
