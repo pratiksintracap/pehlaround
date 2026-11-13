@@ -5,8 +5,8 @@ import { readBody, str, jerr } from "@/lib/http";
 import { notifyDesk } from "@/lib/notify";
 import { allowIp, isBot, TOO_MANY } from "@/lib/rate";
 
-// Public intake forms post here: founders (/founders), holders who want to sell (/sell) and would-be partners (/partners).
-const KINDS: Record<string, string> = { founder: "New company lead", seller: "New sell request", partner: "New partner application" };
+// Public intake forms post here: founders (/founders), holders who want to sell (/sell) and would-be partners (/partners), and the debt desk's access requests (/private-credit).
+const KINDS: Record<string, string> = { founder: "New company lead", seller: "New sell request", partner: "New partner application", credit: "Debt desk access request" };
 
 export async function POST(req: NextRequest) {
   const { data } = await readBody(req);

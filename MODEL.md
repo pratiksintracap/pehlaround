@@ -134,7 +134,8 @@ Portfolio, marked as written by the company and not audited by the desk. Those o
 
 `open → done`; snoozing moves `dueOn`.
 
-### Debt deals (desk only)
+### Debt desk (desk only)
+- The three books: Before the Bell = pre-IPO equity; After the Bell = listed-company equity; Debt desk = lending (loans, NCDs, CP, structured credit). A listed company's convertible equity (CCPS, preferential) is After the Bell, not debt.
 - `deals.debt` + `deals.debtInfo` (borrower type, facility, amount, tenor, rate band, security, purpose, lenders, source, rating). Loans, NCDs, CP, structured credit and NBFC-to-NBFC raises the desk arranges.
 - Desk-only exactly like After the Bell: the database check `deals_debt_desk_only` keeps one in preparation, and `notListed` / `investorVisible` in lib/deal-guard.ts exclude debt deals from every investor read. Console: /admin/debt and /admin/debt/[id]; the pipeline's kind filter has "Debt".
 

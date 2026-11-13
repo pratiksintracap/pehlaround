@@ -26,7 +26,7 @@ export default async function Board({ searchParams }: { searchParams: Promise<{ 
       <p className="fine" style={{ marginBottom: 10 }}>Every deal by the desk&apos;s own stage. Moving a card changes nothing on the site: publishing and opening a room stay in the deal itself.{archivedN ? <> <a href="/admin/deals#archived">Archived ({archivedN})</a> are kept on the Deals page.</> : null}</p>
       <div className="adm-filter">{[["", "Everyone"], ["me", "Mine"], ["none", "No owner"], ...members.filter((m) => m.id !== me.id).map((m) => [String(m.id), m.name])].map(([k, l]) =>
         <a key={`w${k}`} href={q("who", k)} className={(who || "") === k ? "on" : ""}>{l}</a>)}</div>
-      <div className="adm-filter">{[["", "All deals"], ["private", "Pre-IPO and unlisted"], ["listed", "After the Bell (listed)"], ["debt", "Debt"]].map(([k, l]) =>
+      <div className="adm-filter">{[["", "All deals"], ["private", "Before the Bell (pre-IPO)"], ["listed", "After the Bell (listed)"], ["debt", "Debt desk (lending)"]].map(([k, l]) =>
         <a key={`k${k}`} href={q("kind", k)} className={(kind || "") === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["", "Sections"], ["board", "Board"]].map(([k, l]) =>
         <a key={`v${k}`} href={q("view", k)} className={(view || "") === k ? "on" : ""}>{l}</a>)}</div>

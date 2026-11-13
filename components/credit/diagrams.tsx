@@ -14,13 +14,13 @@ function Frame({ title, desc, viewBox, children, className = "" }: Desc & { view
       <desc id={`${id}-d`}>{desc}</desc>
       <defs>
         <marker id="arrow-brass" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0 0L10 5L0 10z" fill="var(--pc-accent)" />
+          <path d="M0 0L10 5L0 10z" fill="var(--cr-accent)" />
         </marker>
         <marker id="arrow-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0 0L10 5L0 10z" fill="var(--pc-ink)" />
+          <path d="M0 0L10 5L0 10z" fill="var(--cr-ink)" />
         </marker>
         <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--pc-rule2)" strokeWidth="2" />
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--cr-rule2)" strokeWidth="2" />
         </pattern>
       </defs>
       {children}

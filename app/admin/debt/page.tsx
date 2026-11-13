@@ -21,9 +21,9 @@ export default async function DebtDeals({ searchParams }: { searchParams: Promis
   return (
     <>
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 6px" }}>
-        <h1 style={{ fontSize: 30, margin: 0 }}>Debt deals</h1><span className="pill">Desk only</span>
+        <h1 style={{ fontSize: 30, margin: 0 }}>Debt desk</h1><span className="pill">Desk only</span>
         {edit && <a className="btn sm primary" href="#add">+ Add a debt deal</a>}</div>
-      <p className="fine" style={{ marginBottom: 12 }}>Loans, NCDs, commercial paper and structured credit the desk arranges, including NBFC-to-NBFC raises. They live only in the console: no investor page, email or search ever shows them.{book ? <> Open book: <b>₹{book.toLocaleString("en-IN")} Cr</b>.</> : null}</p>
+      <p className="fine" style={{ marginBottom: 12 }}>Lending: loans, NCDs, commercial paper and structured credit the desk arranges, including NBFC-to-NBFC raises. Equity stays out of here: pre-IPO equity is Before the Bell, listed-company equity is After the Bell. They live only in the console: no investor page, email or search ever shows them.{book ? <> Open book: <b>₹{book.toLocaleString("en-IN")} Cr</b>.</> : null}</p>
       <div className="adm-filter">{[["", `All (${all.length})`], ["active", "Not closed"], ...DEAL_STAGES.map((s) => [s.id, s.label])].map(([k, l]) =>
         <a key={k} href={k ? `/admin/debt?stage=${k}` : "/admin/debt"} className={(stage || "") === k ? "on" : ""}>{l}</a>)}</div>
       {list.length ? <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Borrower</th><th>Facility</th><th>Amount</th><th>Tenor</th><th>Rate</th><th>Stage</th><th>Owner</th><th>Open tasks</th><th>Updated</th><th /></tr></thead><tbody>

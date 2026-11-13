@@ -99,6 +99,7 @@ export function Footer({ user = null }: { user?: SessionUser | null }) {
             <li><a href="/raise">Raise before an IPO</a></li>
             <li><a href="/sell">Sell pre-IPO shares</a></li>
             <li><a href="/partners">Partner with the desk</a></li>
+            <li><a href="/private-credit">Private credit (lending)</a></li>
           </ul></div>
           <div className="ft-col"><h4>Learn</h4><ul>
             <li><a href="/articles">Articles</a></li>

@@ -23,7 +23,7 @@ export default async function DebtDeal({ params }: { params: Promise<{ id: strin
   const back = `/admin/debt/${d.id}`;
   return (
     <>
-      <p className="crumb"><a href="/admin/debt">← Debt deals</a> · <a href="/admin/board">Deal pipeline</a></p>
+      <p className="crumb"><a href="/admin/debt">← Debt desk</a> · <a href="/admin/board">Deal pipeline</a></p>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", margin: "6px 0 6px" }}>
         <h1 style={{ fontSize: 30, margin: 0 }}>{d.company}</h1><span className="pill">Debt · desk only</span>
         {i.facility ? <span className="mono fine">{[i.facility, i.amountCr ? `₹${i.amountCr} Cr` : ""].filter(Boolean).join(" · ")}</span> : null}<span className="mono fine" title="Internal reference; there is no public page">ref {d.slug}</span></div>
