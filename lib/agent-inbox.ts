@@ -132,6 +132,21 @@ export async function inboxAction(b: Record<string, unknown>): Promise<Record<st
     await db.insert(deskNotes).values({ dealId: hits[0].id, body: text, who: BY });
     return { ok: true, company: hits[0].company, log: { text: `Assistant added a desk note on ${hits[0].company}`, dealId: hits[0].id } };
   }
+  // A new company on the Before the Bell pipeline: in preparation (desk only) at Sourced. Refused if the name is already there.
+  if (b.action === "deal_new") {
+    const company = s(b.company, 200), title = s(b.sector, 120) || "Pre-IPO";
+    if (company.length < 3) return { error: "A company name is needed." };
+    const all = await deskDeals();
+    const key = (v: string) => v.toLowerCase().replace(/\b(private|pvt|limited|ltd)\b\.?/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+    const dup = all.find((d) => key(d.company) === key(company));
+    if (dup) return { exists: true, company: dup.company };
+    const category = ["Pre-IPO primary", "Pre-IPO secondary", "Growth round", "SME IPO-bound"].includes(s(b.category, 40)) ? s(b.category, 40) : "Pre-IPO primary";
+    const room = { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [],
+      interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] };
+    const [row] = await db.insert(deals).values({ slug: `${key(company).replace(/\s+/g, "-").slice(0, 40)}-${Date.now().toString(36)}`, company, title, category,
+      headline: s(b.headline, 600), listingLabel: s(b.listing, 60) || "To be set", phase: "preparing", sort: 200, pipelineStage: "sourced", stageAt: new Date(), room }).returning({ id: deals.id });
+    return { ok: true, company, id: row.id, log: { text: `Assistant added ${company} to the pipeline at Sourced (in preparation, desk only)`, dealId: row.id } };
+  }
   // A first draft of a deal room, only while the deal is in preparation (desk only) and only into fields that are still empty.
   if (b.action === "room_draft") {
     const d = await oneDeal(s(b.company, 200));

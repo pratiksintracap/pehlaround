@@ -68,3 +68,13 @@ test("the onboarding, listed and compliance reads answer and carry no PAN or con
   assert.equal(typeof c.allocationsMoving, "number");
   assert.ok((await deskAction({ action: "office_note", office: "No Such Office Anywhere", body: "A note that goes nowhere." })).error);
 });
+
+test("a new deal from the assistant lands in preparation and is not added twice", async () => {
+  const a = await deskAction({ action: "deal_new", company: "Orrery Test Loyalty Private Limited", sector: "Loyalty software", category: "SME IPO-bound" });
+  assert.equal(a.ok, true);
+  const db = await getDb();
+  const [d] = await db.select().from(deals).where(eq(deals.id, a.id as number));
+  assert.deepEqual([d.phase, d.pipelineStage, d.listed, d.debt, d.category], ["preparing", "sourced", false, false, "SME IPO-bound"]);
+  assert.equal((await deskAction({ action: "deal_new", company: "ORRERY TEST LOYALTY PVT LTD" })).exists, true);
+  await db.update(deals).set({ pipelineStage: "archived" }).where(eq(deals.id, d.id));
+});
