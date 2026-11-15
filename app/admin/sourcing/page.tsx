@@ -8,12 +8,12 @@ import { getDb } from "@/lib/db";
 import { prospects } from "@/db/schema";
 import { deskMembers } from "@/lib/desk";
 import { PROSPECT_STATUS, prospectLabel } from "@/lib/prospects";
-import { addProspectByHand, prospectToDeal, setProspect } from "@/lib/sourcing-actions";
+import { addProspectByHand, prospectToDeal, saveProspectEmail, setProspect } from "@/lib/sourcing-actions";
 import { fmtT } from "@/components/DeskBits";
 
 export const dynamic = "force-dynamic";
 
-const OPEN = ["new", "drafted", "emailed", "interested"];
+const OPEN = ["new", "drafted", "approved", "emailed", "interested"];
 const KIND: Record<string, string> = { equity: "Pre-IPO equity", debt: "Debt", both: "Equity or debt" };
 const cr = (v: number | null) => (v == null ? "—" : `₹${v.toLocaleString("en-IN", { maximumFractionDigits: 1 })} Cr`);
 
@@ -33,7 +33,7 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 6px" }}>
         <h1 style={{ fontSize: 30, margin: 0 }}>Sourcing</h1><span className="pill">Desk only</span>
         {edit && <a className="btn sm" href="#add">+ Add a company</a>}</div>
-      <p className="fine" style={{ marginBottom: 12 }}>Companies the assistant finds each weekday morning: unlisted, ₹50–1,000 Cr revenue, profitable and growing, from rating rationales, news and filings. For each one it writes an outreach email as a <b>draft in the desk mailbox</b>; nothing is sent until someone sends it. When a company replies with interest, Puneet gets a call task. Make a prospect a deal with <i>Pre-IPO</i> or <i>Debt</i>.</p>
+      <p className="fine" style={{ marginBottom: 12 }}>Companies the assistant finds each weekday morning: unlisted, ₹50–1,000 Cr revenue, profitable and growing, from rating rationales, news and filings. For each one it reads the company&apos;s website and writes an outreach email, shown on the row for review. <b>Nothing is sent until someone here approves it</b>; it then goes from the desk address. When a company replies with interest, Puneet gets a call task. Make a prospect a deal with <i>Pre-IPO</i> or <i>Debt</i>.</p>
       <div className="adm-filter">{[["open", `Open (${all.filter((p) => OPEN.includes(p.status)).length})`], ...PROSPECT_STATUS.map((x) => [x.id, `${x.label} (${count(x.id)})`]), ["all", `All (${all.length})`]].map(([k, l]) =>
         <a key={k} href={q({ status: k })} className={status === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["", "Equity and debt"], ["equity", "Pre-IPO equity"], ["debt", "Debt"]].map(([k, l]) =>
@@ -45,9 +45,21 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
               {p.rating && <small className="fine" style={{ display: "block" }}>{p.rating}</small>}
               {p.website && <small style={{ display: "block" }}><a href={p.website} target="_blank" rel="noopener noreferrer">Website</a></small>}</td>
             <td>{cr(p.revenueCr)}</td><td>{cr(p.patCr)}</td><td>{p.growthPct == null ? "—" : `${p.growthPct}%`}</td><td>{KIND[p.kind] ?? p.kind}</td>
-            <td style={{ maxWidth: 340 }}><span className="fine">{p.why || "—"}</span>
+            <td style={{ maxWidth: 460, minWidth: 360 }}><span className="fine">{p.why || "—"}</span>
               {p.signals.length > 0 && <small className="fine" style={{ display: "block", marginTop: 4 }}>{p.signals.join(" · ")}</small>}
               {p.sources.length > 0 && <small style={{ display: "block", marginTop: 4 }}>{p.sources.map((x, i) => <a key={i} href={x.url} target="_blank" rel="noopener noreferrer" style={{ marginRight: 8 }}>{x.title || `Source ${i + 1}`}</a>)}</small>}
+              {(p.emailBody || p.status === "new") && <details className="src-mail" open={p.status === "drafted"}>
+                <summary>{p.status === "drafted" ? (p.sends ? "Follow-up email to review" : "Email to review") : p.status === "approved" ? "Approved email, goes at 9 AM" : p.emailBody ? `Email${p.sends ? ` (sent ${p.sends}×)` : ""}` : "Write an email"}</summary>
+                {edit && (p.status === "new" || p.status === "drafted") ? <form action={saveProspectEmail} className="form">
+                  <input type="hidden" name="company" value={p.company} /><input type="hidden" name="id" value={p.id} /><input type="hidden" name="back" value={back} />
+                  <div className="row"><label>To<input name="contactEmail" type="email" defaultValue={p.contactEmail ?? ""} maxLength={200} /></label><label>Name<input name="contactName" defaultValue={p.contactName ?? ""} maxLength={120} /></label></div>
+                  <label>Subject<input name="emailSubject" defaultValue={p.emailSubject ?? ""} maxLength={300} /></label>
+                  <label>Email<textarea name="emailBody" rows={9} maxLength={3000} defaultValue={p.emailBody ?? ""} /><span className="hint">Plain text. The desk sign-off and an opt-out line are added when it is sent.</span></label>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><button className="btn sm" type="submit">Save</button>
+                    {p.status === "drafted" && <button className="btn sm primary" type="submit" name="then" value="approve">Approve and send from the desk</button>}</div>
+                  <p className="fine" style={{ margin: 0 }}>Sent from desk@beforethebell.in, Monday to Saturday, 9 AM to 7 PM. Approved outside those hours, it goes at 9 AM.</p>
+                </form> : <div className="fine"><p style={{ margin: "6px 0" }}><b>{p.emailSubject}</b>{p.contactEmail ? ` · to ${p.contactEmail}` : ""}{p.approvedBy ? ` · approved by ${p.approvedBy}` : ""}</p><pre style={{ whiteSpace: "pre-wrap", margin: 0, font: "inherit" }}>{p.emailBody}</pre></div>}
+              </details>}
               {p.notes && <details style={{ marginTop: 4 }}><summary className="fine">Notes</summary><pre className="fine" style={{ whiteSpace: "pre-wrap", margin: 0 }}>{p.notes}</pre></details>}</td>
             <td>{p.contactName || "—"}{p.contactRole ? <small className="fine" style={{ display: "block" }}>{p.contactRole}</small> : null}{p.contactEmail ? <small className="mono" style={{ display: "block" }}>{p.contactEmail}</small> : null}</td>
             <td><span className={`pill ${p.status === "interested" || p.status === "added" ? "ok" : p.status === "declined" || p.status === "passed" ? "off" : ""}`}>{prospectLabel(p.status)}</span>
@@ -56,7 +68,7 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
               {p.dealId ? <small style={{ display: "block" }}><a href={p.kind === "debt" ? `/admin/debt/${p.dealId}` : `/admin/deals/${p.dealId}`}>Open the deal</a></small> : null}</td>
             {edit && <td style={{ minWidth: 190 }}>
               <form action={setProspect} className="src-f"><input type="hidden" name="company" value={p.company} /><input type="hidden" name="back" value={back} />
-                <select name="status" defaultValue={p.status} aria-label="Stage">{PROSPECT_STATUS.filter((x) => x.id !== "added").map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select>
+                <select name="status" defaultValue={p.status} aria-label="Stage">{PROSPECT_STATUS.filter((x) => x.id !== "added" && x.id !== "approved").map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select>
                 <input name="note" maxLength={1000} placeholder="Note (optional)" aria-label="Note" />
                 <button className="btn sm" type="submit">Save</button></form>
               {!p.dealId && <form action={prospectToDeal} className="src-f" style={{ marginTop: 6 }}><input type="hidden" name="id" value={p.id} />

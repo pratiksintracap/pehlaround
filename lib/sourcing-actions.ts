@@ -9,7 +9,7 @@ import { deals, prospects } from "@/db/schema";
 import { requirePerm, log } from "@/lib/auth";
 import { PUBLIC_TAG } from "@/lib/cache";
 import { done, fail, deskBack } from "@/lib/form";
-import { addProspect, updateProspect } from "@/lib/prospects";
+import { addProspect, approveProspect, updateProspect } from "@/lib/prospects";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const BACK = "/admin/sourcing";
@@ -56,4 +56,18 @@ export async function prospectToDeal(f: FormData) {
   await log(me, `Desk moved the prospect ${p.company} onto the ${as === "debt" ? "debt desk" : "Before the Bell"} pipeline`, row.id, { entity: "deal", entityId: row.id });
   revalidateTag(PUBLIC_TAG);
   done(as === "debt" ? `/admin/debt/${row.id}` : `/admin/deals/${row.id}`, `${p.company} is on the pipeline at Sourced, desk only.`);
+}
+
+/** Saves the desk's edits to an outreach email (recipient, subject, body). Saving never sends. */
+export async function saveProspectEmail(f: FormData) {
+  const me = await requirePerm("deals.edit");
+  const company = s(f, "company", 200);
+  const r = await updateProspect({ company, contactEmail: s(f, "contactEmail", 200), contactName: s(f, "contactName", 120), emailSubject: s(f, "emailSubject", 300), emailBody: s(f, "emailBody", 3000),
+    ...(s(f, "emailBody", 3000).length > 40 && s(f, "emailSubject", 300) ? { status: "drafted" } : {}) }, me.name);
+  if ("error" in r) fail(deskBack(f, BACK), r.error ?? "Couldn't save.");
+  if (s(f, "then", 10) !== "approve") done(deskBack(f, BACK), "Email saved. Nothing was sent.");
+  const a = await approveProspect(Number(f.get("id")) || 0, me.name);
+  if ("error" in a) fail(deskBack(f, BACK), a.error);
+  await log(me, a.sent ? `Desk approved and sent the outreach email to ${a.company}` : `Desk approved the outreach email to ${a.company}; it goes at 9 AM`, null, { entity: "prospect" });
+  done(deskBack(f, BACK), a.sent ? `Sent to ${a.company} from the desk address.` : `Approved. It is outside sending hours, so the email to ${a.company} goes at 9 AM on the next working day.`);
 }

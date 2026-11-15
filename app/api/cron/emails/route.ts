@@ -7,6 +7,7 @@ import { runTaskReminders } from "@/lib/task-reminders";
 import { runDeskWeekly } from "@/lib/desk-weekly";
 import { runPartnerDigest } from "@/lib/partner-digest";
 import { runWatchAlerts } from "@/lib/watch-alerts";
+import { runProspectSends } from "@/lib/prospects";
 
 // Vercel calls this daily at 03:30 UTC (09:00 IST); see vercel.json. Protected by CRON_SECRET.
 // Sends the onboarding emails that are due, desk task reminders, the Monday desk summary, the Monday note to partner firms, IPO news on companies offices follow, the Monday articles digest, the one invitation reminder (3 days on), and refreshes delivery status for recent emails.
@@ -22,6 +23,7 @@ export async function GET(req: NextRequest) {
   const weekly = await runDeskWeekly(new Date(), req.nextUrl.searchParams.get("weekly") === "force").catch((e) => ({ error: String(e) }));
   const partners = await runPartnerDigest(new Date(), req.nextUrl.searchParams.get("partners") === "force").catch((e) => ({ error: String(e) }));
   const watch = await runWatchAlerts().catch((e) => ({ error: String(e) }));
+  const sourcing = await runProspectSends().catch((e) => ({ error: String(e) }));
   const status = await refreshEmailStatus().catch((e) => ({ error: String(e) }));
-  return Response.json({ onboarding, digest, followups, tasks, weekly, partners, watch, status });
+  return Response.json({ onboarding, digest, followups, tasks, weekly, partners, watch, sourcing, status });
 }

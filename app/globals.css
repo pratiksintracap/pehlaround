@@ -1815,3 +1815,7 @@ footer .ft-brand p.ft-op .addr{opacity:.75}
 /* Sourcing (console) */
 .src-f{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .src-f select,.src-f input{font-size:13px;padding:5px 7px;max-width:170px}
+.src-mail{margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.src-mail summary{cursor:pointer;font-weight:600;font-size:13px}
+.src-mail .form{margin-top:8px;gap:8px}
+.src-mail textarea{font-size:13.5px;line-height:1.5}

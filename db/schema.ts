@@ -519,6 +519,9 @@ export const prospects = pgTable("prospects", {
   // Outreach: the first email goes from the desk mailbox, drafted by the assistant and sent by a person.
   contactName: text("contact_name"), contactRole: text("contact_role"), contactEmail: text("contact_email"), website: text("website"),
   emailSubject: text("email_subject"),          // the subject of the outreach draft, to find its thread in the desk mailbox
+  emailBody: text("email_body"),                // the outreach email as plain text; the desk reviews it, approves it, and the site sends it
+  sends: integer("sends").notNull().default(0), // how many emails have gone to this company (first email, then one follow-up)
+  approvedBy: text("approved_by"),              // who approved the email now waiting to send
   draftedAt: timestamp("drafted_at", { withTimezone: true }), emailedAt: timestamp("emailed_at", { withTimezone: true }),
   repliedAt: timestamp("replied_at", { withTimezone: true }),
   taskId: integer("task_id"),                   // the call task made for the banker once the company shows interest
