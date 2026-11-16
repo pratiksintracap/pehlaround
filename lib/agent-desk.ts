@@ -8,7 +8,8 @@ import { deskDeals, deskMembers } from "@/lib/desk";
 import { addProspect, prospectNames, updateProspect } from "@/lib/prospects";
 import { debtBook, deskInbox, inboxAction, prepList, scorecard } from "@/lib/agent-inbox";
 import { booksAction, complianceGaps, listedBook, newOffices } from "@/lib/agent-books";
-import { poolMark, poolNext, poolStats } from "@/lib/pool";
+import { gunzipSync } from "node:zlib";
+import { poolMark, poolNext, poolStats, upsertPool, type PoolRow } from "@/lib/pool";
 
 // The desk's scheduled assistant (morning brief, meeting follow-ups, weekly pipeline review) reads the desk through this
 // endpoint and can make two small changes: add a task, or move a deal to another pipeline stage. Every change is logged
@@ -93,7 +94,17 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
   // Deal sourcing (lib/prospects.ts): list what is already logged, add a find, or move one along.
   if (b.action === "prospects") return ({ ok: true, prospects: await prospectNames() });
   // The sourcing pool (lib/pool.ts): the next companies to check, and marking one skipped with the reason.
-  if (b.action === "pool_next") return ({ ok: true, pool: await poolStats(), companies: await poolNext(Number(b.n) || 14) });
+  // Loading the pool: rows as an array, or gzipped JSON in base64 so a large file fits in a few sealed requests.
+  if (b.action === "pool_load") {
+    let rows: PoolRow[] = [];
+    try { rows = b.gz ? JSON.parse(gunzipSync(Buffer.from(String(b.gz), "base64"), { maxOutputLength: 4 * 1024 * 1024 }).toString("utf8")) : b.rows; } catch { return ({ error: "Unreadable rows." }); }
+    if (!Array.isArray(rows) || rows.length > 1500) return ({ error: "Send at most 1,500 rows in one action." });
+    let loaded = 0;
+    for (let i = 0; i < rows.length; i += 400) loaded += await upsertPool(rows.slice(i, i + 400), s(b.source, 120) || "assistant");
+    if (loaded) await log(WHO, `Assistant loaded ${loaded} companies into the sourcing pool`, null, { entity: "pool" });
+    return ({ ok: true, loaded, pool: await poolStats() });
+  }
+  if (b.action === "pool_next") return ({ ok: true, pool: await poolStats(), companies: await poolNext(Number(b.n) || 40) });
   if (b.action === "pool_skip") return ({ ok: await poolMark(s(b.company, 200), `skipped: ${s(b.reason, 200) || "not a fit"}`) });
   if (b.action === "prospect") {
     const r = await addProspect(b, WHO.name);

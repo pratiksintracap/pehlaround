@@ -62,9 +62,9 @@ export async function poolSearch(q: string, show: string) {
 /** The next companies for the assistant: highest score first, not yet picked, not already a prospect or a deal. */
 export async function poolNext(n: number) {
   const db = await getDb();
-  const take = Math.max(1, Math.min(30, Math.round(n) || 14));
+  const take = Math.max(1, Math.min(60, Math.round(n) || 40));
   const have = new Set([...(await db.select({ norm: prospects.norm }).from(prospects)).map((p) => p.norm), ...(await deskDeals()).map((d) => normCompany(d.company))]);
-  const rows = await db.select().from(sourcingPool).where(isNull(sourcingPool.pickedAt)).orderBy(desc(sourcingPool.score), desc(sourcingPool.patCr)).limit(take + 40);
+  const rows = await db.select().from(sourcingPool).where(isNull(sourcingPool.pickedAt)).orderBy(desc(sourcingPool.score), desc(sourcingPool.patCr)).limit(take + 60);
   const dup = rows.filter((r) => have.has(r.norm));
   if (dup.length) await db.update(sourcingPool).set({ pickedAt: new Date(), outcome: "skipped: already on the desk" }).where(inArray(sourcingPool.id, dup.map((r) => r.id)));
   return rows.filter((r) => !have.has(r.norm)).slice(0, take).map((r) => ({ company: r.company, legalName: r.legalName, cin: r.cin, publicLimited: r.publicLtd, website: r.website, city: r.city, state: r.state,

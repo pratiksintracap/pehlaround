@@ -87,3 +87,11 @@ test("the pool hands out the best unpicked companies once, and skips ones alread
   assert.equal((await poolNext(5)).some((x) => x.company === "Pooltest Beta Foods"), false);
   assert.ok((await poolStats()).total >= 3);
 });
+
+test("the assistant can load pool rows sent gzipped", async () => {
+  const { gzipSync } = await import("node:zlib");
+  const gz = gzipSync(Buffer.from(JSON.stringify([{ company: "Gzipped Pool Test Alloys", revenue_cr: 150, pat_cr: 20, score: 1.2 }]))).toString("base64");
+  const r = await deskAction({ action: "pool_load", gz, source: "test" });
+  assert.equal(r.loaded, 1);
+  assert.ok((await deskAction({ action: "pool_load", gz: "not-gzip" })).error);
+});
