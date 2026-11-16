@@ -1,6 +1,155 @@
 // The desk's opening articles. Edit or add more in /admin/articles.
 export const SEED_ARTICLES = [
   {
+    slug: "mahanadi-coalfields-crystal-crop-week-ahead",
+    title: "₹9,500 Cr this week, and none of it goes to the company: the IPO calendar for 17–23 November",
+    dek: "Coal India is selling 10% of Mahanadi Coalfields in an offer for sale, and Crystal Crop Protection opens a smaller, mostly fresh issue. They arrive as domestic equity inflows cool and foreign investors keep selling.",
+    publishedAt: "2026-11-17T09:00:00+05:30",
+    published: false,
+    body: `Two main-board issues and one SME issue open this week, together worth more than ₹10,000 Cr. Almost all of that is one deal.
+
+## Mahanadi Coalfields: a parent selling down
+
+Mahanadi Coalfields, a subsidiary of Coal India, opens its IPO on 19 November and closes on 23 November. Anchor bidding is on 18 November, and the shares are expected to list on the BSE and NSE on 27 November.
+
+- The issue is an offer for sale of up to 66.18 crore shares, 10% of the company's paid-up capital.
+- It is expected to raise about ₹9,500 Cr.
+- There is no fresh issue. Coal India is the only seller, and the money goes to the parent, not to Mahanadi Coalfields.
+- Coal India has reserved up to 3.31 crore shares for eligible employees and about 6.61 crore shares for its own eligible shareholders.
+
+The company reported a profit after tax of ₹10,698.1 Cr for FY26 and produced about 218.31 million tonnes of coal that year. The price band had not been announced when the red herring prospectus was filed.
+
+After the issue, Coal India will still hold 90%. That matters for anyone who buys: a holder with 90% decides when, and whether, more shares come to market, and any further sale by the parent is supply that later buyers would meet.
+
+## Crystal Crop Protection: mostly fresh capital
+
+Crystal Crop Protection opens on 18 November and closes on 20 November, with anchor bidding on 17 November. The price band is ₹259 to ₹272.
+
+- The fresh issue is up to ₹355 Cr, and the offer for sale up to ₹101 Cr.
+- At the top of the band the company is valued at about ₹4,438 Cr.
+
+Here the balance runs the other way from Mahanadi: most of the money raised goes into the company.
+
+On the SME board, Watrana Rentals opens on 19 November with a band of ₹232 to ₹245. It aims to raise about ₹120 Cr, all of it fresh capital.
+
+## The money behind the books
+
+The week arrives as the domestic bid cools. AMFI's October data showed net inflows into equity mutual funds of ₹32,993.64 Cr, down 13.87% from ₹38,306.55 Cr in September. SIP contributions held up at ₹32,160 Cr, against ₹32,490 Cr the month before. Flows into small-cap funds fell to ₹6,407.50 Cr from ₹9,038.57 Cr, and into mid-cap funds to ₹4,892.62 Cr from ₹7,834.84 Cr. Foreign investors withdrew ₹34,843 Cr from Indian equities in October.
+
+SIP money still arrives every month, and it is the base on which large issues are sold. But a ₹9,500 Cr offer for sale draws on the same pool that every other listing, and every lock-in expiry, also needs.
+
+## What it means if you invest before an IPO
+
+- Read the split first. An offer for sale moves shares from one holder to another; a fresh issue funds the business. The two say different things about why the company is listing now.
+- A large holder that keeps most of the company after listing is a lasting source of supply. Ask how much of the company will still be in the hands of one seller after the IPO, and what it has said about selling more.
+- Large issues and lock-in expiries compete for the same domestic money. When inflows cool, the price at which the IPO book clears is set by fewer buyers. A pre-IPO entry price needs room for that.`,
+    sources: [
+      { title: "Rs.10,000 cr upcoming IPOs: latest GMP price, key dates: Crystal Crop Protection, Mahanadi Coalfields, Watrana Rentals (TradingView News, 15 November 2026)", url: "https://www.tradingview.com/news/moodys:e1b14ff470000:0-rs-10-000-cr-upcoming-ipos-latest-gmp-price-key-dates-crystal-crop-protection-mahanadi-coalfields-watrana-rentals/" },
+      { title: "Coal India arm Mahanadi Coalfields IPO to open on November 19, eyes ₹9,500 crore (Lapaas Voice, 15 November 2026)", url: "https://lapaasvoice.com/coal-india-arm-mahanadi-coalfields-ipo-to-open-on-november-19-eyes-%E2%82%B99500-crore" },
+      { title: "Mahanadi Coalfields IPO: 10 things to know about issue date, GMP, price band, size and listing (DNA India, 15 November 2026)", url: "https://www.dnaindia.com/business/report-mahanadi-coalfields-ipo-10-things-to-know-about-issue-date-gmp-price-band-size-and-listing-3224099" },
+      { title: "Mahanadi Coalfields IPO details (IPO Watch, 16 November 2026)", url: "https://ipowatch.in/mahanadi-coalfields-ipo-details/" },
+      { title: "AMFI data October 2026: equity MF inflows moderate to Rs 32,994 crore (Outlook Money, 11 November 2026)", url: "https://www.outlookmoney.com/invest/amfi-data-october-2026-equity-mutual-fund-inflows-sip" },
+      { title: "Equity mutual fund inflows fall 14% in October 2026; SIP contributions decline (Kotak Neo, 11 November 2026)", url: "https://www.kotakneo.com/news/mutual-funds/equity-mutual-fund-inflows-fall-14-percent-october-2026-sip-contributions/" },
+    ],
+  },
+  {
+    slug: "sebi-sme-ipo-overhaul-lock-in-six-months",
+    title: "SEBI wants to rebuild the SME IPO. The lock-in on pre-IPO shares would halve",
+    dek: "An October consultation paper proposes market-cap tests for SME listings, higher profit thresholds, no compulsory market making and a six-month lock-in for non-promoter shareholders instead of one year. For anyone buying into a company before an SME listing, the exit date moves.",
+    publishedAt: "2026-11-18T09:00:00+05:30",
+    published: false,
+    body: `On 14 October, SEBI published a consultation paper proposing a broad rewrite of the rules for SME IPOs. Public comments closed on 4 November. The proposals are not yet rules, and the paper sets no date for them to take effect.
+
+The segment it addresses has grown well past what the original rules were built for. As of 31 July 2026, 1,496 companies had listed on the SME platforms, 365 had migrated to the main board, and SME IPOs had raised ₹40,222 Cr in total.
+
+## Who could list where
+
+Today, eligibility for the SME platform turns on post-issue paid-up capital. The paper replaces that with market capitalisation.
+
+- Up to ₹1,000 Cr: SME platform only.
+- Above ₹1,000 Cr and up to ₹4,000 Cr: the company may choose the SME route.
+- Above ₹4,000 Cr: main board.
+
+The profit test would rise. An issuer would need average operating profit of at least ₹3 Cr a year over the preceding three financial years, against ₹1 Cr in at least two of three years today. A company that has converted or reorganised would need four completed quarters after the change and an audited annual statement filed with the Registrar of Companies.
+
+## What changes for pre-IPO shareholders
+
+This is the part that bears most directly on anyone who buys into a company before it lists on an SME platform.
+
+- Lock-in on non-promoter pre-issue shares would fall to six months from allotment in the IPO, from one year today. Venture capital funds, Category I and II AIFs and foreign venture capital investors would keep a holding period of at least one year from purchase.
+- Promoter holdings above the minimum contribution would be locked in for one year, instead of half for two years and half for one. The minimum promoter contribution would stay locked for three years.
+- Shares offered for sale would need to have been held for at least a year before the draft offer document is filed. The caps on how much a seller can offer would be lifted for QIB sellers only.
+
+## Less support after listing
+
+The paper would remove two features that have shaped SME trading since the start.
+
+- Compulsory market making, today required for three years after listing, would go.
+- Full underwriting would go. Instead, an issue would need subscriptions for at least 90% of the offer, excluding the offer for sale, or refund the money.
+
+SEBI's reasoning rests partly on cost and partly on use. Underwriting fees made up 49.52% of total issue expenses on NSE's SME platform in FY 2024-25. Market makers accounted for 0% to 10% of turnover in 361 NSE-listed and 268 BSE-listed SME stocks between August 2025 and July 2026.
+
+The minimum number of allottees would rise to 500 from 200, and shares would trade in lots of one.
+
+## What it means if you invest before an IPO
+
+- A shorter lock-in brings your exit date forward, but it also brings everyone else's. Six months after an SME listing, every non-promoter pre-IPO holder would be free on the same day, in a market that may no longer have a designated market maker.
+- Without compulsory market making, liquidity after listing depends on real buyers. Model your exit against the volume a company of that size actually trades, not against a quoted price.
+- Higher profit and track-record tests would mean fewer, larger SME issuers. Companies near the ₹1,000 Cr and ₹4,000 Cr lines would choose their board, and the choice changes who buys at listing.
+- Until SEBI notifies final rules, deals should be judged under the current ones, with the proposals as a likely direction rather than a certainty.`,
+    sources: [
+      { title: "SEBI SME IPO consultation paper 2026: market-cap eligibility and key changes (Corplaw Updates, 14 October 2026)", url: "https://www.corplawupdates.in/updates/sebi-sme-ipo-consultation-paper-2026" },
+      { title: "SEBI SME IPO consultation paper, October 2026: proposed rules (Khanals, 18 October 2026)", url: "https://khanals.in/insights/sebi-sme-ipo-consultation-paper-oct-2026/" },
+      { title: "SEBI's proposed SME IPO reforms: key changes for issuers, merchant bankers and IPO due diligence (Legal 500, 2 November 2026)", url: "https://www.legal500.com/intelligence/india/corporate-commercial-law/sebi%E2%80%99s-proposed-sme-ipo-reforms-key-changes-for-issuers-merchant-bankers-and-ipo-due-diligence" },
+    ],
+  },
+  {
+    slug: "your-entry-price-in-the-prospectus-waca",
+    title: "Your entry price will be in the prospectus. How SEBI's disclosure rules treat a pre-IPO round",
+    dek: "Since 2022, an offer document must show what investors paid for shares in the 18 months before filing, and state the IPO price band as a multiple of that cost. Since 2025, a pre-IPO placement must be reported to the exchanges within 24 hours. A pre-IPO price is no longer private.",
+    publishedAt: "2026-11-19T09:00:00+05:30",
+    published: false,
+    body: `Many investors in a pre-IPO round assume their price stays between them and the company. Under SEBI's issue rules, it does not. If the company goes on to list, the price you paid is likely to appear in its offer document, next to the IPO price band.
+
+## The 18-month look-back
+
+Amendments to SEBI's Issue of Capital and Disclosure Requirements (ICDR) Regulations in 2022 require the offer document to disclose the price per share of certain deals made in the 18 months before the draft red herring prospectus is filed.
+
+- Primary issuances, other than ESOPs and bonus shares, that amount to 5% or more of the fully diluted pre-issue capital, in one transaction or several within a rolling 30 days.
+- Secondary transactions of the same size involving the promoters, the promoter group, selling shareholders, or shareholders with the right to nominate a director.
+- Where there were no such deals, the price of the last five primary issuances or secondary transactions, going back no more than three years.
+
+## The price band as a multiple of your cost
+
+From those transactions the offer document works out a weighted average cost of acquisition, or WACA. The floor and cap of the IPO price band must be stated as a multiple of it. A committee of independent directors must then recommend that the price band is justified, comparing key performance indicators against the WACA, with an explanation covering the last three full financial years.
+
+In practice, the pre-IPO round becomes the reference point the IPO price is explained against. A wide gap between the round and the band has to be justified in writing, in a public document.
+
+## A placement after filing is reported within a day
+
+The March 2025 amendments, notified in the Official Gazette on 8 March 2025, went further for rounds done after the draft offer document is filed. Any proposed pre-IPO placement disclosed in the draft offer document must be reported to the stock exchanges within 24 hours of the transaction, whether done in part or in full. The same duty was added for rights issues, follow-on offers and SME issues.
+
+## Selling in the offer has conditions too
+
+A pre-IPO investor who hopes to sell some shares in the IPO itself meets separate rules.
+
+- Shares offered for sale generally have to have been held for at least one year before the draft offer document is filed.
+- For companies listing under Regulation 6(2), which must allot at least 75% of the net offer to qualified institutional buyers, the amount each shareholder may offer for sale is capped. Since 2025 the cap applies cumulatively to shares sold in the IPO and to any secondary sales made before it.
+
+## What it means if you invest before an IPO
+
+- Assume your price will be public. The round is not only what you pay; it is the base against which the company and its bankers will explain the IPO price.
+- Ask where your round sits in the company's 18-month history. Several rounds at rising prices, or a recent secondary at a very different price, will all appear in the same table.
+- If you are buying after the draft offer document is filed, expect the deal to be reported to the exchanges within a day.
+- Do not plan on selling in the offer unless you have checked the holding period and, where it applies, the cap on how much each holder can sell.`,
+    sources: [
+      { title: "Client alert: SEBI ICDR (Fourth Amendment) Regulations, 2022 (AZB & Partners, 2022)", url: "https://www.azbpartners.com/wp-content/uploads/2022/12/Client-Alert-SEBI-ICDR-Fourth-Amendment-Regulations-2022-W.pdf" },
+      { title: "Client update: SEBI ICDR amendment regulations (Shardul Amarchand Mangaldas, March 2025)", url: "https://amsshardul.com/wp-content/uploads/2025/03/Alert-CM-SEBI-ICDR-Amendment-Regulations-March-2025.pdf" },
+      { title: "JSA Prism: capital markets and securities, ICDR amendments (JSA Advocates & Solicitors, March 2025)", url: "https://www.jsalaw.com/wp-content/uploads/2025/03/JSA-Prism-Capital-Markets-and-Securities-ICDR-Amendments.March-2025.Final_.pdf" },
+      { title: "SEBI ICDR amendments 2025: an overview of key changes to the framework of issuance of securities (Mondaq, 21 May 2025)", url: "https://www.mondaq.com/india/shareholders/1626916/sebi-icdr-amendments-2025-an-overview-of-key-changes-to-framework-of-issuance-of-securities" },
+    ],
+  },
+  {
     slug: "october-2026-ipo-month-listing-pop",
     title: "₹44,610 Cr in one month: what October's IPOs say about where the return is made",
     dek: "Fourteen main-board issues closed in October and 14 of 18 listings opened above their price. The average first-day gain was 15.8%. For anyone with real money to put to work, that number matters less than it looks.",
