@@ -65,3 +65,25 @@ test("an email is written by the assistant, approved by the desk, and sent only 
   assert.ok("error" in a);
   assert.deepEqual(await runProspectSends(new Date("2026-11-15T23:40:00Z")), { sent: 0, waiting: true });
 });
+
+test("the pool hands out the best unpicked companies once, and skips ones already on the desk", async () => {
+  const { upsertPool, poolNext, poolMark, poolStats } = await import("@/lib/pool");
+  const n = await upsertPool([
+    { company: "Pooltest Alpha Castings", revenue_cr: "220", pat_cr: "30", score: "99.5", contact_email: "md@alpha-pool.example", contact_name: "A Person", public_ltd: "1", website: "https://alpha-pool.example" },
+    { company: "Pooltest Beta Foods", revenue_cr: "80", pat_cr: "4", score: "98.5", contact_email: "not-an-email" },
+    { company: "Zeta Sourcing Test Industries", revenue_cr: "240", pat_cr: "18", score: "99.9" },   // already a prospect from an earlier test
+    { company: "", score: "100" },
+  ], "test");
+  assert.equal(n, 3);
+  const next = await poolNext(2);
+  assert.deepEqual(next.map((x) => x.company), ["Pooltest Alpha Castings", "Pooltest Beta Foods"]);
+  assert.equal(next[0].publicLimited, true);
+  assert.equal(next[1].contactEmail, null);
+  assert.equal(await poolMark("Pooltest Beta Foods", "skipped: filed a DRHP"), true);
+  await deskAction({ action: "prospect", company: "Pooltest Alpha Castings Limited", poolCompany: "Pooltest Alpha Castings" });
+  assert.equal((await poolNext(5)).some((x) => x.company.startsWith("Pooltest")), false);
+  // A refresh of the same file does not put a checked company back in the queue.
+  await upsertPool([{ company: "Pooltest Beta Foods", revenue_cr: "85", pat_cr: "5", score: "98.5" }], "test");
+  assert.equal((await poolNext(5)).some((x) => x.company === "Pooltest Beta Foods"), false);
+  assert.ok((await poolStats()).total >= 3);
+});

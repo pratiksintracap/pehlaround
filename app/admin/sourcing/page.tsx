@@ -32,7 +32,7 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
     <>
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", margin: "6px 0 6px" }}>
         <h1 style={{ fontSize: 30, margin: 0 }}>Sourcing</h1><span className="pill">Desk only</span>
-        {edit && <a className="btn sm" href="#add">+ Add a company</a>}</div>
+        {edit && <a className="btn sm" href="#add">+ Add a company</a>}<a className="btn sm" href="/admin/sourcing/pool">Sourcing pool</a></div>
       <p className="fine" style={{ marginBottom: 12 }}>Companies the assistant finds each weekday morning: unlisted, ₹50–1,000 Cr revenue, profitable and growing, from rating rationales, news and filings. For each one it reads the company&apos;s website and writes an outreach email, shown on the row for review. <b>Nothing is sent until someone here approves it</b>; it then goes from the desk address. When a company replies with interest, Puneet gets a call task. Make a prospect a deal with <i>Pre-IPO</i> or <i>Debt</i>.</p>
       <div className="adm-filter">{[["open", `Open (${all.filter((p) => OPEN.includes(p.status)).length})`], ...PROSPECT_STATUS.map((x) => [x.id, `${x.label} (${count(x.id)})`]), ["all", `All (${all.length})`]].map(([k, l]) =>
         <a key={k} href={q({ status: k })} className={status === k ? "on" : ""}>{l}</a>)}</div>

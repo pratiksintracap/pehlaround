@@ -71,3 +71,13 @@ export async function saveProspectEmail(f: FormData) {
   await log(me, a.sent ? `Desk approved and sent the outreach email to ${a.company}` : `Desk approved the outreach email to ${a.company}; it goes at 9 AM`, null, { entity: "prospect" });
   done(deskBack(f, BACK), a.sent ? `Sent to ${a.company} from the desk address.` : `Approved. It is outside sending hours, so the email to ${a.company} goes at 9 AM on the next working day.`);
 }
+
+/** Loads one batch of pool rows from the file the desk uploads on the pool page. */
+export async function loadPool(rows: Record<string, unknown>[], source: string) {
+  const me = await requirePerm("deals.edit");
+  if (!Array.isArray(rows) || rows.length > 400) return { error: "Send at most 400 rows at a time." };
+  const { upsertPool } = await import("@/lib/pool");
+  const n = await upsertPool(rows, String(source ?? "").slice(0, 120) || "upload");
+  if (n) await log(me, `Desk loaded ${n} companies into the sourcing pool`, null, { entity: "pool" });
+  return { ok: true, loaded: n };
+}

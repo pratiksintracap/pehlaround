@@ -8,6 +8,7 @@ import { deskDeals, deskMembers } from "@/lib/desk";
 import { addProspect, prospectNames, updateProspect } from "@/lib/prospects";
 import { debtBook, deskInbox, inboxAction, prepList, scorecard } from "@/lib/agent-inbox";
 import { booksAction, complianceGaps, listedBook, newOffices } from "@/lib/agent-books";
+import { poolMark, poolNext, poolStats } from "@/lib/pool";
 
 // The desk's scheduled assistant (morning brief, meeting follow-ups, weekly pipeline review) reads the desk through this
 // endpoint and can make two small changes: add a task, or move a deal to another pipeline stage. Every change is logged
@@ -91,8 +92,12 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
   }
   // Deal sourcing (lib/prospects.ts): list what is already logged, add a find, or move one along.
   if (b.action === "prospects") return ({ ok: true, prospects: await prospectNames() });
+  // The sourcing pool (lib/pool.ts): the next companies to check, and marking one skipped with the reason.
+  if (b.action === "pool_next") return ({ ok: true, pool: await poolStats(), companies: await poolNext(Number(b.n) || 14) });
+  if (b.action === "pool_skip") return ({ ok: await poolMark(s(b.company, 200), `skipped: ${s(b.reason, 200) || "not a fit"}`) });
   if (b.action === "prospect") {
     const r = await addProspect(b, WHO.name);
+    if ("ok" in r || "exists" in r) await poolMark(s(b.poolCompany, 200) || s(b.company, 200), "prospect");
     if ("ok" in r) await log(WHO, `Assistant found a prospect: ${s(b.company, 200)}`, null, { entity: "prospect", entityId: r.id });
     return r;
   }

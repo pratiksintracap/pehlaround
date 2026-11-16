@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex, index, numeric, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, boolean, timestamp, jsonb, uniqueIndex, index, numeric, doublePrecision, real } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { PHASE_SQL, type Phase } from "@/lib/phase";
 import type { RoomContent, IpoProgress } from "@/lib/types";
@@ -528,6 +528,22 @@ export const prospects = pgTable("prospects", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("prospects_norm_uq").on(t.norm), index("prospects_status_idx").on(t.status)]);
+
+// The sourcing pool: companies loaded from a data export (uploaded by the desk, never in the repository) that fit the
+// desk's filters. The assistant takes the highest-scored ones each morning, checks them, and moves the good ones to
+// prospects. Desk only.
+export const sourcingPool = pgTable("sourcing_pool", {
+  id: serial("id").primaryKey(),
+  company: text("company").notNull(), norm: text("norm").notNull(),
+  legalName: text("legal_name"), cin: text("cin"), website: text("website"), city: text("city"), state: text("state"), sector: text("sector"), overview: text("overview"),
+  founded: integer("founded"), fy: text("fy"), revenueCr: real("revenue_cr"), patCr: real("pat_cr"), ebitdaCr: real("ebitda_cr"),
+  stage: text("stage"), investors: text("investors"), people: text("people"),
+  contactName: text("contact_name"), contactRole: text("contact_role"), contactEmail: text("contact_email"), companyEmail: text("company_email"), phone: text("phone"), linkedin: text("linkedin"),
+  publicLtd: boolean("public_ltd").notNull().default(false), partOf: text("part_of"),
+  score: real("score").notNull().default(0), source: text("source"),
+  pickedAt: timestamp("picked_at", { withTimezone: true }), outcome: text("outcome"),   // outcome: "prospect" or "skipped: <why>"
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("sourcing_pool_norm_uq").on(t.norm), index("sourcing_pool_next_idx").on(t.pickedAt, t.score)]);
 
 // What the desk asks of a partner firm (an office of type "broker") for one issue: how many clients to introduce and how
 // much to bring. leg: pre_ipo (the round on the desk) | ipo (the public issue that follows). Shown to that firm only.
