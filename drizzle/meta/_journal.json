@@ -344,6 +344,13 @@
       "when": 1794950000000,
       "tag": "0048_sourcing_pool",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1795000000000,
+      "tag": "0049_deal_images",
+      "breakpoints": true
     }
   ]
 }

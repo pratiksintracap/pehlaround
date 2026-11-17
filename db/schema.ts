@@ -744,3 +744,14 @@ export const kycFiles = pgTable("kyc_files", {
   replacedAt: timestamp("replaced_at", { withTimezone: true }), // a newer file of the same kind took its place
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("kyc_files_office_idx").on(t.officeId)]);
+
+// Card pictures uploaded from the deal admin page. Stored here (base64) and served from /api/deal-art/[id];
+// deals.art then holds an <img> pointing at it instead of a built-in illustration.
+export const dealImages = pgTable("deal_images", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  mime: text("mime").notNull(),
+  data: text("data").notNull(),
+  createdBy: text("created_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("deal_images_deal_idx").on(t.dealId)]);

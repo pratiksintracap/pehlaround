@@ -17,6 +17,7 @@ import { PHASES, phaseInfo, isPublic } from "@/lib/phase";
 import { Field as IN, Area as TA } from "@/components/ui";
 import { RUBRIC, rubricTotal, DESK_BAR } from "@/lib/score";
 import ART from "@/lib/deal-art.json";
+import { DealPictureUpload } from "@/components/DealPictureUpload";
 import { dealInterest, STAGE_LABEL, type Stage } from "@/lib/interest";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
@@ -99,8 +100,9 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <div className="row"><IN name="roundCr" label="Round size, ₹ crore (allocation book)" value={d.roundCr ?? ""} ph="50" hint="Used for coverage in the Pipeline; read from the round label when empty" /><span /></div>
         <div className="row"><IN name="peLabel" label="P/E trailing · forward" value={d.peLabel} /></div>
         <IN name="dataRoomUrl" label="Data bank: Google Drive folder link (layer 3, opens only from the NDA room)" value={d.dataRoomUrl} ph="https://drive.google.com/drive/folders/…" hint="Share the folder as 'Anyone with the link · Viewer' with downloading, printing and copying switched off (Drive: Share → Settings). Offices reach it only through the room, and every open is logged by name and office. Leave empty to show 'coming'." />
-        <div className="row"><label>Card illustration<select name="artKey" defaultValue={artKey}>{Object.keys(ART).map((k) => <option key={k} value={k}>{k}</option>)}</select></label>
+        <div className="row"><label>Card picture<select name="artKey" defaultValue={artKey}><option value="">{artKey ? "Keep current picture" : d.art?.startsWith("<img") ? "Your uploaded picture (keep)" : "Keep current picture"}</option>{Object.keys(ART).map((k) => <option key={k} value={k}>Built-in: {k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
+        <DealPictureUpload dealId={d.id} />
         <TA name="publicRisks" label="Short risk list (kept for the desk; no longer shown publicly, the room's risks are under In the room)" value={toText.list(d.publicRisks)} rows={3} />
 
         <h2>In the room</h2>
