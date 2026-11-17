@@ -1,3 +1,4 @@
+import { dealCheck } from "@/lib/agent-dealcheck";
 import "server-only";
 import { and, desc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
@@ -118,6 +119,7 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     return r;
   }
   // The inbox, the debt book and the weekly scorecard (lib/agent-inbox.ts).
+  if (b.action === "deal_check") return dealCheck(s(b.company, 120));
   if (b.action === "inbox") return deskInbox();
   if (b.action === "debt") return debtBook();
   if (b.action === "scorecard") return scorecard();
