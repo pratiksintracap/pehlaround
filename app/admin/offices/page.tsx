@@ -13,9 +13,10 @@ import { listTasks, officeScope } from "@/lib/desk";
 
 const fmtD = (d: Date | null) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
 
-export default async function Offices({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
+export default async function Offices({ searchParams }: { searchParams: Promise<{ show?: string; type?: string }> }) {
   const me = await requireDesk();
-  const { show } = await searchParams;
+  const { show, type } = await searchParams;
+  const kind = type && type in TYPE_LABEL ? (type as InvestorType) : "";
   const manage = can(me, "offices.manage"), seeContacts = can(me, "contacts.view", { analystContacts: (await getSettings()).analystContacts });
   const em = (v?: string | null) => (seeContacts ? v : mask(v));
   const db = await getDb();
@@ -32,7 +33,10 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
   const pendingN = os.filter((o) => o.approval === "pending").length;
   const pick = (o: typeof os[number]) => !show ? true : show === "pending" ? o.approval === "pending" : show === "approved" ? o.approval === "approved" && o.origin !== "desk"
     : show === "registered" ? o.origin !== "desk" : show === "desk" ? o.origin === "desk" : o.approval === "rejected";
-  const list = [...os].filter(pick).sort((a, b) => order(a) - order(b));
+  const typeOf = (o: typeof os[number]) => (o.investorType in TYPE_LABEL ? o.investorType : "family_office") as InvestorType;
+  const list = [...os].filter(pick).filter((o) => !kind || typeOf(o) === kind).sort((a, b) => order(a) - order(b));
+  const byType = (Object.keys(TYPE_LABEL) as InvestorType[]).map((k) => [k, os.filter(pick).filter((o) => typeOf(o) === k).length] as const);
+  const q = (sh: string, ty: string) => { const p = new URLSearchParams(); if (sh) p.set("show", sh); if (ty) p.set("type", ty); const x = p.toString(); return x ? `/admin/offices?${x}` : "/admin/offices"; };
   const deskN = os.filter((o) => o.origin === "desk").length;
   const openTasks = await listTasks({ status: "open", me });
   const userEmails = new Map(us.filter((u) => u.officeId).map((u) => [u.email.toLowerCase(), u.officeId!]));
@@ -40,10 +44,12 @@ export default async function Offices({ searchParams }: { searchParams: Promise<
   const AP: Record<string, [string, string]> = { pending: ["Awaiting approval", "mid"], approved: ["Approved", "ok"], rejected: ["Declined", "off"] };
   return (
     <>
-      <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Family offices</h1>
+      <h1 style={{ fontSize: 30, margin: "6px 0 6px" }}>Investors and partners</h1>
       <p className="fine" style={{ marginBottom: 10 }}>New registrations wait here for the desk. An office sees company names, terms and NDAs only after you approve it, and it is told in its dashboard (and by email, once email is set up). {manage ? <>Approval can be switched off in <a href="/admin/settings">Settings</a>.</> : null}</p>
       <div className="adm-filter">{[["", `All (${os.length})`], ["pending", `Awaiting approval (${pendingN})`], ["approved", "Approved (registered)"], ["registered", `Registered (${os.length - deskN})`], ["desk", `Added by desk (${deskN})`], ["rejected", "Declined"]].map(([k, l]) =>
-        <a key={k} href={k ? `/admin/offices?show=${k}` : "/admin/offices"} className={(show || "") === k ? "on" : ""}>{l}</a>)}</div>
+        <a key={k} href={q(k, kind)} className={(show || "") === k ? "on" : ""}>{l}</a>)}</div>
+      <div className="adm-filter" aria-label="By type"><a href={q(show || "", "")} className={!kind ? "on" : ""}>All types</a>{byType.map(([k, n]) =>
+        <a key={k} href={q(show || "", k)} className={kind === k ? "on" : ""}>{k === "broker" ? "Partners (wealth managers)" : TYPE_LABEL[k]} ({n})</a>)}</div>
       <p className="fine" style={{ marginBottom: 16 }}>Putting an office on hold closes every room to it. NDAs are signed with the signatory&apos;s name and a one-time code emailed to them; no PAN is asked until an office invests.</p>
       {list.map((o) => {
         const people = us.filter((u) => u.officeId === o.id), nn = ns.filter((x) => x.officeId === o.id);

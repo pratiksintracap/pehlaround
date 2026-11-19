@@ -1,7 +1,9 @@
 import "server-only";
 import { and, desc, eq, gte, inArray, isNull, or } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { deskNotes, interests, kycFiles, ndas, offices } from "@/db/schema";
+import { deskInvites, deskNotes, interests, kycFiles, ndas, offices, users } from "@/db/schema";
+import { randomBytes } from "node:crypto";
+import { SITE_URL } from "@/lib/site";
 import { deskDeals } from "@/lib/desk";
 import { istDay, stageLabel } from "@/lib/stages";
 
@@ -79,6 +81,7 @@ export async function complianceGaps() {
 }
 
 export async function booksAction(b: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+  if (b.action === "partner_invite") return partnerInvite(b);
   if (b.action !== "office_note") return null;
   const db = await getDb();
   const name = s(b.office, 200).toLowerCase(), text = s(b.body, 4000);
@@ -86,4 +89,19 @@ export async function booksAction(b: Record<string, unknown>): Promise<Record<st
   if (hits.length !== 1 || text.length < 10) return { error: "Give the office's exact name and a note." };
   await db.insert(deskNotes).values({ officeId: hits[0].id, body: text, who: BY });
   return { ok: true, office: hits[0].name, log: { text: "Assistant added a desk note on an investor office", dealId: null } };
+}
+
+// Invite a wealth manager or adviser as a partner firm, the same as the console's Partners page: the link registers the
+// firm already approved, as a broker / wealth manager. Nothing is emailed; the desk sends the link with the agreement.
+async function partnerInvite(b: Record<string, unknown>) {
+  const email = s(b.email, 200).toLowerCase(), name = s(b.name, 120), firm = s(b.firm, 160);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !firm) return { error: "A firm name and an email are needed." };
+  const db = await getDb();
+  const [used] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+  if (used) return { error: `${email} is already registered; set that office's type to Broker / wealth manager.` };
+  const [dup] = await db.select({ token: deskInvites.token }).from(deskInvites).where(and(eq(deskInvites.email, email), isNull(deskInvites.usedAt)));
+  if (dup) return { ok: true, existing: true, link: `${SITE_URL}/invite/${dup.token}` };
+  const token = randomBytes(18).toString("base64url");
+  await db.insert(deskInvites).values({ token, email, name: name || null, officeName: firm, createdBy: BY, known: true, investorType: "broker" });
+  return { ok: true, firm, link: `${SITE_URL}/invite/${token}`, log: { text: `Assistant invited ${firm} as a partner`, dealId: null } };
 }

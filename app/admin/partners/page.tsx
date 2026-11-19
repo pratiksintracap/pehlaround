@@ -54,7 +54,7 @@ export default async function Partners() {
       {invite && <details className="adm-card" style={{ marginTop: 12 }}><summary><b>Invite a firm by hand</b></summary>
         <form action={invitePartner} className="form"><div className="row3"><label>Firm<input name="firm" required maxLength={160} /></label><label>Contact name<input name="name" maxLength={120} /></label><label>Email<input name="email" type="email" required maxLength={200} /></label></div>
           <div><button className="btn sm" type="submit">Make the partner link</button></div>
-          <p className="fine">The link registers the firm already approved, as a partner. No email goes out: send the link yourself, with the partner agreement. A firm already on the desk becomes a partner under Family offices (investor type).</p></form></details>}
+          <p className="fine">The link registers the firm already approved, as a partner. No email goes out: send the link yourself, with the partner agreement. A firm already on the desk becomes a partner under Investors (investor type).</p></form></details>}
       {waiting.length > 0 && <div id="invited" className="adm-card"><b>Invited, not yet registered</b>
         <ul className="feed">{waiting.map((w) => { const url = `${SITE_URL}/invite/${w.token}`; return (
           <li key={w.id}>{w.officeName || w.name} · <small className="fine">{w.email} · {fmtD(w.createdAt)}</small>
@@ -99,7 +99,7 @@ export default async function Partners() {
               <li key={c.id}><a href={`/admin/offices#o${c.id}`}>{c.name}</a> · {c.approval} · joined {fmtD(c.createdAt)}{n.length ? ` · NDAs: ${n.map((x) => dealName.get(x.dealId)).join(", ")}` : ""}{a.length ? ` · asked: ${a.map((x) => `${dealName.get(x.dealId)} ₹${Number(x.amountCr)} Cr (${x.status})`).join(", ")}` : ""}</li>); })}</ul>
               : <p className="fine">No clients yet.</p>}
           </details>); })
-        : <p className="fine">No partner firms yet. Invite one above, or set an existing office&apos;s investor type to Broker / wealth manager under Family offices.</p>}
+        : <p className="fine">No partner firms yet. Invite one above, or set an existing office&apos;s investor type to Broker / wealth manager under Investors.</p>}
     </>
   );
 }

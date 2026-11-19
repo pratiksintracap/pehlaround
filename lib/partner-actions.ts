@@ -21,7 +21,7 @@ export async function invitePartner(f: FormData) {
   if (!EM.test(email) || !firm) fail(`${HERE}#apply`, "A firm name and an email are needed.");
   const db = await getDb();
   const [used] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
-  if (used) fail(`${HERE}#apply`, `${email} is already registered. Set that office's type to Broker / wealth manager under Family offices.`);
+  if (used) fail(`${HERE}#apply`, `${email} is already registered. Set that office's type to Broker / wealth manager under Investors.`);
   const [dup] = await db.select({ id: deskInvites.id }).from(deskInvites).where(and(eq(deskInvites.email, email), isNull(deskInvites.usedAt)));
   if (dup) fail(`${HERE}#apply`, `${email} already has an invitation waiting (Invite offices).`);
   const token = randomBytes(18).toString("base64url");
