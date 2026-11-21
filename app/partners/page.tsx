@@ -46,22 +46,24 @@ export default async function Partners() {
 
   return (
     <main className="ptn">
-      <section className="hero hx">
-        <div className="wrap hx-in">
-          <div className="hx-main">
-            <h1>Pre-IPO rounds for your clients, under your relationship.</h1>
-            <p className="hx-lede">If your clients are asking about companies before they list, we can give you something real to show them. We find the companies, check them, put our own money in first and handle the paperwork. You keep the client.</p>
-            <div className="ctas"><a className="btn primary" href="#apply">Apply to partner</a><a className="hx-link" href="#get">How it works for partners</a></div>
-            <p className="hx-note">For wealth managers, private bankers, RIAs, chartered accountants and family-office advisers.</p>
+      <section className="pt-hero">
+        <div className="wrap pt-hero-in">
+          <div>
+                        <h1>Pre-IPO rounds for your clients, under your relationship.</h1>
+            <p className="pt-lede">If your clients ask about companies before they list, we give you something real to show them. We find the companies, check them, put our own money in first and handle the paperwork. You keep the client.</p>
+            <div className="pt-ctas"><a className="pt-btn" href="#apply">Apply to partner</a><a className="pt-btn ghost" href="#get">See what you get</a></div>
           </div>
-          <aside className="hx-side" aria-label="On the desk now">
-            <p className="hx-side-h">On the desk now</p>
-            <ol className="hx-list">
-              <li><b>{open.length || live.length} {(open.length || live.length) === 1 ? "company" : "companies"}</b> {open.length ? "with a round open" : "on the desk"}{coming.length ? `, and ${coming.length} more in diligence` : ""}.</li>
-              <li><b>Pre-IPO and IPO.</b> One relationship from the private round to listing day.</li>
-              <li><b>Terms in writing.</b> A partner agreement before anything else; nothing is paid or charged before it is signed.</li>
-            </ol>
-          </aside>
+          <div className="pt-mock" aria-label="An illustration of the partner desk">
+            <div className="pt-mock-top"><i /><i /><i /><span>Your partner desk</span><em>Sample</em></div>
+            <div className="pt-mock-kpi">
+              <div><small>Clients</small><b>14</b></div><div><small>Introductions</small><b>9</b></div><div><small>Requested</small><b>₹6.5 Cr</b></div>
+            </div>
+            <div className="pt-mock-rows">
+              {[["Specialty chemicals, Gujarat", 80], ["Defence electronics, Maharashtra", 55], ["Packaged foods, Rajasthan", 30]].map(([t, p]) => (
+                <div key={t as string}><span>{t}</span><i><i style={{ width: `${p}%` }} /></i><small>{p}% of target</small></div>))}
+            </div>
+            <div className="pt-mock-share"><span>Your link · Specialty chemicals</span><b>WhatsApp</b></div>
+          </div>
         </div>
       </section>
 
