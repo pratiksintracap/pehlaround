@@ -5,7 +5,7 @@ export const SEED_ARTICLES = [
     title: "A coal giant's book closes, two new issues open: the IPO calendar for 24–30 November",
     dek: "Mahanadi Coalfields went into its last day with the book less than half covered, while Crystal Crop Protection closed 17 times subscribed. This week Foodlink F&B and Integris Medtech open, each with a fresh issue that comes with a list of what the money is for.",
     publishedAt: "2026-11-24T09:00:00+05:30",
-    published: false,
+    published: true,
     body: `Last week's two main-board issues ended in very different places. This week two more open, and both put a specific plan for the fresh money in front of investors.
 
 ## Mahanadi Coalfields: a large offer for sale goes to the wire
@@ -73,7 +73,7 @@ On the SME board, Shree Siddhivinayak Greentech Industries opens on 25 November 
     title: "₹1.22 lakh crore in three weeks: foreign money came back in November. Here is where it went",
     dek: "After six straight months of selling, foreign portfolio investors put a record sum into Indian equities between 2 and 20 November. Most of it went into large, liquid stocks, and the speed of the turn is the lesson.",
     publishedAt: "2026-11-25T09:00:00+05:30",
-    published: false,
+    published: true,
     body: `Foreign portfolio investors bought a net ₹1.22 lakh crore of Indian equities between 2 and 20 November, according to NSDL data. It is the largest monthly inflow on record, and the month is not over.
 
 ## How sharp the turn was
@@ -123,7 +123,7 @@ Domestic institutions were often on the other side. In the week to 6 November, f
     title: "After the IPO, who checks where the money went? Monitoring agencies, deviation reports and the exit offer",
     dek: "Every fresh issue comes with a list of objects. A monitoring agency, the audit committee and a shareholder vote are what hold a company to it after listing, and a SEBI consultation paper from October would tighten the first of these.",
     publishedAt: "2026-11-26T09:00:00+05:30",
-    published: false,
+    published: true,
     body: `An offer document sets out what the fresh money will be spent on: a plant, a debt repayment, a new subsidiary. Once the shares list, a set of rules decides who checks that it was, and what happens if the company changes its mind.
 
 ## Before the IPO: how far the plan can move
