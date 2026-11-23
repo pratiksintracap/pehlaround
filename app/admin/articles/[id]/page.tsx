@@ -15,7 +15,7 @@ export default async function EditArticle({ params }: { params: Promise<{ id: st
   const date = (a?.publishedAt ?? new Date()).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
   return (
     <>
-      <p className="crumb"><a href="/admin/articles">← All articles</a>{a && <> · <a href={`/articles/${a.slug}`}>View</a></>}</p>
+      <p className="crumb"><a href="/admin/articles">← All articles</a>{a && (a.published && a.publishedAt && new Date(a.publishedAt) <= new Date() ? <> · <a href={`/articles/${a.slug}`}>View</a></> : <> · <span className="fine">{a.published ? `Scheduled for ${new Date(a.publishedAt!).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })}` : "Draft, not on the site yet"}</span></>)}</p>
       <h1 style={{ fontSize: 30, margin: "6px 0 16px" }}>{a ? "Edit article" : "Write an article"}</h1>
       <form action={saveArticle} className="form adm-form">
         <input type="hidden" name="id" value={a?.id ?? 0} />
