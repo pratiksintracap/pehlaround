@@ -71,6 +71,11 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     const rows = (await deskDeals()).filter((d) => d.company.toLowerCase().includes(n)).map((d) => ({ id: d.id, company: d.company, stage: d.pipelineStage }));
     return rows.length === 1 ? rows[0] : rows.length > 1 ? "ambiguous" : null;
   };
+  // The one-off move of NBFC Desk's data into /credit (lib/credit/server/import.ts). Resumable: call until done.
+  if (b.action === "credit_import") {
+    const { creditImport } = await import("@/lib/credit/server/import");
+    return creditImport();
+  }
   if (b.action === "task") {
     const title = s(b.title, 200);
     if (!title) return ({ error: "A title is needed." });

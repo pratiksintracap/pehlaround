@@ -30,6 +30,8 @@ function sitePrivateRaw(): Buffer {
   k[0] &= 248; k[31] &= 127; k[31] |= 64;
   return k;
 }
+/** Opens something sealed to the site's key by another of the desk's systems (the NBFC Desk data move). */
+export const openForSite = (sealed: Buffer) => open(sealed, sitePrivateRaw());
 export const sitePublicRaw = () => rawPublic(createPublicKey(privateKeyFromRaw(sitePrivateRaw())));
 
 export async function verifyWorkflow(header: string | null): Promise<boolean> {
