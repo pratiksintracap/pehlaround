@@ -78,3 +78,13 @@ test("a new deal from the assistant lands in preparation and is not added twice"
   assert.equal((await deskAction({ action: "deal_new", company: "ORRERY TEST LOYALTY PVT LTD" })).exists, true);
   await db.update(deals).set({ pipelineStage: "archived" }).where(eq(deals.id, d.id));
 });
+
+test("a debt deal from the assistant is desk only, keeps its terms and is not added twice", async () => {
+  const a = await deskAction({ action: "debt_new", company: "Tessaly Test Finance Pvt Ltd", facility: "Term loan", amountCr: "10", tenorMonths: 36, rateBand: "14-16%", source: "Partner" });
+  assert.equal(a.ok, true);
+  const db = await getDb();
+  const [d] = await db.select().from(deals).where(eq(deals.id, a.id as number));
+  assert.deepEqual([d.debt, d.listed, d.phase, d.pipelineStage, d.debtInfo?.amountCr, d.debtInfo?.tenorMonths, d.debtInfo?.rateBand], [true, false, "preparing", "sourced", 10, 36, "14-16%"]);
+  assert.equal((await deskAction({ action: "debt_new", company: "TESSALY TEST FINANCE LIMITED" })).exists, true);
+  await db.update(deals).set({ pipelineStage: "archived" }).where(eq(deals.id, d.id));
+});

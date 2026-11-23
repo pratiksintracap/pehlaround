@@ -147,6 +147,25 @@ export async function inboxAction(b: Record<string, unknown>): Promise<Record<st
       headline: s(b.headline, 600), listingLabel: s(b.listing, 60) || "To be set", phase: "preparing", sort: 200, pipelineStage: "sourced", stageAt: new Date(), room }).returning({ id: deals.id });
     return { ok: true, company, id: row.id, log: { text: `Assistant added ${company} to the pipeline at Sourced (in preparation, desk only)`, dealId: row.id } };
   }
+  // A debt deal (desk only, never on the site), e.g. a borrower a partner sent in. Matched by company so a resend is a no-op.
+  if (b.action === "debt_new") {
+    const company = s(b.company, 200);
+    if (company.length < 3) return { error: "A borrower name is needed." };
+    const all = await deskDeals({ kind: "debt" });
+    const key = (v: string) => v.toLowerCase().replace(/\b(private|pvt|limited|ltd)\b\.?/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+    const dup = all.find((d) => key(d.company) === key(company));
+    if (dup) return { exists: true, company: dup.company };
+    const info: Record<string, unknown> = {};
+    for (const k of ["borrowerType", "sector", "facility", "rateBand", "security", "purpose", "side", "lenders", "counterparty", "source", "rating"]) { const v = s(b[k], 300); if (v) info[k] = v; }
+    const num = (v: unknown) => { const x = parseFloat(String(v ?? "").replace(/[₹,\s]/g, "")); return isFinite(x) && x > 0 ? x : null; };
+    info.amountCr = num(b.amountCr); info.tenorMonths = num(b.tenorMonths);
+    const slug = `debt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    const [row] = await db.insert(deals).values({ slug, company, title: (info.sector as string) || "Debt", category: (info.facility as string) || "Debt",
+      headline: s(b.summary, 2000), listingLabel: "Debt", phase: "preparing", debt: true, debtInfo: info, sort: 600,
+      pipelineStage: "sourced", stageAt: new Date(),
+      room: { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [], interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] } }).returning({ id: deals.id });
+    return { ok: true, company, id: row.id, log: { text: `Assistant added the debt deal ${company} at Sourced (desk only)`, dealId: row.id } };
+  }
   // A first draft of a deal room, only while the deal is in preparation (desk only) and only into fields that are still empty.
   if (b.action === "room_draft") {
     const d = await oneDeal(s(b.company, 200));
