@@ -88,6 +88,19 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     await log(WHO, `Assistant added a task: ${title}`, d?.id ?? null, { entity: "task", entityId: t.id });
     return ({ ok: true, taskId: t.id, company: d?.company ?? null });
   }
+  // { action: "task_move", taskId, company } — puts a task on a different deal (company "" takes it off any deal).
+  if (b.action === "task_move") {
+    const id = Number(b.taskId);
+    const [t] = Number.isInteger(id) && id > 0 ? await db.select({ id: tasks.id, title: tasks.title, dealId: tasks.dealId }).from(tasks).where(eq(tasks.id, id)) : [];
+    if (!t) return ({ error: "No task with that id." });
+    const name = s(b.company, 120);
+    const d = name ? await findDeal(name) : null;
+    if (name && (!d || d === "ambiguous")) return ({ error: "Name one deal." });
+    const to = d && d !== "ambiguous" ? d : null;
+    await db.update(tasks).set({ dealId: to?.id ?? null }).where(eq(tasks.id, id));
+    await log(WHO, `Assistant moved the task "${t.title}" to ${to ? to.company : "no deal"}`, to?.id ?? null, { entity: "task", entityId: id, detail: { changes: { dealId: [t.dealId, to?.id ?? null] } } });
+    return ({ ok: true, taskId: id, company: to?.company ?? null });
+  }
   // { action: "owner", company, owner } — who on the desk owns a deal.
   // { action: "art", company, key } — sets a deal's card picture to one of the built-in drawings (lib/deal-art.json).
   // A picture the desk uploaded is never replaced this way.
