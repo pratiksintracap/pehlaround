@@ -1,0 +1,436 @@
+.credit-app {
+  --paper: #fbfbf8;
+  --surface: #ffffff;
+  --ink: #1b2b6b;
+  --ink-strong: #121c47;
+  --text: #1d2230;
+  --muted: #5b6472;
+  --rule: #e3e3de;
+  --rule-strong: #c9c9c2;
+  --ledger: #b3261e;
+  --ok: #1f7a4d;
+  --ok-bg: #e7f4ec;
+  --warn: #8a5a00;
+  --warn-bg: #fdf3dc;
+  --bad: #b3261e;
+  --bad-bg: #fbe9e7;
+  --idle: #5b6472;
+  --idle-bg: #eef0f3;
+  --focus: #3b5bdb;
+  --brass: #8f6a26;
+  --brass-wash: #f6efdf;
+  --radius-sm: 4px;
+  --radius: 8px;
+  font-family: var(--sans, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .credit-app {
+    --paper: #0f1428;
+    --surface: #161c35;
+    --ink: #a9b8ff;
+    --ink-strong: #d3dbff;
+    --text: #e6e8ef;
+    --muted: #9aa2b4;
+    --rule: #262e4d;
+    --rule-strong: #3a4369;
+    --ledger: #ff7a70;
+    --ok: #6fd3a0;
+    --ok-bg: #133325;
+    --warn: #f2c46b;
+    --warn-bg: #3a2c0e;
+    --bad: #ff8a80;
+    --bad-bg: #3d1714;
+    --idle: #aab1c2;
+    --idle-bg: #232a45;
+    --brass: #d6b26b;
+    --brass-wash: #352a14;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] .credit-app {
+    --paper: #0f1428;
+    --surface: #161c35;
+    --ink: #a9b8ff;
+    --ink-strong: #d3dbff;
+    --text: #e6e8ef;
+    --muted: #9aa2b4;
+    --rule: #262e4d;
+    --rule-strong: #3a4369;
+    --ledger: #ff7a70;
+    --ok: #6fd3a0;
+    --ok-bg: #133325;
+    --warn: #f2c46b;
+    --warn-bg: #3a2c0e;
+    --bad: #ff8a80;
+    --bad-bg: #3d1714;
+    --idle: #aab1c2;
+    --idle-bg: #232a45;
+    --brass: #d6b26b;
+    --brass-wash: #352a14;
+    color-scheme: dark;
+  }
+
+.credit-app * { box-sizing: border-box; }
+.credit-app { margin: 0; }
+.credit-app {
+  background: var(--paper);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.credit-app a { color: var(--ink); }
+.credit-app a:hover { color: var(--ink-strong); }
+.credit-app :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.credit-app h1, .credit-app h2, .credit-app h3 { color: var(--ink-strong); line-height: 1.25; margin: 0 0 0.5rem; }
+.credit-app h1 { font-size: 1.6rem; font-weight: 650; }
+.credit-app h2 { font-size: 1.15rem; font-weight: 650; }
+.credit-app h3 { font-size: 1rem; font-weight: 600; }
+.credit-app p { margin: 0 0 0.75rem; }
+.credit-app .muted { color: var(--muted); }
+.credit-app .small { font-size: 0.85rem; }
+
+/* ---------- shell ---------- */
+.credit-app .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.credit-app .nav {
+  border-right: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.credit-app .nav .brand {
+  font-weight: 700;
+  color: var(--ink-strong);
+  padding: 0 0.6rem 0.9rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 2px solid var(--ledger);
+}
+.credit-app .nav .brand span { display: block; font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+.credit-app .nav a {
+  text-decoration: none;
+  color: var(--text);
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+.credit-app .nav a:hover { background: var(--idle-bg); }
+.credit-app .nav .spacer { flex: 1; }
+.credit-app .nav .who { font-size: 0.8rem; color: var(--muted); padding: 0.6rem; border-top: 1px solid var(--rule); }
+.credit-app .nav form button { all: unset; cursor: pointer; color: var(--ink); text-decoration: underline; }
+.credit-app main.content { padding: 1.75rem 2rem 4rem; max-width: 1200px; width: 100%; }
+@media (max-width: 800px) {
+  .credit-app .shell { grid-template-columns: 1fr; }
+  .credit-app .nav { flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--rule); }
+  .credit-app .nav .brand { width: 100%; }
+  .credit-app .nav .spacer { display: none; }
+  .credit-app main.content { padding: 1.25rem 1rem 3rem; }
+}
+
+.credit-app .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.credit-app .page-head p { margin: 0; }
+
+/* ---------- panels ---------- */
+.credit-app .panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.credit-app .panel > h2 { padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 0.9rem; }
+.credit-app .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.credit-app .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 900px) { .credit-app .grid-2, .credit-app .grid-3 { grid-template-columns: 1fr; } }
+.credit-app .stat { padding: 0.9rem 1rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
+.credit-app .stat strong { display: block; font-size: 1.4rem; color: var(--ink-strong); }
+.credit-app dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1.25rem; margin: 0; }
+.credit-app dl.facts dt { color: var(--muted); }
+.credit-app dl.facts dd { margin: 0; }
+
+/* ---------- tables ---------- */
+.credit-app .table-wrap { overflow-x: auto; }
+.credit-app table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+.credit-app th, .credit-app td { text-align: left; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.credit-app th { font-weight: 600; color: var(--muted); font-size: 0.82rem; border-bottom-color: var(--rule-strong); }
+.credit-app td.num, .credit-app th.num { text-align: right; }
+.credit-app tr:last-child td { border-bottom: 0; }
+.credit-app .empty { padding: 1.5rem; text-align: center; color: var(--muted); border: 1px dashed var(--rule-strong); border-radius: var(--radius); }
+
+/* ---------- badges ---------- */
+.credit-app .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+.credit-app .badge.ok { color: var(--ok); background: var(--ok-bg); }
+.credit-app .badge.warn { color: var(--warn); background: var(--warn-bg); }
+.credit-app .badge.bad { color: var(--bad); background: var(--bad-bg); }
+.credit-app .badge.idle { color: var(--idle); background: var(--idle-bg); }
+.credit-app .badge.info { color: var(--ink); background: var(--idle-bg); }
+
+/* ---------- fill bar (sell-down progress) ---------- */
+.credit-app .fill { height: 8px; background: var(--idle-bg); border-radius: 999px; overflow: hidden; min-width: 90px; }
+.credit-app .fill > span { display: block; height: 100%; background: var(--ink); }
+
+/* ---------- forms ---------- */
+.credit-app form.stack { display: grid; gap: 0.8rem; }
+.credit-app .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; }
+.credit-app label { display: grid; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
+.credit-app label.check { display: flex; align-items: center; gap: 0.45rem; color: var(--text); font-size: 0.92rem; }
+.credit-app input, .credit-app select, .credit-app textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.55rem;
+  width: 100%;
+}
+.credit-app label.check input { width: auto; }
+.credit-app textarea { min-height: 80px; resize: vertical; }
+.credit-app input[type="file"] { padding: 0.3rem; }
+.credit-app .inline { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
+.credit-app .inline > label { flex: 1; min-width: 140px; }
+.credit-app button, .credit-app .button {
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  white-space: nowrap;
+}
+.credit-app button:hover, .credit-app .button:hover { background: var(--ink-strong); color: var(--surface); }
+.credit-app button.secondary, .credit-app .button.secondary { background: transparent; color: var(--ink); }
+.credit-app button.secondary:hover, .credit-app .button.secondary:hover { background: var(--idle-bg); color: var(--ink); }
+.credit-app button.danger { background: transparent; color: var(--bad); border-color: var(--bad); }
+.credit-app button:disabled { opacity: 0.55; cursor: not-allowed; }
+.credit-app .msg { padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.88rem; }
+.credit-app .msg.error { color: var(--bad); background: var(--bad-bg); }
+.credit-app .msg.ok { color: var(--ok); background: var(--ok-bg); }
+.credit-app .note { border-left: 3px solid var(--ledger); padding: 0.4rem 0.8rem; background: var(--surface); color: var(--muted); font-size: 0.88rem; margin-bottom: 1rem; }
+
+/* ---------- auth ---------- */
+.credit-app .auth { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; }
+.credit-app .auth .card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--ledger); border-radius: var(--radius); padding: 1.75rem; }
+.credit-app .auth .card h1 { font-size: 1.3rem; }
+.credit-app .auth img.qr { width: 180px; height: 180px; display: block; margin: 0.5rem auto; background: #fff; padding: 6px; border-radius: var(--radius-sm); }
+.credit-app code.secret { display: block; word-break: break-all; padding: 0.5rem; background: var(--idle-bg); border-radius: var(--radius-sm); font-size: 0.85rem; }
+.credit-app form[aria-busy="true"] button[type="submit"] { opacity: 0.6; pointer-events: none; }
+
+/* ---------- Q&A thread ---------- */
+.credit-app .thread { display: grid; gap: 0.6rem; margin-bottom: 0.9rem; }
+.credit-app .bubble { max-width: 80%; padding: 0.6rem 0.8rem; border-radius: var(--radius); background: var(--idle-bg); white-space: pre-wrap; }
+.credit-app .bubble.mine { justify-self: end; background: var(--ink); color: var(--surface); }
+.credit-app .bubble .meta { display: block; font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.2rem; }
+.credit-app .thread-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin: 0.25rem 0 0.6rem; }
+.credit-app .earlier { color: var(--muted); text-decoration: line-through; }
+.credit-app details.history summary { cursor: pointer; font-size: 0.88rem; color: var(--ink); }
+.credit-app input:read-only:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .credit-app textarea:read-only, .credit-app select:disabled { background: var(--idle-bg); color: var(--muted); cursor: not-allowed; }
+
+/* ---------- filter chips (prospects) ---------- */
+.credit-app .chip { display: inline-flex; gap: 0.35rem; align-items: center; padding: 0.25rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; font-size: 0.85rem; color: var(--ink); text-decoration: none; background: var(--surface); }
+.credit-app .chip:hover { background: var(--idle-bg); }
+.credit-app .chip.on { border-color: var(--ink); background: var(--idle-bg); font-weight: 600; }
+.credit-app .preview { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 1rem; background: #fff; }
+.credit-app .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1rem; align-items: start; }
+.credit-app .grid2 > .panel { margin: 0; }
+.credit-app a.sort { color: inherit; text-decoration: none; white-space: nowrap; }
+.credit-app a.sort:hover { text-decoration: underline; }
+.credit-app tr.dim td { opacity: 0.55; }
+.credit-app label.check { flex: 0 0 auto; min-width: 0; display: flex; gap: 0.35rem; align-items: center; padding-bottom: 0.55rem; }
+.credit-app label.check input { width: auto; }
+.credit-app td.num { white-space: nowrap; }
+
+/* ---------- borrower information form (partners) ---------- */
+.credit-app .intake { display: grid; gap: 1rem; }
+.credit-app .intake-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.credit-app .meter { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: var(--muted); }
+.credit-app .meter strong { color: var(--text); }
+.credit-app .meter-bar { width: 220px; height: 6px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+.credit-app .meter-bar span { display: block; height: 100%; background: var(--brass); border-radius: inherit; transition: width 0.3s ease; }
+.credit-app .intake-cols { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 2rem; align-items: start; }
+/* The path: one node per part of the form, joined by a rule that fills in brass as parts are completed. */
+.credit-app .path { position: sticky; top: 1rem; }
+.credit-app .path ol { list-style: none; margin: 0; padding: 0; display: grid; }
+.credit-app .path li { position: relative; }
+.credit-app .path li + li::before { content: ""; position: absolute; left: 9px; top: -0.55rem; height: 1.1rem; width: 2px; background: var(--rule-strong); }
+.credit-app .path li.done + li::before { background: var(--brass); }
+.credit-app .path button { all: unset; box-sizing: border-box; cursor: pointer; text-align: left; display: flex; gap: 0.7rem; align-items: center; width: 100%; padding: 0.55rem 0.5rem 0.55rem 0; color: var(--muted); font-size: 0.92rem; line-height: 1.3; }
+.credit-app .path button:hover { color: var(--text); }
+.credit-app .path button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-sm); }
+.credit-app .path .node { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--rule-strong); background: var(--surface); box-sizing: border-box; position: relative; z-index: 1; }
+.credit-app .path li.started .node { border-color: var(--brass); background: linear-gradient(90deg, var(--brass) 50%, var(--surface) 50%); }
+.credit-app .path li.done .node { border-color: var(--brass); background: var(--brass); }
+.credit-app .path li.done .node::after { content: ""; position: absolute; left: 5px; top: 2px; width: 5px; height: 9px; border: solid var(--surface); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.credit-app .path li.here button { color: var(--text); font-weight: 600; }
+.credit-app .path li.here .node { box-shadow: 0 0 0 4px var(--brass-wash); }
+.credit-app .path li.review .node { border-radius: 4px; }
+.credit-app .sheet { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 1.6rem 1.75rem 1.4rem; }
+.credit-app .sheet h2 { margin: 0 0 0.4rem; font-size: 1.4rem; }
+.credit-app .sheet-count { margin: 0 0 0.2rem; color: var(--brass); font-size: 0.85rem; font-weight: 600; }
+.credit-app .sheet-intro { color: var(--muted); margin: 0 0 1.1rem; max-width: 68ch; }
+.credit-app .sheet .qgrid { margin-top: 1.25rem; }
+.credit-app .sheet-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.75rem; padding-top: 1.1rem; border-top: 1px solid var(--rule); }
+.credit-app .sheet-nav + p { margin: 0.75rem 0 0; }
+.credit-app .need { display: inline-block; margin-left: 0.4rem; padding: 0 0.45rem; border-radius: 999px; background: var(--brass-wash); color: var(--brass); font-size: 0.72rem; font-weight: 600; vertical-align: 0.1em; white-space: nowrap; }
+.credit-app .needs { background: var(--brass-wash); border-radius: var(--radius-sm); padding: 0.8rem 1rem; margin-bottom: 1rem; }
+.credit-app .needs p { margin: 0 0 0.3rem; font-weight: 600; }
+.credit-app .needs ul { margin: 0; padding-left: 1.1rem; }
+.credit-app .needs button.link, .credit-app details.later button.link { display: inline; white-space: normal; text-align: left; margin-left: 0; font-size: 0.92rem; }
+.credit-app details.later { margin: 0.5rem 0 1rem; }
+.credit-app details.later summary { cursor: pointer; color: var(--text); }
+.credit-app details.later ul { columns: 2; column-gap: 2rem; font-size: 0.88rem; padding-left: 1.1rem; margin: 0.6rem 0 0; }
+.credit-app details.later li { break-inside: avoid; margin-bottom: 0.2rem; }
+@media (max-width: 900px) {
+  .credit-app .intake-cols { grid-template-columns: 1fr; gap: 1rem; }
+  .credit-app .path { position: static; overflow-x: auto; }
+  .credit-app .path ol { display: flex; gap: 0.4rem; }
+  .credit-app .path li + li::before { display: none; }
+  .credit-app .path button { width: auto; white-space: nowrap; padding: 0.35rem 0.7rem 0.35rem 0.4rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); font-size: 0.85rem; }
+  .credit-app .path .node { width: 14px; height: 14px; }
+  .credit-app .path li.done .node::after { left: 3px; top: 0; width: 4px; height: 7px; }
+  .credit-app .path li:not(.here) .path-label { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; }
+  .credit-app .sheet { padding: 1.1rem 1rem; }
+  .credit-app details.later ul { columns: 1; }
+  .credit-app .meter-bar { width: 140px; }
+}
+.credit-app .qgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem 1.1rem; }
+.credit-app .q { display: grid; gap: 0.35rem; align-content: start; scroll-margin-top: 1rem; }
+.credit-app .q.wide { grid-column: 1 / -1; }
+.credit-app .qhead { display: grid; gap: 0.15rem; }
+.credit-app .qlabel { color: var(--text); font-size: 0.9rem; font-weight: 550; }
+.credit-app .qhelp { color: var(--muted); font-size: 0.8rem; font-weight: 400; }
+.credit-app .req { color: var(--ledger); }
+.credit-app .unit-input { display: flex; align-items: stretch; }
+.credit-app .unit-input input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.credit-app .unit-input span { display: flex; align-items: center; padding: 0 0.55rem; border: 1px solid var(--rule-strong); border-left: 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--idle-bg); color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.credit-app .multi { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.15rem 0.75rem; }
+.credit-app .multi.many { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.credit-app .multi label.opt { display: flex; gap: 0.45rem; align-items: center; color: var(--text); font-size: 0.88rem; padding: 0.15rem 0; }
+.credit-app .multi label.opt input, .credit-app .seg input { width: auto; }
+.credit-app .seg { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); overflow: hidden; width: max-content; }
+.credit-app .seg label { display: flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.9rem; color: var(--text); font-size: 0.9rem; cursor: pointer; }
+.credit-app .seg label + label { border-left: 1px solid var(--rule-strong); }
+.credit-app .seg label.on { background: var(--ink); color: var(--surface); }
+.credit-app .seg input { position: absolute; opacity: 0; pointer-events: none; }
+.credit-app .seg label:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }
+.credit-app label.check.decl { align-items: flex-start; padding: 0.6rem 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--paper); }
+.credit-app label.check.decl input { margin-top: 0.2rem; }
+.credit-app table.form-table th, .credit-app table.form-table td { padding: 0.3rem 0.35rem; }
+.credit-app table.form-table input, .credit-app table.form-table select { padding: 0.3rem 0.4rem; font-size: 0.88rem; min-width: 80px; }
+.credit-app table.form-table.grid input { text-align: right; min-width: 90px; }
+.credit-app table.form-table th.rowhead { color: var(--text); font-weight: 500; font-size: 0.85rem; white-space: nowrap; }
+.credit-app button.link { all: unset; cursor: pointer; color: var(--ink); text-decoration: underline; font-size: 0.85rem; margin-left: 0.5rem; }
+.credit-app button.small-btn { font-size: 0.85rem; padding: 0.3rem 0.7rem; margin-top: 0.5rem; }
+.credit-app .files { display: grid; gap: 0.35rem; }
+.credit-app .files ul, .credit-app ul.plain { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+.credit-app .file-pick { display: inline-block; width: max-content; cursor: pointer; }
+.credit-app .file-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.credit-app .file-pick:focus-within .button { outline: 2px solid var(--focus); outline-offset: 2px; }
+.credit-app ul.missing { columns: 2; column-gap: 2rem; font-size: 0.88rem; padding-left: 1.1rem; margin: 0 0 0.5rem; }
+@media (max-width: 900px) { .credit-app ul.missing { columns: 1; } }
+.credit-app dl.answers { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.8rem 1.25rem; margin: 0; }
+.credit-app dl.answers .answer.wide { grid-column: 1 / -1; }
+.credit-app dl.answers dt { color: var(--muted); font-size: 0.82rem; }
+.credit-app dl.answers dd { margin: 0; }
+.credit-app hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 1rem 0; }
+.credit-app button.is-pending { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; opacity: 0.85; cursor: progress; }
+.credit-app .spinner { width: 0.9em; height: 0.9em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: credit-spin 0.7s linear infinite; }
+@keyframes credit-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .credit-app .spinner { animation-duration: 2s; } }
+.credit-app .auth button[type="submit"] { width: 100%; }
+.credit-app table.form-table.grid:has(thead th:nth-child(2):last-child) { max-width: 460px; }
+.credit-app .lookup { border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--surface); display: grid; margin-top: 0.25rem; box-shadow: 0 4px 14px rgb(0 0 0 / 0.08); max-height: 320px; overflow: auto; }
+.credit-app .lookup-head { display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0.6rem; font-size: 0.78rem; color: var(--muted); border-bottom: 1px solid var(--rule); }
+.credit-app .lookup > button { all: unset; cursor: pointer; display: grid; gap: 0.1rem; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); font-size: 0.88rem; color: var(--text); }
+.credit-app .lookup > button:hover, .credit-app .lookup > button:focus-visible { background: var(--idle-bg); }
+.credit-app .lookup > button:last-child { border-bottom: 0; }
+
+/* ---------- public borrower pages: the website's palette and type, light only ---------- */
+.credit-app .public {
+  --ink: #14302e; --ink-strong: #0d2321; --paper: #f3f4f0; --surface: #ffffff; --text: #1a2422; --muted: #55625e;
+  --rule: #d6dbd4; --rule-strong: #b6beb5; --brass: #8f6a26; --brass-light: #d6b26b; --brass-wash: #f6efdf;
+  --idle-bg: #e4ebe8; --idle: #55625e; --focus: #2f6fd6; --ledger: #8f6a26;
+  --ok: #1f6b45; --ok-bg: #e3f1e8; --warn: #7a5a12; --warn-bg: #f6efdf; --bad: #a3321f; --bad-bg: #f8e6e2;
+  --serif: var(--font-serif), "Source Serif 4", Georgia, serif;
+  --sans: var(--font-sans), "Schibsted Grotesk", system-ui, sans-serif;
+  color-scheme: light;
+  min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; font-variant-numeric: normal;
+  background: var(--paper); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.55;
+}
+.credit-app .public h1, .credit-app .public h2 { font-family: var(--serif); font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.credit-app .public h1 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1.12; margin: 0 0 0.75rem; }
+.credit-app .public table, .credit-app .public .meter, .credit-app .public input[inputmode="decimal"] { font-variant-numeric: tabular-nums; }
+.credit-app .public input, .credit-app .public select, .credit-app .public textarea { font-family: var(--sans); font-size: 0.95rem; background: var(--surface); color: var(--text); }
+.credit-app .public button, .credit-app .public .button { font-family: var(--sans); }
+.credit-app .public .lede { font-size: 1.1rem; color: var(--muted); max-width: 52ch; margin: 0 0 1.75rem; }
+.credit-app .public-head { display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; padding: 1rem clamp(1rem, 4vw, 2.5rem); background: var(--surface); border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+.credit-app .public-brand { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 700; color: var(--ink); text-decoration: none; font-size: 1.1rem; }
+.credit-app .public-nav { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; font-size: 0.92rem; }
+.credit-app .public-nav a, .credit-app .public-nav .linkish { color: var(--ink); text-decoration: none; }
+.credit-app .public-nav a:hover, .credit-app .public-nav .linkish:hover { text-decoration: underline; }
+.credit-app .public-nav form { margin: 0; }
+.credit-app button.linkish { all: unset; cursor: pointer; }
+.credit-app button.linkish:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.credit-app .public-main { padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem) 4rem; max-width: 1240px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.credit-app .public-foot { display: flex; gap: 1.25rem; flex-wrap: wrap; padding: 1.25rem clamp(1rem, 4vw, 2.5rem); background: var(--ink); color: #d9e2df; font-size: 0.88rem; }
+.credit-app .public-foot a { color: #fff; }
+.credit-app .apply-start { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
+.credit-app .apply-intro { padding-top: 0.5rem; }
+.credit-app .flow-title { font-size: 1.15rem; margin: 0 0 1rem; }
+.credit-app ol.flow { list-style: none; margin: 0; padding: 0; counter-reset: flow; display: grid; }
+.credit-app ol.flow li { counter-increment: flow; position: relative; display: grid; gap: 0.15rem; padding: 0 0 1.4rem 2.75rem; }
+.credit-app ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: -0.1rem; width: 1.8rem; height: 1.8rem; border-radius: 50%; border: 2px solid var(--brass); color: var(--brass); font-weight: 700; font-size: 0.85rem; display: grid; place-items: center; background: var(--paper); }
+.credit-app ol.flow li:not(:last-child)::after { content: ""; position: absolute; left: calc(0.9rem - 1px); top: 1.8rem; bottom: 0.1rem; width: 2px; background: var(--rule-strong); }
+.credit-app ol.flow li:first-child::before { background: var(--brass); color: #fff; }
+.credit-app ol.flow strong { color: var(--ink); }
+.credit-app ol.flow span { color: var(--muted); font-size: 0.95rem; max-width: 46ch; }
+.credit-app .start-card { background: var(--surface); border: 1px solid var(--rule); border-top: 4px solid var(--brass); border-radius: 6px; padding: clamp(1.25rem, 3vw, 2rem); }
+.credit-app .start-card h2 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+.credit-app .start-card form { margin-top: 1.25rem; }
+.credit-app .public .role-pick label.on { border-color: var(--brass); background: var(--brass-wash); }
+.credit-app .public .start-card button[type="submit"] { width: 100%; padding: 0.75rem 1rem; font-size: 1rem; }
+.credit-app .apply-form .form-head h1 { margin-bottom: 0.2rem; }
+.credit-app .apply-form .form-head { margin-bottom: 1.25rem; }
+.credit-app .welcome { background: var(--brass-wash); border-left: 4px solid var(--brass); padding: 0.85rem 1.1rem; border-radius: 4px; margin-bottom: 1.25rem; max-width: 80ch; }
+.credit-app .form-foot { margin-top: 2rem; }
+.credit-app .my h1 { margin-bottom: 0.3rem; }
+.credit-app ul.form-list { list-style: none; margin: 0 0 1.5rem; padding: 0; display: grid; gap: 0.6rem; max-width: 820px; }
+.credit-app ul.form-list li { display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: center; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 0.9rem 1.1rem; }
+.credit-app ul.form-list li > div { display: grid; gap: 0.15rem; }
+.credit-app .state { font-size: 0.85rem; color: var(--muted); }
+.credit-app .state.s-needs_info { color: var(--brass); font-weight: 600; }
+.credit-app .state.s-accepted { color: var(--ok); }
+@media (max-width: 700px) { .credit-app ul.form-list li { grid-template-columns: 1fr; gap: 0.4rem; } }
+.credit-app .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.credit-app .role-pick { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.credit-app .role-pick legend { margin-bottom: 0.4rem; }
+.credit-app .role-pick label { display: flex; gap: 0.6rem; align-items: flex-start; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 0.6rem 0.75rem; cursor: pointer; color: var(--text); }
+.credit-app .role-pick label.on { border-color: var(--ink); background: var(--idle-bg); }
+.credit-app .role-pick label input { width: auto; margin-top: 0.25rem; }
+.credit-app .role-pick label > span { display: grid; }
+.credit-app .hp { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }
+@media (max-width: 900px) { .credit-app .apply-start { grid-template-columns: 1fr; } .credit-app .role-pick { grid-template-columns: 1fr; } }
+.credit-app label:has(> .lookup), .credit-app div:has(> .lookup) { position: relative; }
+.credit-app .lookup { position: absolute; left: 0; right: 0; top: 100%; z-index: 30; }
+.credit-app .score { display: inline-block; min-width: 2.2rem; text-align: center; padding: 0.05rem 0.4rem; border-radius: 999px; font-weight: 600; font-size: 0.82rem; color: var(--idle); background: var(--idle-bg); }
+.credit-app .score.mid { color: var(--warn); background: var(--warn-bg); }
+.credit-app .score.hi { color: var(--ok); background: var(--ok-bg); }
+.credit-app .warn-text { color: var(--warn); }
+
+/* ---------- bulk upload ---------- */
+.credit-app .drop { display: grid; gap: 0.25rem; place-items: center; text-align: center; padding: 1.4rem 1rem; border: 2px dashed var(--rule-strong); border-radius: var(--radius); cursor: pointer; background: var(--paper); }
+.credit-app .drop.over, .credit-app .drop:hover { border-color: var(--ink); background: var(--idle-bg); }
+.credit-app .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.credit-app .drop:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.credit-app .bulk .table-wrap { margin-top: 0.75rem; max-height: 420px; overflow: auto; }
+.credit-app .bulk select { max-width: 260px; }
+
+/* Borrower pages sit under the site's own header: a slim strip of form links, aligned with the content. */
+.credit-app .public-sub { max-width: 1160px; margin: 0 auto; padding: 0.9rem 1.5rem 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; justify-content: flex-end; align-items: center; font-size: 0.9rem; }
+.credit-app .public-sub form { margin: 0; }

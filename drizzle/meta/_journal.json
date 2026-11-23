@@ -351,6 +351,13 @@
       "when": 1795000000000,
       "tag": "0049_deal_images",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1795411134139,
+      "tag": "0050_private_credit",
+      "breakpoints": true
     }
   ]
 }

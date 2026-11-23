@@ -1,8 +1,8 @@
 // The debt desk under the Before the Bell brand: debt arranged for companies that need to borrow (term loans, working
 // capital, NCDs, CP, acquisition finance, refinancing, structured credit) and funding lines for NBFCs. The public pages
-// are for borrowers and live at /private-credit; the lender and admin console (with its own sign-in,
-// lender isolation and maker-checker) stays a separate app, at CREDIT_APP.
-export const CREDIT_APP = process.env.NEXT_PUBLIC_CREDIT_APP ?? "https://app.nbfcdesk.com";
+// are for borrowers and live at /private-credit; the borrower form, lender console and admin console (with their own
+// sign-in, lender isolation and maker-checker) live under CREDIT_APP (MODEL.md, "Private credit").
+export const CREDIT_APP = "/credit";
 export const CREDIT_BASE = "/private-credit";
 
 export type CreditGuide = { slug: string; title: string; description: string; summary: string };

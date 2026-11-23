@@ -139,6 +139,14 @@ Portfolio, marked as written by the company and not audited by the desk. Those o
 - `deals.debt` + `deals.debtInfo` (borrower type, facility, amount, tenor, rate band, security, purpose, lenders, source, rating). Loans, NCDs, CP, structured credit and NBFC-to-NBFC raises the desk arranges.
 - Desk-only exactly like After the Bell: the database check `deals_debt_desk_only` keeps one in preparation, and `notListed` / `investorVisible` in lib/deal-guard.ts exclude debt deals from every investor read. Console: /admin/debt and /admin/debt/[id]; the pipeline's kind filter has "Debt".
 
+### Private credit (the console that was NBFC Desk)
+- Public pages for borrowers stay at `/private-credit` (plus `/private-credit/privacy`, the DPDP notice borrowers consent to: `PRIVACY_NOTICE_VERSION` in `lib/credit/brand.ts`). The working product lives at `/credit`: the borrower form (`/credit/apply`, `/credit/my`), the admin console (`/credit/admin`: borrowers, Level 1 diligence, raises and sharing, lenders, partners, intake with data-sheet import and bulk files, direct deals, prospects), the lender console (`/credit/lender`) and partners (`/credit/partner`). `CREDIT_APP` in `lib/credit.ts` is `/credit`.
+- Its own tables, all prefixed `credit_` (`lib/credit/schema.ts`), and its own sign-in for lenders, partners and applicants: an emailed code, cookie `credit_session`. Before the Bell's super admins reach `/credit/admin` with their site sign-in; their credit user (platform_admin) is made on first visit by email.
+- Isolation is enforced by the database: every credit query goes through `withContext` (`lib/credit/db.ts`), which drops to the role `credit_app` and sets `app.role`, `app.lender_id` and friends. Row-level security on every `credit_` table keys on them, so a lender sees only its own organisation and raises shared with it, never the platform's economics, and `credit_app` has no rights on any Before the Bell table. Policies live in `drizzle/0050_private_credit.sql`; `tests/credit-isolation.test.ts` holds them.
+- Files are stored base64 in `credit_blobs`, read only through `lib/credit/server/storage.ts` after the caller's permission check (the credit role cannot see the table). Uploads go up to 4 MB a request; bigger files are sent in parts.
+- Mail goes out through the site's Resend sender (desk@beforethebell.in) in the house layout. Notifications never carry deal details; outreach to lenders goes only 09:00 to 20:00 IST.
+- nbfcdesk.com redirects to `/private-credit` and app.nbfcdesk.com to `/credit` (next.config.ts), once those domains point here.
+
 ### Holdings outside the desk and followed companies
 - `outside_holdings`: an office's unlisted holdings bought elsewhere (added by hand) and listed holdings (imported from a broker's .xlsx/.csv; a new import replaces the last). Values are the office's own price, or the price in the broker's file; none means at cost. The desk takes no view on any price. Only the office sees these: no desk screen reads them. Editing needs commit rights.
 - `watches`: companies an office follows (max 100; one per normalised name). Adding an unlisted holding follows it. A daily cron (`watch`) matches names to the public IPO calendar and tells the office once per stage (dates announced, open, closed, listed, with the lock-in end on listing). A company followed late is told only where it stands. `lib/outside.ts`, `lib/watch-alerts.ts`.
@@ -248,6 +256,7 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 | Founder portal | `/founder` |
 | Desk on the phone | `/desk` |
 | Desk console | `/admin` |
+| Private credit | `/credit`, `/api/credit`, `lib/credit/`, `components/credit/app/` |
 | Rules for roles | `lib/perm.ts` |
 | Listed guard | `lib/deal-guard.ts` |
 | Deal lifecycle | `lib/phase.ts` |
@@ -255,4 +264,4 @@ Product and wording rules agreed with the founder. They apply to every page, ema
 | UI kit | `components/ui.tsx` |
 
 Tests that hold the rules: `tests/listed-guard*.test.ts` (listed deals), `tests/investor-privacy.test.ts` (desk data),
-`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), `tests/closing.test.ts` (closing steps), `tests/ipo.test.ts` (when an issue is shown and who may choose which category), `tests/four-more.test.ts` (IPO-only issues, client confirmation, seller matching), plus feature tests.
+`tests/phase.test.ts` (lifecycle), `tests/partner.test.ts` (who in a partner firm sees which clients), `tests/closing.test.ts` (closing steps), `tests/ipo.test.ts` (when an issue is shown and who may choose which category), `tests/four-more.test.ts` (IPO-only issues, client confirmation, seller matching), `tests/credit-isolation.test.ts` (private-credit lenders see only their own rows), plus feature tests.
