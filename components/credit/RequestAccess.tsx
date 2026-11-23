@@ -33,7 +33,7 @@ export function RequestAccess() {
       <div className="row"><label>Amount you need (₹ crore)<input name="amountCr" inputMode="decimal" maxLength={20} /></label>
         <label>Type of facility<select name="facility" defaultValue=""><option value="">Not sure yet</option><option>Term loan or capex</option><option>Working capital</option><option>NCD or commercial paper</option><option>Acquisition finance</option><option>Refinancing</option><option>Loan against shares or property</option><option>Structured or mezzanine</option><option>Funding line for an NBFC</option></select></label></div>
       <label>What it is for, and the security you can offer (optional)<textarea name="note" rows={3} maxLength={2000} /></label>
-      <label className="chk"><input type="checkbox" name="consent" value="yes" required /> <span>I agree that SintraCap Advisors LLP may use these details to respond to this request, as set out in the <a href="/privacy" target="_blank" rel="noopener">privacy notice</a>.</span></label>
+      <label className="chk"><input type="checkbox" name="consent" value="yes" required /> <span>I agree that SintraCap Advisors LLP may use these details to respond to this request, as set out in the <a href="/legal" target="_blank" rel="noopener">privacy notice</a>.</span></label>
       <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
       {state === "error" && <div className="err" role="alert">{error}</div>}
       <div><button className="btn primary" type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending…" : "Send to the desk"}</button></div>
