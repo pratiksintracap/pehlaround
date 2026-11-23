@@ -74,10 +74,13 @@ export async function creditImport(budgetMs = 45_000) {
       if (!page.rows.length) break;
       if (src === "users") {
         // A platform admin made here before the move (by signing in with the site) would clash with their old account
-        // by email: the old account wins, so the new one is removed first. Nothing references it yet.
+        // by email: the old account wins. The new one is set aside (email renamed, disabled) so anything it already
+        // touched still points somewhere.
         const emails = page.rows.map((r) => String(r.email).toLowerCase());
         const ids = page.rows.map((r) => String(r.id));
-        await db.execute(sql`delete from credit_users where lower(email) = any(${emails}) and not (id::text = any(${ids}))`);
+        await db.execute(sql`update credit_users set email = email || '.premove-' || left(id::text, 8), disabled_at = now()
+          where lower(email) = any(${sql.raw(`array[${emails.map((e) => `'${e.replace(/'/g, "''")}'`).join(",") || "''"}]::text[]`)})
+          and not (id::text = any(${sql.raw(`array[${ids.map((e) => `'${e.replace(/'/g, "''")}'`).join(",") || "''"}]::text[]`)}))`);
       }
       await db.execute(sql`insert into ${sql.raw(`"${t}"`)} select * from json_populate_recordset(null::${sql.raw(`"${t}"`)}, ${JSON.stringify(page.rows)}::json) on conflict do nothing`);
       offset = page.next;
