@@ -102,8 +102,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <IN name="dataRoomUrl" label="Data bank: Google Drive folder link (layer 3, opens only from the NDA room)" value={d.dataRoomUrl} ph="https://drive.google.com/drive/folders/…" hint="Share the folder as 'Anyone with the link · Viewer' with downloading, printing and copying switched off (Drive: Share → Settings). Offices reach it only through the room, and every open is logged by name and office. Leave empty to show 'coming'." />
         <div className="row"><label>Card picture<select name="artKey" defaultValue={artKey}><option value="">{artKey ? "Keep current picture" : d.art?.startsWith("<img") ? "Your uploaded picture (keep)" : "Keep current picture"}</option>{Object.keys(ART).map((k) => <option key={k} value={k}>Built-in: {k}</option>)}</select></label>
           <IN name="ndaVersion" label="NDA version" value={d.ndaVersion} hint="Change it when the NDA text changes" /></div>
-        <DealPictureUpload dealId={d.id} />
-        <TA name="publicRisks" label="Short risk list (kept for the desk; no longer shown publicly, the room's risks are under In the room)" value={toText.list(d.publicRisks)} rows={3} />
+                <TA name="publicRisks" label="Short risk list (kept for the desk; no longer shown publicly, the room's risks are under In the room)" value={toText.list(d.publicRisks)} rows={3} />
 
         <h2>In the room</h2>
         <TA name="lede" label="Lede under the company name" value={r.lede} rows={2} />
@@ -150,6 +149,7 @@ export default async function EditDeal({ params, searchParams }: { params: Promi
         <label className="chk"><input type="checkbox" name="promoterDemand" defaultChecked={d.promoterDemand} /> Show the promoter the total amount indicated (founder portal). Off: they see activity counts only.</label>
         <div className="adm-save"><button className="btn primary" type="submit">Save deal</button></div>
       </form>
+      <section className="adm-card" id="picture"><h2 style={{ fontSize: 18, margin: "0 0 4px" }}>Card picture</h2><p className="fine" style={{ margin: 0 }}>Upload a photo for this deal&apos;s card. To use a built-in illustration instead, pick one under Card picture above and save the deal.</p><DealPictureUpload dealId={d.id} /></section>
       <h2 id="updates">Updates to holders ({holderN} {holderN === 1 ? "office holds" : "offices hold"} shares)</h2>
       <p className="fine">A note from the company to the offices that were allotted shares: the quarter against plan, orders, where the listing stands. The promoter drafts it in the founder portal, or write one here. Only holders see it, under their Portfolio, once published.</p>
       {updates.map((x) => (
