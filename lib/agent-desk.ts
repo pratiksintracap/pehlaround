@@ -1,4 +1,5 @@
 import { dealCheck } from "@/lib/agent-dealcheck";
+import ART from "@/lib/deal-art.json";
 import "server-only";
 import { and, desc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
@@ -88,6 +89,20 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     return ({ ok: true, taskId: t.id, company: d?.company ?? null });
   }
   // { action: "owner", company, owner } — who on the desk owns a deal.
+  // { action: "art", company, key } — sets a deal's card picture to one of the built-in drawings (lib/deal-art.json).
+  // A picture the desk uploaded is never replaced this way.
+  if (b.action === "art") {
+    const d = await findDeal(s(b.company, 120));
+    if (!d || d === "ambiguous") return ({ error: "Name one deal." });
+    const key = s(b.key, 80);
+    const svg = (ART as Record<string, string>)[key];
+    if (!svg) return ({ error: `Unknown picture. Built-ins: ${Object.keys(ART).join(", ")}` });
+    const [cur] = (await deskDeals()).filter((x) => x.id === d.id);
+    if (cur?.art?.startsWith("<img")) return ({ error: "This deal has an uploaded picture; change it from the admin page." });
+    await db.update(deals).set({ art: svg, updatedAt: new Date() }).where(eq(deals.id, d.id));
+    await log(WHO, `Assistant set the card picture of ${d.company} to ${key}`, d.id, { entity: "deal", entityId: d.id });
+    return ({ ok: true, company: d.company, art: key });
+  }
   if (b.action === "owner") {
     const d = await findDeal(s(b.company, 120));
     if (!d || d === "ambiguous") return ({ error: "Name one deal." });
