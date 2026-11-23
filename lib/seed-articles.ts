@@ -1,6 +1,174 @@
 // The desk's opening articles. Edit or add more in /admin/articles.
 export const SEED_ARTICLES = [
   {
+    slug: "mahanadi-close-foodlink-integris-week-ahead",
+    title: "A coal giant's book closes, two new issues open: the IPO calendar for 24–30 November",
+    dek: "Mahanadi Coalfields went into its last day with the book less than half covered, while Crystal Crop Protection closed 17 times subscribed. This week Foodlink F&B and Integris Medtech open, each with a fresh issue that comes with a list of what the money is for.",
+    publishedAt: "2026-11-24T09:00:00+05:30",
+    published: false,
+    body: `Last week's two main-board issues ended in very different places. This week two more open, and both put a specific plan for the fresh money in front of investors.
+
+## Mahanadi Coalfields: a large offer for sale goes to the wire
+
+Mahanadi Coalfields, a Coal India subsidiary, closed its IPO on 23 November. The issue is ₹8,981.12 Cr, all of it an offer for sale of 66.18 crore shares by Coal India, at a price band of ₹129 to ₹136. Anchor investors took about ₹2,295 Cr at the top of the band on 18 November.
+
+At the end of the second day, excluding the anchor portion, the book stood as follows:
+
+- Overall: 0.48 times.
+- Qualified institutional buyers: 1.37 times.
+- Non-institutional investors: 0.18 times.
+- Retail: 0.24 times.
+- Employees: 0.09 times. Coal India shareholders: 0.28 times.
+
+Final figures were not available when this was written. Allotment is due on 25 November and listing on 27 November.
+
+## Crystal Crop Protection: 17 times covered
+
+Crystal Crop Protection closed on 20 November at 17.03 times overall. Non-institutional investors bid 37.69 times, institutions 15.47 times and retail 9.26 times. The ₹455.49 Cr issue included a fresh issue of ₹354.77 Cr. The shares are due to list on 26 November.
+
+Two issues in the same week, one mostly fresh capital and one entirely a parent selling down, drew very different demand.
+
+## Foodlink F&B Holdings: 26 to 30 November
+
+Foodlink, a caterer, banqueting and restaurant business founded in 2003, opens on 26 November. The price band had not been announced by 22 November.
+
+- A fresh issue of ₹192 Cr and an offer for sale of up to 88.35 lakh shares.
+- 75% of the issue is reserved for institutions, 10% for non-institutional investors and 10% for retail.
+- The fresh money is earmarked as ₹21.3 Cr for a centralised kitchen, ₹41.5 Cr for two banquets, ₹50.8 Cr to a subsidiary for four casual dining restaurants and ₹21 Cr for debt repayment, with the balance for general corporate purposes.
+- Revenue was ₹567.5 Cr in FY26, up 25.9% from ₹450.9 Cr; profit was ₹29.1 Cr, against ₹14.3 Cr.
+
+Listing is expected on 3 December.
+
+## Integris Medtech: 27 November to 1 December
+
+Integris Medtech makes cardiovascular devices and laboratory products, with manufacturing in India, Germany and the Netherlands.
+
+- A fresh issue of about ₹600 Cr and an offer for sale of up to 1,08,37,266 shares. The price band was still to be announced.
+- 75% for institutions, 15% for non-institutional investors and 10% for retail.
+- The largest stated object is repayment or prepayment of borrowings, ₹509.85 Cr.
+- The promoter group held 83.24% before the issue.
+- In FY26, total income was ₹26,567.62 million, up 35.58%. Profit for the year was ₹2,916.48 million, against ₹706.84 million. Profit before exceptional items and tax was ₹1,841.12 million.
+
+Listing is expected on 4 December.
+
+On the SME board, Shree Siddhivinayak Greentech Industries opens on 25 November at ₹130 to ₹142, seeking ₹85.75 Cr to ₹93.66 Cr.
+
+## What it means if you invest before an IPO
+
+- Demand follows the structure of the deal as much as the company. A mostly fresh issue and a pure offer for sale can meet very different books in the same week.
+- When a fresh issue is earmarked mainly for repaying debt, the question is what the balance sheet looks like after listing, and what that does to earnings per share.
+- Read the gap between operating profit and reported profit. Where profit for the year sits above profit before exceptional items and tax, the offer document explains why, and the explanation matters for what the next year looks like.
+- The anchor book and the first two days show where institutions stand before retail decides. They are worth watching for any company whose round you are considering.`,
+    sources: [
+      { title: "IPOs next week: Mahanadi Coalfields, Crystal Crop set for listing; Foodlink, Integris MedTech IPO to hit mainboard (GoodReturns, 22 November 2026)", url: "https://www.goodreturns.in/ipo/ipos-next-week-mahanadi-coalfields-crystal-crop-listing-foodlink-integris-medtech-ipo-on-mainboard-1548827.html" },
+      { title: "Upcoming IPOs: Integris Medtech IPO and Foodlink F&B Holdings IPO; get all details (ETV Bharat, 21 November 2026)", url: "https://www.etvbharat.com/en/business/upcoming-ipos-integris-medtech-ipo-and-foodlink-f-get-all-details-enn26112104805" },
+      { title: "Integris Medtech IPO date, price band, issue size (IPO Watch, 21 November 2026)", url: "https://ipowatch.in/integris-medtech-ipo-details/" },
+      { title: "Mahanadi Coalfields IPO day 3 subscription status (Univest, 23 November 2026)", url: "https://univest.in/blogs/mahanadi-coalfields-initial-public-offering-day-3-subscription-23-november-2026" },
+      { title: "Mahanadi Coalfields IPO latest update: subscription status, price band and key details (PSU Connect, 22 November 2026)", url: "https://www.psuconnect.in/ipo/mahanadi-coalfields-ipo-latest-update-subscription-status-gmp-price-band-key-details" },
+      { title: "Upcoming IPOs in India: three issues open from November 25 (Multibagg AI, 21 November 2026)", url: "https://www.multibagg.ai/market-pulse/articles/india-ipos-november-opening-dates-cmwqnmbpq002c2mmtgnbds8iw" },
+    ],
+  },
+  {
+    slug: "fpi-record-november-inflow-reversal",
+    title: "₹1.22 lakh crore in three weeks: foreign money came back in November. Here is where it went",
+    dek: "After six straight months of selling, foreign portfolio investors put a record sum into Indian equities between 2 and 20 November. Most of it went into large, liquid stocks, and the speed of the turn is the lesson.",
+    publishedAt: "2026-11-25T09:00:00+05:30",
+    published: false,
+    body: `Foreign portfolio investors bought a net ₹1.22 lakh crore of Indian equities between 2 and 20 November, according to NSDL data. It is the largest monthly inflow on record, and the month is not over.
+
+## How sharp the turn was
+
+The figures before November point the other way.
+
+- Foreign investors were net sellers for six straight months, from May to October.
+- They withdrew ₹35,861 Cr in September and ₹34,843 Cr in October.
+- From January to October they pulled out a net ₹2.95 trillion, according to NSDL.
+- The previous monthly record was ₹70,896 Cr, in November 2020.
+
+By 17 November the month's buying had already reached ₹99,158 Cr. Between 27 October and 17 November, foreign investors put in a net ₹1.06 trillion in about four weeks. They were net buyers in every session from 2 to 19 November, according to provisional exchange data. With November's buying, the outflow for the year has narrowed to about ₹1.8 lakh crore.
+
+Indices moved with the money. The Sensex rose 10.84% in November to 82,532.19 by 17 November.
+
+## Why it came back
+
+The reasons reported are mostly about other markets, not India alone.
+
+- A sell-off in AI-linked stocks in the US, South Korea, Taiwan and Japan, on fears over US data-centre spending. India, with little AI exposure, became a place to move money to.
+- Reports that the government may review capital gains tax on foreign investors' share sales in the February 2027 budget.
+- Lower crude prices, better corporate earnings and a steadier rupee.
+
+Bloomberg data cited in reports showed India as the largest recipient among emerging markets, at about $10 billion, while Taiwan saw withdrawals of nearly $21 billion and South Korea outflows of $9.3 billion.
+
+## Where it went
+
+The money was concentrated. Of the November allocation, financial services took ₹43,102 Cr, telecom ₹7,570 Cr, autos ₹7,551 Cr, consumer services ₹6,519 Cr and IT ₹5,080 Cr. Brokerage notes described large caps as the most direct beneficiaries, because of their liquidity and the size of existing foreign holdings.
+
+Domestic institutions were often on the other side. In the week to 6 November, foreign investors bought ₹45,960 Cr while domestic institutions sold ₹24,197 Cr.
+
+## What it means if you invest before an IPO
+
+- Foreign flows changed direction in a matter of weeks. Six months of selling turned into a record month of buying. A pre-IPO plan should not depend on either trend lasting.
+- The buying went mostly to large, liquid listed stocks. It reaches unlisted companies indirectly, through the mood of the IPO window and the prices of listed peers that a pre-IPO round is often measured against.
+- When listed peer prices rise quickly, the valuation asked in a private round tends to follow. Check which peer prices a round is anchored to, and when they were taken.
+- A tax change for foreign investors is a report, not a rule. Until the budget, it is a reason flows moved, not a certainty to plan on.`,
+    sources: [
+      { title: "FPIs smash monthly investment record in Indian stocks with Rs 99k-crore buy (Business Standard, 18 November 2026)", url: "https://www.business-standard.com/markets/news/fpis-smash-monthly-investment-record-in-indian-stocks-with-rs-99k-crore-buy-126111800696_1.html" },
+      { title: "From underperformer to investor favourite: what is driving India's stock market comeback? (Upstox, 22 November 2026)", url: "https://upstox.com/news/market-news/trading/from-underperformer-to-investor-favourite-what-is-driving-india-s-stock-market-comeback/article-203817/" },
+      { title: "Foreign portfolio investors set record ₹1.22 lakh crore inflow (Multibagg AI, 22 November 2026)", url: "https://www.multibagg.ai/market-pulse/articles/fpi-november-record-equity-inflows-cmws57bgj004a2mmt4p4lnri1" },
+      { title: "Foreign portfolio investors take November inflows to ₹66,302 crore (Multibagg AI, 11 November 2026)", url: "https://www.multibagg.ai/market-pulse/articles/foreign-portfolio-investor-inflows-november-cmwcd8vqn00hk2rpblhdhrnlk" },
+    ],
+  },
+  {
+    slug: "who-checks-where-ipo-money-went-monitoring-agency",
+    title: "After the IPO, who checks where the money went? Monitoring agencies, deviation reports and the exit offer",
+    dek: "Every fresh issue comes with a list of objects. A monitoring agency, the audit committee and a shareholder vote are what hold a company to it after listing, and a SEBI consultation paper from October would tighten the first of these.",
+    publishedAt: "2026-11-26T09:00:00+05:30",
+    published: false,
+    body: `An offer document sets out what the fresh money will be spent on: a plant, a debt repayment, a new subsidiary. Once the shares list, a set of rules decides who checks that it was, and what happens if the company changes its mind.
+
+## Before the IPO: how far the plan can move
+
+Changes to the objects before the issue opens are limited by SEBI's ICDR Regulations.
+
+- On the normal route, a company must file a fresh draft offer document if an addition raises the offer size or means of finance by more than 20%. A change of more than 10% but not over 20% needs an updated document.
+- On the confidential pre-filing route, a fresh document is needed if the size rises or falls by more than 50%, or if the estimated deployment to any object rises by more than 20%.
+- In a communication dated 13 April 2026, SEBI allowed the fresh issue size to vary by up to 50% without a fresh filing, for IPOs opening before 30 September 2026, subject to conditions including no change in the main objects.
+
+## After listing: the monitoring agency
+
+Today a monitoring agency, which must be a SEBI-registered credit rating agency, is required only where the issue size, excluding the offer for sale, exceeds ₹100 Cr. For SME IPOs the threshold is a fresh issue above ₹50 Cr. Banks, public financial institutions and insurance companies are exempt.
+
+The agency reports to the company each quarter until all the proceeds are used. The company files the report with the stock exchange within 45 days of the quarter's end, and the audit committee reviews it. Separately, a listed company must disclose any deviation or variation in the use of funds, place it before the audit committee and file it with the exchanges until the money is fully used.
+
+## What SEBI has proposed
+
+A consultation paper issued on 13 October 2026, with comments closed on 3 November, carries a working group's recommendations. They are proposals, not rules, and no date has been set.
+
+- A monitoring agency for every issue, whatever its size, excluding the offer for sale.
+- The agency would report directly to the stock exchanges.
+- If a company does not cooperate, the agency would report on the best information available, with a statement of non-cooperation. The exchanges would fine the company ₹50,000 for each instance.
+- A company that has been reported for non-cooperation could not end the agreement or appoint a new agency until it puts things right.
+- Exchanges would display the agency reports and statements of non-cooperation prominently on their websites.
+
+## Changing the objects after listing
+
+A company can change how it uses unspent IPO money, but it needs a special resolution, passed by postal ballot where funds are unused. The notice must set out the original objects, the amount used, the amount left, the proposed change and the reasons.
+
+Dissenting shareholders can be offered an exit by the promoters, but only if two conditions are both met: at least 10% of shareholders present and voting dissent, and less than 75% of the money raised has been used for the original objects. The exit price is the highest of three tests linked to promoter purchases and market prices. Where a company has no identifiable promoters or controlling shareholders, the exit obligation does not apply.
+
+## What it means if you invest before an IPO
+
+- The objects of the issue are a commitment with a paper trail. Ask early what they will be and whether they have been costed.
+- Below ₹100 Cr of fresh issue today, there may be no monitoring agency at all. If the proposal becomes a rule, every issue would have one.
+- The exit offer protects only in narrow cases. A change made after 75% of the money is spent, or in a company with no identifiable promoter, does not trigger it.
+- Agency reports and deviation statements are public. For a company you hold after listing, they are the plainest record of whether the plan in the prospectus was followed.`,
+    sources: [
+      { title: "SEBI consultation paper on monitoring agency and utilisation of issue proceeds: LODR working group proposals (CorpLawUpdates, 13 October 2026)", url: "https://www.corplawupdates.in/updates/sebi-consultation-paper-monitoring-agency-issue-proceeds-lodr-2026" },
+      { title: "IPO commitments and investor protection: when can companies alter their stated objects of the offer? Part I (Bar & Bench, 21 May 2026)", url: "https://www.barandbench.com/law-firms/view-point/ipo-commitments-and-investor-protection-when-can-companies-alter-their-stated-objects-of-the-offer-part-i" },
+      { title: "IPO commitments and investor protection: when can companies alter their stated objects of the offer? Part II (Bar & Bench, 22 May 2026)", url: "https://www.barandbench.com/law-firms/view-point/ipo-commitments-and-investor-protection-when-can-companies-alter-their-stated-objects-of-the-offer-part-ii" },
+    ],
+  },
+  {
     slug: "mahanadi-coalfields-crystal-crop-week-ahead",
     title: "₹9,500 Cr this week, and none of it goes to the company: the IPO calendar for 17–23 November",
     dek: "Coal India is selling 10% of Mahanadi Coalfields in an offer for sale, and Crystal Crop Protection opens a smaller, mostly fresh issue. They arrive as domestic equity inflows cool and foreign investors keep selling.",
