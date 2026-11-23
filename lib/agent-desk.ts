@@ -82,6 +82,36 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     await log(WHO, `Assistant added a task: ${title}`, d?.id ?? null, { entity: "task", entityId: t.id });
     return ({ ok: true, taskId: t.id, company: d?.company ?? null });
   }
+  // { action: "owner", company, owner } — who on the desk owns a deal.
+  if (b.action === "owner") {
+    const d = await findDeal(s(b.company, 120));
+    if (!d || d === "ambiguous") return ({ error: "Name one deal." });
+    const want = s(b.owner, 80).toLowerCase();
+    const who = (await deskMembers()).filter((u) => want && u.name.toLowerCase().includes(want));
+    if (who.length !== 1) return ({ error: "Name one desk member." });
+    await db.update(deals).set({ ownerId: who[0].id, updatedAt: new Date() }).where(eq(deals.id, d.id));
+    await log(WHO, `Assistant made ${who[0].name} owner of ${d.company}`, d.id, { entity: "deal", entityId: d.id });
+    return ({ ok: true, company: d.company, owner: who[0].name });
+  }
+  // { action: "remove_empty", id } — deletes a deal added twice or by mistake, only while it is unpublished and has no
+  // history of any kind (no task, note, file, NDA, document, question, view or link). Anything else is refused.
+  if (b.action === "remove_empty") {
+    const id = Number(b.id);
+    const d = Number.isInteger(id) && id > 0 ? (await deskDeals()).find((x) => x.id === id) : undefined;
+    if (!d) return ({ error: "No deal with that id." });
+    if (d.published) return ({ error: "Published deals are not removed." });
+    const tables = ["ndas", "sign_codes", "documents", "questions", "calls", "interests", "passes", "deal_prefs", "desk_notes", "desk_files", "tasks", "deal_links", "deal_views", "broadcasts", "tickets", "ai_chats", "events", "deal_images"];
+    const busy: string[] = [];
+    for (const t of tables) {
+      const r = await db.execute(sql.raw(`select count(*)::int as n from "${t}" where deal_id = ${id}`)) as unknown as { rows: { n: number }[] };
+      if (Number(r.rows[0]?.n ?? 0)) busy.push(t);
+    }
+    const [{ p }] = (await db.execute(sql`select count(*)::int as p from users where promoter_deal_id = ${id}`) as unknown as { rows: { p: number }[] }).rows;
+    if (busy.length || Number(p)) return ({ error: `Not empty: ${[...busy, ...(Number(p) ? ["promoter login"] : [])].join(", ")}.` });
+    await db.delete(deals).where(eq(deals.id, id));
+    await log(WHO, `Assistant removed the empty deal #${id}: ${d.company}`, null, { entity: "deal", entityId: id });
+    return ({ ok: true, removed: id, company: d.company });
+  }
   if (b.action === "stage") {
     const d = await findDeal(s(b.company, 120));
     const stage = asStage(s(b.stage, 20));

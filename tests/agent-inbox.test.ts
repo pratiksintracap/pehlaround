@@ -1,9 +1,9 @@
 // The assistant's inbox: it reads what is waiting on the desk and writes only drafts and desk-only notes.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { deals, questions } from "@/db/schema";
+import { deals, questions, users } from "@/db/schema";
 import { deskAction } from "@/lib/agent-desk";
 import { notListed } from "@/lib/deal-guard";
 
@@ -87,4 +87,17 @@ test("a debt deal from the assistant is desk only, keeps its terms and is not ad
   assert.deepEqual([d.debt, d.listed, d.phase, d.pipelineStage, d.debtInfo?.amountCr, d.debtInfo?.tenorMonths, d.debtInfo?.rateBand], [true, false, "preparing", "sourced", 10, 36, "14-16%"]);
   assert.equal((await deskAction({ action: "debt_new", company: "TESSALY TEST FINANCE LIMITED" })).exists, true);
   await db.update(deals).set({ pipelineStage: "archived" }).where(eq(deals.id, d.id));
+});
+
+test("the assistant can set an owner and remove only an empty deal", async () => {
+  const a = await deskAction({ action: "debt_new", company: "Umbriel Test Credit Ltd" });
+  const db = await getDb();
+  const desk = await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.role, "admin"));
+  const o = await deskAction({ action: "owner", company: "Umbriel Test Credit", owner: desk[0].name });
+  assert.equal(o.ok, true);
+  await deskAction({ action: "task", title: "Umbriel test task", company: "Umbriel Test Credit" });
+  assert.ok((await deskAction({ action: "remove_empty", id: a.id })).error);
+  await db.execute(sql`delete from tasks where deal_id = ${a.id as number}`);
+  assert.equal((await deskAction({ action: "remove_empty", id: a.id })).ok, true);
+  assert.equal((await db.select().from(deals).where(eq(deals.id, a.id as number))).length, 0);
 });
