@@ -2,13 +2,18 @@
 import { Field } from "@/components/ui";
 import { notFound, redirect } from "next/navigation";
 import { requireDesk } from "@/lib/auth";
-import { can } from "@/lib/perm";
+import { can, isSuper } from "@/lib/perm";
+import { removeDebtDeal } from "@/lib/admin-actions";
 import { deskDeal } from "@/lib/desk";
 import { saveDebtDeal } from "@/lib/desk-actions";
 import { BORROWER_TYPES, DEBT_FACILITIES, dealHref } from "@/lib/stages";
 import { DeskWorkspace } from "@/components/DeskWorkspace";
 
 export const dynamic = "force-dynamic";
+
+const SIDES = ["Arranging for the borrower", "Placing for a lender", "Both"];
+// A value saved some other way (e.g. by the assistant) stays selectable, so saving the form never blanks it.
+const withSaved = (list: string[], v?: string) => (v && !list.includes(v) ? [...list, v] : list);
 
 const IN = (p: { name: string; label: string; value?: string | number | null; ph?: string; mode?: "decimal" }) => <Field {...p} max={300} />;
 
@@ -32,17 +37,24 @@ export default async function DebtDeal({ params }: { params: Promise<{ id: strin
       <div className="chart" style={{ marginTop: 22 }} id="details"><span className="k">Borrower and facility</span>
         <form action={saveDebtDeal} className="form"><input type="hidden" name="id" value={d.id} /><input type="hidden" name="back" value={back} />
           <fieldset disabled={!edit} style={{ border: 0, padding: 0, margin: 0 }}>
-          <div className="row"><IN name="company" label="Borrower" value={d.company} /><label>Borrower type<select name="borrowerType" defaultValue={i.borrowerType || "Company"}>{BORROWER_TYPES.map((t) => <option key={t}>{t}</option>)}</select></label></div>
-          <div className="row"><label>Facility<select name="facility" defaultValue={i.facility || "Term loan"}>{DEBT_FACILITIES.map((t) => <option key={t}>{t}</option>)}</select></label><IN name="sector" label="Sector" value={i.sector} /></div>
+          <div className="row"><IN name="company" label="Borrower" value={d.company} /><label>Borrower type<select name="borrowerType" defaultValue={i.borrowerType || "Company"}>{withSaved(BORROWER_TYPES, i.borrowerType).map((t) => <option key={t}>{t}</option>)}</select></label></div>
+          <div className="row"><label>Facility<select name="facility" defaultValue={i.facility || "Term loan"}>{withSaved(DEBT_FACILITIES, i.facility).map((t) => <option key={t}>{t}</option>)}</select></label><IN name="sector" label="Sector" value={i.sector} /></div>
           <div className="row"><IN name="amountCr" label="Amount (₹ crore)" value={i.amountCr ?? ""} mode="decimal" /><IN name="tenorMonths" label="Tenor (months)" value={i.tenorMonths ?? ""} mode="decimal" /></div>
           <div className="row"><IN name="rateBand" label="Rate or band" value={i.rateBand} ph="11.5–12.5%" /><IN name="rating" label="Rating" value={i.rating} ph="e.g. BBB+ (CARE), or unrated" /></div>
           <div className="row"><IN name="security" label="Security" value={i.security} /><IN name="purpose" label="Purpose" value={i.purpose} /></div>
-          <div className="row"><label>Side<select name="side" defaultValue={i.side || ""}><option value="">—</option><option>Arranging for the borrower</option><option>Placing for a lender</option><option>Both</option></select></label><IN name="lenders" label="Lenders approached" value={i.lenders} ph="Vivriti, SIDBI, …" /></div>
+          <div className="row"><label>Side<select name="side" defaultValue={i.side || ""}><option value="">—</option>{withSaved(SIDES, i.side).map((t) => <option key={t}>{t}</option>)}</select></label><IN name="lenders" label="Lenders approached" value={i.lenders} ph="Vivriti, SIDBI, …" /></div>
           <div className="row"><IN name="counterparty" label="Counterparty / intermediary" value={i.counterparty} /><IN name="source" label="Source" value={i.source} ph="Who brought it" /></div>
           <IN name="status" label="Status line" value={d.status} />
           <label>Summary<textarea name="summary" rows={4} maxLength={2000} defaultValue={d.headline} /></label>
           {edit && <div><button className="btn primary" type="submit">Save</button></div>}
           </fieldset></form></div>
+      {isSuper(me) && (
+        <details className="adm-card" id="remove" style={{ margin: "22px 0 24px" }}><summary><b>Delete this deal</b> <span className="fine">· removes it from the debt desk for good</span></summary>
+          <form action={removeDebtDeal} className="form" style={{ marginTop: 10 }}><input type="hidden" name="id" value={d.id} />
+            <p className="fine">Deletes the deal with its tasks, desk notes and files. This cannot be undone. To keep the history, move it to Archived instead.</p>
+            <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" name="sure" required /> Delete {d.company} (deal #{d.id}) for good</label>
+            <div><button className="btn sm" type="submit">Delete deal</button></div></form>
+        </details>)}
     </>
   );
 }

@@ -690,3 +690,36 @@ export async function removeEmptyDeal(f: FormData) {
   revalidatePath("/admin/deals");
   back("/admin/deals", `Removed deal #${id} (${d.company}).`);
 }
+
+/**
+ * Deletes a debt deal and its desk workspace (tasks, desk notes, desk files). Debt deals never reach investors, so
+ * there is no investor history to keep; if anything investor-side is somehow attached, it refuses. Super admin only,
+ * with a tick to confirm. The audit trail keeps a line saying what was deleted.
+ */
+export async function removeDebtDeal(f: FormData) {
+  const admin = await requireAdmin();
+  const id = n(f, "id");
+  const page = `/admin/debt/${id}`;
+  if (!id || f.get("sure") !== "on") return refuse(page + "#remove", "Tick the box to confirm the deletion.");
+  const db = await getDb();
+  const [d] = await db.select({ id: deals.id, company: deals.company, debt: deals.debt }).from(deals).where(eq(deals.id, id));
+  if (!d) return refuse("/admin/debt", "That deal no longer exists.");
+  if (!d.debt) return refuse(`/admin/deals/${id}#remove`, "Not a debt deal.");
+  const investorSide = ["ndas", "sign_codes", "documents", "questions", "calls", "interests", "passes", "deal_prefs", "deal_links", "deal_views", "broadcasts", "tickets", "ai_chats", "events"];
+  const counts = await Promise.all(investorSide.map(async (t) => {
+    const r = await db.execute(sql.raw(`select count(*)::int as n from "${t}" where deal_id = ${Number(id)}`)) as unknown as { rows: { n: number }[] };
+    return [t, Number(r.rows[0]?.n ?? 0)] as const;
+  }));
+  const busy = counts.filter(([, c]) => c > 0).map(([t, c]) => `${t.replace(/_/g, " ")} (${c})`);
+  if (busy.length) return refuse(page + "#remove", `Not deleted: this deal has ${busy.join(", ")}. Archive it instead.`);
+  const gone: string[] = [];
+  for (const t of ["tasks", "desk_notes", "desk_files", "deal_images"]) {
+    const r = await db.execute(sql.raw(`delete from "${t}" where deal_id = ${Number(id)}`)) as unknown as { rowCount?: number; affectedRows?: number };
+    const c = Number(r.rowCount ?? r.affectedRows ?? 0);
+    if (c) gone.push(`${c} ${t.replace(/_/g, " ")}`);
+  }
+  await db.delete(deals).where(eq(deals.id, id));
+  await log(admin, `Desk deleted the debt deal #${id}: ${d.company}${gone.length ? ` (with ${gone.join(", ")})` : ""}`, null, { entity: "deal", entityId: id });
+  revalidatePath("/admin/debt");
+  back("/admin/debt", `Deleted ${d.company}.`);
+}
