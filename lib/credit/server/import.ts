@@ -21,8 +21,8 @@ async function pull(params: Record<string, string>): Promise<Buffer> {
 }
 const pullJson = async <T>(params: Record<string, string>) => JSON.parse((await pull(params)).toString("utf8")) as T;
 
-type Manifest = { at: string; tables: Record<string, number>; files: string[] };
-type Page = { table: string; offset: number; rows: Record<string, unknown>[]; next: number };
+type Manifest = { at: string; tables: Record<string, number>; unreadable?: Record<string, string>; files: string[]; error?: string };
+type Page = { table: string; offset: number; rows: Record<string, unknown>[]; next: number; error?: string };
 type Rows = { rows?: Record<string, unknown>[] } | Record<string, unknown>[];
 const rowsOf = (r: unknown) => (Array.isArray(r) ? r : ((r as { rows?: Record<string, unknown>[] }).rows ?? [])) as Record<string, unknown>[];
 
@@ -58,6 +58,7 @@ export async function creditImport(budgetMs = 45_000) {
   const until = Date.now() + budgetMs;
   const db = await getDb();
   const m = await pullJson<Manifest>({ step: "manifest" });
+  if (m.error) throw new Error(`NBFC Desk: ${m.error}`);
   const order = (await insertOrder()).filter((t) => t.slice("credit_".length) in m.tables);
   const report: Record<string, [number, number]> = {};
   let busy = false;
@@ -69,6 +70,7 @@ export async function creditImport(budgetMs = 45_000) {
     let offset = 0;
     while (have < total && Date.now() < until) {
       const page = await pullJson<Page>({ step: "rows", table: src, offset: String(offset) });
+      if (page.error) throw new Error(`NBFC Desk (${src}): ${page.error}`);
       if (!page.rows.length) break;
       if (src === "users") {
         // A platform admin made here before the move (by signing in with the site) would clash with their old account
@@ -102,5 +104,6 @@ export async function creditImport(budgetMs = 45_000) {
     await putObjectAt(key, await pull({ step: "file", key }));
     filesHave++;
   }
-  return { ok: true, done: !busy && filesHave === m.files.length, sourceAt: m.at, tables: report, files: [filesHave, m.files.length] };
+  const missing = Object.keys(m.tables).filter((t) => !order.includes(`credit_${t}`));
+  return { ok: true, done: !busy && filesHave === m.files.length, sourceAt: m.at, tables: report, files: [filesHave, m.files.length], unreadable: m.unreadable ?? {}, notHere: missing };
 }
