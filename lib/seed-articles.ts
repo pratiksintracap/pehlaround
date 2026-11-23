@@ -4,13 +4,13 @@ export const SEED_ARTICLES = [
     slug: "mahanadi-close-foodlink-integris-week-ahead",
     title: "A coal giant's book closes, two new issues open: the IPO calendar for 24–30 November",
     dek: "Mahanadi Coalfields went into its last day with the book less than half covered, while Crystal Crop Protection closed 17 times subscribed. This week Foodlink F&B and Integris Medtech open, each with a fresh issue that comes with a list of what the money is for.",
-    publishedAt: "2026-11-24T09:00:00+05:30",
+    publishedAt: "2026-11-23T07:30:00+05:30",
     published: true,
-    body: `Last week's two main-board issues ended in very different places. This week two more open, and both put a specific plan for the fresh money in front of investors.
+    body: `Last week's two main-board issues are heading for very different finishes. This week two more open, and both put a specific plan for the fresh money in front of investors.
 
-## Mahanadi Coalfields: a large offer for sale goes to the wire
+## Mahanadi Coalfields: a large offer for sale on its last day
 
-Mahanadi Coalfields, a Coal India subsidiary, closed its IPO on 23 November. The issue is ₹8,981.12 Cr, all of it an offer for sale of 66.18 crore shares by Coal India, at a price band of ₹129 to ₹136. Anchor investors took about ₹2,295 Cr at the top of the band on 18 November.
+Mahanadi Coalfields, a Coal India subsidiary, closes its IPO today, 23 November. The issue is ₹8,981.12 Cr, all of it an offer for sale of 66.18 crore shares by Coal India, at a price band of ₹129 to ₹136. Anchor investors took about ₹2,295 Cr at the top of the band on 18 November.
 
 At the end of the second day, excluding the anchor portion, the book stood as follows:
 
@@ -20,7 +20,7 @@ At the end of the second day, excluding the anchor portion, the book stood as fo
 - Retail: 0.24 times.
 - Employees: 0.09 times. Coal India shareholders: 0.28 times.
 
-Final figures were not available when this was written. Allotment is due on 25 November and listing on 27 November.
+Final figures will be known after the book closes today. Allotment is due on 25 November and listing on 27 November.
 
 ## Crystal Crop Protection: 17 times covered
 
