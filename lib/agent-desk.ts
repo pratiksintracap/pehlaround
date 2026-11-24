@@ -186,6 +186,14 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
   if (b.action === "inbox") return deskInbox();
   if (b.action === "debt") return debtBook();
   if (b.action === "scorecard") return scorecard();
+  // Day report setup: who must send one, who receives it, the cut-off, and who sent today's reports.
+  if (b.action === "report_settings") {
+    const { reportSettings, deskPeople, reportLog } = await import("@/lib/day-report");
+    const [cfg, ppl] = await Promise.all([reportSettings(), deskPeople()]);
+    const day = istDay(), log = await reportLog(day, day);
+    return ({ ...cfg, from: ppl.filter((p) => cfg.from.includes(p.id)).map((p) => ({ id: p.id, name: p.name })),
+      desk: ppl.map((p) => ({ id: p.id, name: p.name, role: p.role })), today: [...log.entries()].map(([k, v]) => ({ k, at: v.at })) });
+  }
   if (b.action === "prep") return prepList();
   if (b.action === "offices_new") return newOffices();
   if (b.action === "listed") return listedBook();

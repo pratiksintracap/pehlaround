@@ -1,1 +1,1 @@
-{ "framework": "nextjs", "crons": [{ "path": "/api/cron/emails", "schedule": "30 3 * * *" }], "git": { "deploymentEnabled": { "agent": false } } }
+{"framework": "nextjs", "crons": [{"path": "/api/cron/emails", "schedule": "30 3 * * *"}, {"path": "/api/cron/day-report", "schedule": "0 14 * * *"}], "git": {"deploymentEnabled": {"agent": false}}}
