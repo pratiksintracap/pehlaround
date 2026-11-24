@@ -123,6 +123,19 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     try { revalidateTag(PUBLIC_TAG); } catch { /* outside a request: the public cache refreshes on its own */ }
     return ({ ok: true, company: d.company, from: cur.phase, to, shown: phaseInfo(to).desk });
   }
+  // { action: "card", company, title?, headline? } — the public card's anonymised title and one-line headline.
+  if (b.action === "card") {
+    const d = await findDeal(s(b.company, 120));
+    if (!d || d === "ambiguous") return ({ error: "Name one deal." });
+    const title = s(b.title, 120), headline = s(b.headline, 600);
+    if (!title && !headline) return ({ error: "Give a title or a headline." });
+    const [cur] = (await deskDeals()).filter((x) => x.id === d.id);
+    await db.update(deals).set({ ...(title ? { title } : {}), ...(headline ? { headline } : {}), updatedAt: new Date() }).where(eq(deals.id, d.id));
+    await log(WHO, `Assistant updated the card text of ${d.company}`, d.id, { entity: "deal", entityId: d.id,
+      detail: { changes: { ...(title ? { title: [cur?.title, title] } : {}), ...(headline ? { headline: [cur?.headline, headline] } : {}) } } });
+    try { const { revalidateTag } = await import("next/cache"); const { PUBLIC_TAG } = await import("@/lib/cache"); revalidateTag(PUBLIC_TAG); } catch { /* refreshes on its own */ }
+    return ({ ok: true, company: d.company });
+  }
   // { action: "art", company, key } — sets a deal's card picture to one of the built-in drawings (lib/deal-art.json).
   // A picture the desk uploaded is never replaced this way.
   if (b.action === "art") {
