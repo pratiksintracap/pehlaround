@@ -102,6 +102,27 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     return ({ ok: true, taskId: id, company: to?.company ?? null });
   }
   // { action: "owner", company, owner } — who on the desk owns a deal.
+  // { action: "phase", company, phase, listing? } — puts a pre-IPO deal on the site (announced / open) or takes it down,
+  // exactly like the one-click phase change on the deals list: no announcement is sent. Only when Pratik asks for it.
+  // Listed, debt and IPO-only deals never go on the shelf.
+  if (b.action === "phase") {
+    const { isPhase, phaseInfo } = await import("@/lib/phase");
+    const { revalidateTag } = await import("next/cache");
+    const { PUBLIC_TAG } = await import("@/lib/cache");
+    const d = await findDeal(s(b.company, 120));
+    if (!d || d === "ambiguous") return ({ error: "Name one deal." });
+    const to = s(b.phase, 20);
+    if (!isPhase(to)) return ({ error: "Phase must be preparing, coming, announced, open or closed." });
+    const [cur] = (await deskDeals()).filter((x) => x.id === d.id);
+    if (!cur || cur.listed || cur.debt || cur.ipoOnly) return ({ error: "Only pre-IPO deals go on the shelf." });
+    const listing = s(b.listing, 60);
+    if (cur.phase === to && !listing) return ({ ok: true, unchanged: true });
+    await db.update(deals).set({ phase: to, ...(listing ? { listingLabel: listing } : {}), updatedAt: new Date() }).where(eq(deals.id, d.id));
+    await log(WHO, `Assistant moved ${d.company} to ${phaseInfo(to).label.toLowerCase()} (no announcement sent)${listing ? `; listing set to ${listing}` : ""}`, d.id,
+      { entity: "deal", entityId: d.id, detail: { changes: { phase: [cur.phase, to], ...(listing ? { listingLabel: [cur.listingLabel, listing] } : {}) } } });
+    try { revalidateTag(PUBLIC_TAG); } catch { /* outside a request: the public cache refreshes on its own */ }
+    return ({ ok: true, company: d.company, from: cur.phase, to, shown: phaseInfo(to).desk });
+  }
   // { action: "art", company, key } — sets a deal's card picture to one of the built-in drawings (lib/deal-art.json).
   // A picture the desk uploaded is never replaced this way.
   if (b.action === "art") {
