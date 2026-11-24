@@ -8,7 +8,7 @@ import { getDb } from "@/lib/db";
 import { prospects } from "@/db/schema";
 import { deskMembers } from "@/lib/desk";
 import { PROSPECT_STATUS, prospectLabel } from "@/lib/prospects";
-import { addProspectByHand, approveAllProspectEmails, prospectToDeal, saveProspectEmail, setProspect } from "@/lib/sourcing-actions";
+import { addProspectByHand, approveAllProspectEmails, approveProspectEmail, prospectToDeal, saveProspectEmail, setProspect } from "@/lib/sourcing-actions";
 import { emailReady } from "@/lib/email";
 import { fmtT } from "@/components/DeskBits";
 
@@ -62,7 +62,7 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
                   <label>Subject<input name="emailSubject" defaultValue={p.emailSubject ?? ""} maxLength={300} /></label>
                   <label>Email<textarea name="emailBody" rows={9} maxLength={3000} defaultValue={p.emailBody ?? ""} /><span className="hint">Plain text. The desk sign-off and an opt-out line are added when it is sent.</span></label>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><button className="btn sm" type="submit">Save</button>
-                    {p.status === "drafted" && <button className="btn sm primary" type="submit" name="then" value="approve">Approve and send from the desk</button>}</div>
+                    {p.status === "drafted" && <button className="btn sm primary" type="submit" formAction={approveProspectEmail}>Approve and send from the desk</button>}</div>
                   <p className="fine" style={{ margin: 0 }}>Sent from desk@beforethebell.in, Monday to Saturday, 9 AM to 7 PM. Approved outside those hours, it goes at 9 AM.</p>
                 </form> : <div className="fine"><p style={{ margin: "6px 0" }}><b>{p.emailSubject}</b>{p.contactEmail ? ` · to ${p.contactEmail}` : ""}{p.approvedBy ? ` · approved by ${p.approvedBy}` : ""}</p><pre style={{ whiteSpace: "pre-wrap", margin: 0, font: "inherit" }}>{p.emailBody}</pre></div>}
               </details>}

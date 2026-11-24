@@ -60,12 +60,21 @@ export async function prospectToDeal(f: FormData) {
 
 /** Saves the desk's edits to an outreach email (recipient, subject, body). Saving never sends. */
 export async function saveProspectEmail(f: FormData) {
+  return saveEmail(f, s(f, "then", 10) === "approve");
+}
+
+/** The approve button's own action, so approving never depends on the browser sending which button was pressed. */
+export async function approveProspectEmail(f: FormData) {
+  return saveEmail(f, true);
+}
+
+async function saveEmail(f: FormData, approve: boolean) {
   const me = await requirePerm("deals.edit");
   const company = s(f, "company", 200);
   const r = await updateProspect({ company, contactEmail: s(f, "contactEmail", 200), contactName: s(f, "contactName", 120), emailSubject: s(f, "emailSubject", 300), emailBody: s(f, "emailBody", 3000),
     ...(s(f, "emailBody", 3000).length > 40 && s(f, "emailSubject", 300) ? { status: "drafted" } : {}) }, me.name);
   if ("error" in r) fail(deskBack(f, BACK), r.error ?? "Couldn't save.");
-  if (s(f, "then", 10) !== "approve") done(deskBack(f, BACK), "Email saved. Nothing was sent.");
+  if (!approve) done(deskBack(f, BACK), "Email saved. Nothing was sent.");
   const a = await approveProspect(Number(f.get("id")) || 0, me.name);
   if ("error" in a) fail(deskBack(f, BACK), a.error);
   await log(me, a.sent ? `Desk approved and sent the outreach email to ${a.company}` : `Desk approved the outreach email to ${a.company}; it goes at 9 AM`, null, { entity: "prospect" });
