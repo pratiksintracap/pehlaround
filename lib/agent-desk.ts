@@ -123,16 +123,19 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     try { revalidateTag(PUBLIC_TAG); } catch { /* outside a request: the public cache refreshes on its own */ }
     return ({ ok: true, company: d.company, from: cur.phase, to, shown: phaseInfo(to).desk });
   }
-  // { action: "card", company, title?, headline? } — the public card's anonymised title and one-line headline.
+  // { action: "card", company, title?, headline?, slug? } — the public card's anonymised title, one-line headline and link.
   if (b.action === "card") {
     const d = await findDeal(s(b.company, 120));
     if (!d || d === "ambiguous") return ({ error: "Name one deal." });
     const title = s(b.title, 120), headline = s(b.headline, 600);
-    if (!title && !headline) return ({ error: "Give a title or a headline." });
-    const [cur] = (await deskDeals()).filter((x) => x.id === d.id);
-    await db.update(deals).set({ ...(title ? { title } : {}), ...(headline ? { headline } : {}), updatedAt: new Date() }).where(eq(deals.id, d.id));
+    const slug = s(b.slug, 80).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    if (!title && !headline && !slug) return ({ error: "Give a title, a headline or a slug." });
+    const all = await deskDeals();
+    const [cur] = all.filter((x) => x.id === d.id);
+    if (slug && all.some((x) => x.slug === slug && x.id !== d.id)) return ({ error: "That slug is taken." });
+    await db.update(deals).set({ ...(title ? { title } : {}), ...(headline ? { headline } : {}), ...(slug ? { slug } : {}), updatedAt: new Date() }).where(eq(deals.id, d.id));
     await log(WHO, `Assistant updated the card text of ${d.company}`, d.id, { entity: "deal", entityId: d.id,
-      detail: { changes: { ...(title ? { title: [cur?.title, title] } : {}), ...(headline ? { headline: [cur?.headline, headline] } : {}) } } });
+      detail: { changes: { ...(title ? { title: [cur?.title, title] } : {}), ...(headline ? { headline: [cur?.headline, headline] } : {}), ...(slug ? { slug: [cur?.slug, slug] } : {}) } } });
     try { const { revalidateTag } = await import("next/cache"); const { PUBLIC_TAG } = await import("@/lib/cache"); revalidateTag(PUBLIC_TAG); } catch { /* refreshes on its own */ }
     return ({ ok: true, company: d.company });
   }
