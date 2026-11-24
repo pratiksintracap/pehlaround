@@ -170,6 +170,29 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     await log(WHO, `Assistant interest · ${name}: ${interestLabel(row.status)}`, d.id, { entity: "interest", entityId: row.id });
     return ({ ok: true, added: true, company: d.company, name });
   }
+  // { action: "room_replace", company, find, replace } — a wording fix in a deal's room (also when it is live), as Pratik
+  // asks. Replaces one exact piece of text found in exactly one place in the room; anything else is refused.
+  if (b.action === "room_replace") {
+    const d = await findDeal(s(b.company, 120));
+    if (!d || d === "ambiguous") return ({ error: "Name one deal." });
+    const find = String(b.find ?? ""), repl = String(b.replace ?? "");
+    if (find.length < 4 || find.length > 2000 || repl.length > 4000) return ({ error: "Give the exact text to find (4–2000 characters)." });
+    const [cur] = (await deskDeals()).filter((x) => x.id === d.id);
+    if (!cur) return ({ error: "Deal not found." });
+    let hits = 0; const where: string[] = [];
+    const walk = (v: unknown, path: string): unknown => {
+      if (typeof v === "string") { const n = v.split(find).length - 1; if (n) { hits += n; where.push(path); return v.split(find).join(repl); } return v; }
+      if (Array.isArray(v)) return v.map((x, i) => walk(x, `${path}[${i}]`));
+      if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x, path ? `${path}.${k}` : k)]));
+      return v;
+    };
+    const room = walk(cur.room, "");
+    if (hits !== 1) return ({ error: hits ? `That text appears ${hits} times; give a longer piece.` : "That text is not in the room." });
+    await db.update(deals).set({ room: room as typeof cur.room, updatedAt: new Date() }).where(eq(deals.id, d.id));
+    await log(WHO, `Assistant edited the room text of ${d.company} (${where[0]})`, d.id, { entity: "deal", entityId: d.id, detail: { changes: { [`room.${where[0]}`]: [find, repl] } } });
+    try { const { revalidateTag } = await import("next/cache"); const { PUBLIC_TAG } = await import("@/lib/cache"); revalidateTag(PUBLIC_TAG); } catch { /* refreshes on its own */ }
+    return ({ ok: true, company: d.company, field: where[0] });
+  }
   // { action: "art", company, key } — sets a deal's card picture to one of the built-in drawings (lib/deal-art.json).
   // A picture the desk uploaded is never replaced this way.
   if (b.action === "art") {

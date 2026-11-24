@@ -3,10 +3,10 @@ import { track } from "@/lib/track";
 import { notFound } from "next/navigation";
 import { and, asc, desc, eq, gt, like, or, ne } from "drizzle-orm";
 import { getUser, log } from "@/lib/auth";
-import { getDeal, listDeals, signedDealIds, roomAccess, trackerCounts, docAccess, type Deal } from "@/lib/deals";
+import { getDeal, listDeals, signedDealIds, roomAccess, docAccess, type Deal } from "@/lib/deals";
 import { getDb } from "@/lib/db";
 import { audit, dealPrefs, documents, interests, passes, questions } from "@/db/schema";
-import { Donut, Ring, StatusBar, Bars, HBars, Timeline, barSeries } from "@/components/Charts";
+import { Donut, Bars, HBars, Timeline, barSeries } from "@/components/Charts";
 import { ScoreBadge } from "@/components/Score";
 import { GateCard } from "@/components/Gate";
 import { Analyst } from "@/components/Analyst";
@@ -66,10 +66,10 @@ export default async function Room({ params }: P) {
   const recent = await db.select({ id: audit.id }).from(audit).where(and(eq(audit.userId, user!.id), eq(audit.dealId, d.id), like(audit.action, "Opened the room%"), gt(audit.at, new Date(Date.now() - 900e3)))).limit(1);
   if (!recent.length) { await log(user, `Opened the room: ${d.company}`, d.id); if (user!.officeId) await track("room_opened", { officeId: user!.officeId, userId: user!.id, dealId: d.id }); }
 
-  const r = d.room, c = trackerCounts(d);
+  const r = d.room;
   const pc = peerCompareFor(d.slug, r.compare);
   // until an office chooses, every alert is on
-  const alertsOn = new Set(prefs[0]?.alertsSet ? prefs[0].alerts : r.alerts), ticks = new Set(prefs[0]?.ticks ?? []);
+  const alertsOn = new Set(prefs[0]?.alertsSet ? prefs[0].alerts : r.alerts);
   const inter = myInterest[0], passed = myPass[0];
   // the office's latest word: a pass counts unless it asked for an allocation afterwards
   const passedNow = passed && (!inter || inter.createdAt < passed.createdAt) ? passed : null;
@@ -123,7 +123,7 @@ export default async function Room({ params }: P) {
           <div className="undisc"><span className="k">Why it is on the desk</span><p>{r.why}</p></div>
 
           <div className="tabs" role="tablist">
-            {["Overview", "Financials", ...(pc ? ["Peers"] : []), "Terms", "IPO path", "Diligence", "Documents", "Q&A"].map((t, i) =>
+            {["Overview", "Financials", ...(pc ? ["Peers"] : []), "Terms", "IPO path", "Documents", "Q&A"].map((t, i) =>
               <button key={t} role="tab" type="button" data-tab={t} aria-selected={i === 0} className="tabbtn">{t}</button>)}
           </div>
 
@@ -184,16 +184,7 @@ export default async function Room({ params }: P) {
             ))}</ol>
           </section>
 
-          <section className="panel" data-panel="Diligence" hidden>
-            <p className="fine" style={{ marginBottom: 12 }}>What the desk has verified, is verifying, or has not started. Facts, not opinions; dates are when the item was completed. More checks are added where the company, sector or history calls for them.</p>
-            <div className="chart" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}><Ring done={c.done} total={c.total} size={104} />
-              <div style={{ flex: 1, minWidth: 220 }}><StatusBar done={c.done} prog={c.prog} pend={c.pend} /></div></div>
-            <ul className="checks">{r.checks.map((k, i) => (
-              <li key={i}><span className={`pill ${PILL[k.status][0]}`}>{PILL[k.status][1]}</span><div><b>{k.title}</b>{k.note && <small>{k.note}</small>}</div><span className="mono">{k.date || ""}</span></li>
-            ))}</ul>
-            <div className="mine"><h3>Your office&apos;s checklist <small>{r.mine.filter((m) => ticks.has(m)).length}/{r.mine.length}</small></h3>
-              {r.mine.map((m) => <label key={m} className="chk"><input type="checkbox" data-tick={m} defaultChecked={ticks.has(m)} />{m}</label>)}</div>
-          </section>
+          {/* The Diligence tab was removed from every room on 24 Nov 2026 (Pratik). The checks stay in the deal data and the admin editor. */}
 
           <section className="panel" data-panel="Documents" hidden>
             {d.dataRoomUrl ? (
