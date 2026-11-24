@@ -178,6 +178,22 @@ export async function approveProspect(id: number, by: string, now = new Date()):
   return ok ? { sent: true, company: p.company } : { error: "The email was approved but could not be sent just now; it will be tried again at 9 AM." };
 }
 
+/**
+ * The desk approves every email at Draft ready in one go. In sending hours the first few go at once (kept small so
+ * the request finishes); the rest wait, approved, for the 9 AM run, which sends them in daily batches.
+ */
+export async function approveAllProspects(by: string, now = new Date(), sendNow = 15): Promise<{ error: string } | { approved: number; sent: number; skipped: number }> {
+  if (!emailReady()) return { error: "Sending is not set up on this site: add RESEND_API_KEY (and EMAIL_FROM) in Vercel and redeploy." };
+  const db = await getDb();
+  const drafted = await db.select().from(prospects).where(eq(prospects.status, "drafted"));
+  const ready = drafted.filter((p) => p.contactEmail && p.emailSubject && p.emailBody);
+  if (!ready.length) return { error: drafted.length ? "None of the drafts has a recipient, a subject and a body yet." : "There are no emails at Draft ready." };
+  await db.update(prospects).set({ status: "approved", approvedBy: by, updatedAt: now }).where(inArray(prospects.id, ready.map((p) => p.id)));
+  let sent = 0;
+  if (inSendingHours(now)) for (const p of ready.slice(0, sendNow)) if (await sendOne({ ...p, status: "approved" })) sent++;
+  return { approved: ready.length, sent, skipped: drafted.length - ready.length };
+}
+
 /** The 9 AM run: sends every approved email that is still waiting. */
 export async function runProspectSends(now = new Date()) {
   if (!emailReady() || !inSendingHours(now)) return { sent: 0, waiting: true };

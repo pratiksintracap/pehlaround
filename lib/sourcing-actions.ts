@@ -9,7 +9,7 @@ import { deals, prospects } from "@/db/schema";
 import { requirePerm, log } from "@/lib/auth";
 import { PUBLIC_TAG } from "@/lib/cache";
 import { done, fail, deskBack } from "@/lib/form";
-import { addProspect, approveProspect, updateProspect } from "@/lib/prospects";
+import { addProspect, approveAllProspects, approveProspect, updateProspect } from "@/lib/prospects";
 
 const s = (f: FormData, k: string, max = 4000) => String(f.get(k) ?? "").trim().slice(0, max);
 const BACK = "/admin/sourcing";
@@ -70,6 +70,15 @@ export async function saveProspectEmail(f: FormData) {
   if ("error" in a) fail(deskBack(f, BACK), a.error);
   await log(me, a.sent ? `Desk approved and sent the outreach email to ${a.company}` : `Desk approved the outreach email to ${a.company}; it goes at 9 AM`, null, { entity: "prospect" });
   done(deskBack(f, BACK), a.sent ? `Sent to ${a.company} from the desk address.` : `Approved. It is outside sending hours, so the email to ${a.company} goes at 9 AM on the next working day.`);
+}
+
+export async function approveAllProspectEmails(f: FormData) {
+  const me = await requirePerm("deals.edit");
+  const a = await approveAllProspects(me.name);
+  if ("error" in a) fail(deskBack(f, BACK), a.error);
+  await log(me, `Desk approved ${a.approved} outreach emails in one go; ${a.sent} sent at once`, null, { entity: "prospect" });
+  const rest = a.approved - a.sent;
+  done(deskBack(f, BACK), `Approved ${a.approved} emails.${a.sent ? ` ${a.sent} sent now from the desk address.` : ""}${rest ? ` The other ${rest} go out from 9 AM on working days, up to 40 a day.` : ""}${a.skipped ? ` ${a.skipped} drafts without a recipient were left at Draft ready.` : ""}`);
 }
 
 /** Loads one batch of pool rows from the file the desk uploads on the pool page. */

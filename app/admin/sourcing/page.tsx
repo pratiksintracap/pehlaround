@@ -8,7 +8,8 @@ import { getDb } from "@/lib/db";
 import { prospects } from "@/db/schema";
 import { deskMembers } from "@/lib/desk";
 import { PROSPECT_STATUS, prospectLabel } from "@/lib/prospects";
-import { addProspectByHand, prospectToDeal, saveProspectEmail, setProspect } from "@/lib/sourcing-actions";
+import { addProspectByHand, approveAllProspectEmails, prospectToDeal, saveProspectEmail, setProspect } from "@/lib/sourcing-actions";
+import { emailReady } from "@/lib/email";
 import { fmtT } from "@/components/DeskBits";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,11 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
         <h1 style={{ fontSize: 30, margin: 0 }}>Sourcing</h1><span className="pill">Desk only</span>
         {edit && <a className="btn sm" href="#add">+ Add a company</a>}<a className="btn sm" href="/admin/sourcing/pool">Sourcing pool</a></div>
       <p className="fine" style={{ marginBottom: 12 }}>Companies the assistant finds each weekday morning: unlisted, ₹50–1,000 Cr revenue, profitable and growing, from rating rationales, news and filings. For each one it reads the company&apos;s website and writes an outreach email, shown on the row for review. <b>Nothing is sent until someone here approves it</b>; it then goes from the desk address. When a company replies with interest, Puneet gets a call task. Make a prospect a deal with <i>Pre-IPO</i> or <i>Debt</i>.</p>
+      {!emailReady() && <p className="fine" style={{ margin: "0 0 12px", color: "#b42318" }}><b>Sending is not set up on this site</b>, so approving an email cannot send it. Add RESEND_API_KEY (and EMAIL_FROM, for example Before the Bell &lt;desk@beforethebell.in&gt;) in Vercel&apos;s environment variables and redeploy.</p>}
+      {edit && count("drafted") > 0 && <form action={approveAllProspectEmails} style={{ margin: "0 0 12px", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <input type="hidden" name="back" value={back} />
+        <button className="btn sm primary" type="submit">Approve and send all {count("drafted")} drafts</button>
+        <span className="fine">Approves every email at Draft ready as written. Up to 15 go at once in sending hours; the rest go from 9 AM on working days, up to 40 a day.</span></form>}
       <div className="adm-filter">{[["open", `Open (${all.filter((p) => OPEN.includes(p.status)).length})`], ...PROSPECT_STATUS.map((x) => [x.id, `${x.label} (${count(x.id)})`]), ["all", `All (${all.length})`]].map(([k, l]) =>
         <a key={k} href={q({ status: k })} className={status === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["", "Equity and debt"], ["equity", "Pre-IPO equity"], ["debt", "Debt"]].map(([k, l]) =>
