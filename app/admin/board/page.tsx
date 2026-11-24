@@ -28,8 +28,9 @@ export default async function Board({ searchParams }: { searchParams: Promise<{ 
         <a key={`w${k}`} href={q("who", k)} className={(who || "") === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["", "All deals"], ["private", "Before the Bell (pre-IPO)"], ["listed", "After the Bell (listed)"], ["debt", "Debt desk (lending)"]].map(([k, l]) =>
         <a key={`k${k}`} href={q("kind", k)} className={(kind || "") === k ? "on" : ""}>{l}</a>)}</div>
-      <div className="adm-filter">{[["", "Sections"], ["board", "Board"]].map(([k, l]) =>
-        <a key={`v${k}`} href={q("view", k)} className={(view || "") === k ? "on" : ""}>{l}</a>)}</div>
+      <div className="adm-filter" style={{ alignItems: "center" }}>{[["", "Sections"], ["board", "Board"]].map(([k, l]) =>
+        <a key={`v${k}`} href={q("view", k)} className={(view || "") === k ? "on" : ""}>{l}</a>)}
+        <a href={`/admin/board/export${(() => { const p = new URLSearchParams(); if (who) p.set("who", who); if (kind) p.set("kind", kind); const x = p.toString(); return x ? `?${x}` : ""; })()}`} className="btn sm" style={{ marginLeft: "auto" }} download>Export to Excel</a></div>
       {!board && <div className="pl-sections">
         {ACTIVE_STAGES.map((s) => { const cs = list.filter((d) => d.pipelineStage === s.id); return (
           <section key={s.id} className={`pl-sec pl-${s.id}${cs.length ? "" : " empty"}`} aria-label={s.label}>
