@@ -8,29 +8,38 @@ import { fmtT } from "@/components/DeskBits";
 
 export const dynamic = "force-dynamic";
 
-export default async function Board({ searchParams }: { searchParams: Promise<{ who?: string; kind?: string; view?: string }> }) {
+export default async function Board({ searchParams }: { searchParams: Promise<{ who?: string; kind?: string; view?: string; s?: string }> }) {
   const me = await requireDesk();
-  const { who, kind, view } = await searchParams;
+  const { who, kind, view, s: find = "" } = await searchParams;
+  const terms = find.toLowerCase().split(/\s+/).filter(Boolean);
+  // Search: every word must appear somewhere in the deal's name, sector, type, headline, listing or debt terms.
+  const hay = (d: (typeof all)[number]) => [d.company, d.title, d.category, d.headline, d.listingLabel, d.preMoney, JSON.stringify(d.debtInfo ?? {})].join(" ").toLowerCase();
   const board = view === "board";
   const [all, members, open] = await Promise.all([deskDeals(), deskMembers(), listTasks({ status: "open", me })]);
   const ownerFilter = who === "me" ? me.id : who === "none" ? null : who ? Number(who) : undefined;
-  const list = all.filter((d) => (ownerFilter === undefined || d.ownerId === ownerFilter) && (!kind || (kind === "listed" ? d.listed : kind === "debt" ? d.debt : !d.listed && !d.debt)));
+  const list = all.filter((d) => (ownerFilter === undefined || d.ownerId === ownerFilter) && (!kind || (kind === "listed" ? d.listed : kind === "debt" ? d.debt : !d.listed && !d.debt)) && terms.every((t) => hay(d).includes(t)));
   const name = new Map(members.map((m) => [m.id, m.name]));
   const work = can(me, "workflow");
-  const q = (k: string, v: string) => { const p = new URLSearchParams(); if (who) p.set("who", who); if (kind) p.set("kind", kind); if (board) p.set("view", "board"); if (v) p.set(k, v); else p.delete(k); const s = p.toString(); return `/admin/board${s ? `?${s}` : ""}`; };
+  const q = (k: string, v: string) => { const p = new URLSearchParams(); if (who) p.set("who", who); if (kind) p.set("kind", kind); if (board) p.set("view", "board"); if (find) p.set("s", find); if (v) p.set(k, v); else p.delete(k); const s = p.toString(); return `/admin/board${s ? `?${s}` : ""}`; };
   const back = q("x", "");
   const archivedN = list.filter((d) => d.pipelineStage === "archived").length;
   return (
     <>
       <h1 style={{ fontSize: 30, margin: "6px 0 4px" }}>Deal pipeline</h1>
       <p className="fine" style={{ marginBottom: 10 }}>Every deal by the desk&apos;s own stage. Moving a card changes nothing on the site: publishing and opening a room stay in the deal itself.{archivedN ? <> <a href="/admin/deals#archived">Archived ({archivedN})</a> are kept on the Deals page.</> : null}</p>
+      <form action="/admin/board" className="adm-filter" role="search" style={{ alignItems: "center" }}>
+        {who && <input type="hidden" name="who" value={who} />}{kind && <input type="hidden" name="kind" value={kind} />}{board && <input type="hidden" name="view" value="board" />}
+        <input type="search" name="s" defaultValue={find} placeholder="Search deals: name, sector, lender, terms…" aria-label="Search deals" style={{ flex: "1 1 260px", maxWidth: 420 }} />
+        <button className="btn sm" type="submit">Search</button>
+        {find && <><span className="fine">{list.length} match{list.length === 1 ? "" : "es"} for “{find}”</span> <a href={q("s", "")}>Clear</a></>}
+      </form>
       <div className="adm-filter">{[["", "Everyone"], ["me", "Mine"], ["none", "No owner"], ...members.filter((m) => m.id !== me.id).map((m) => [String(m.id), m.name])].map(([k, l]) =>
         <a key={`w${k}`} href={q("who", k)} className={(who || "") === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["", "All deals"], ["private", "Before the Bell (pre-IPO)"], ["listed", "After the Bell (listed)"], ["debt", "Debt desk (lending)"]].map(([k, l]) =>
         <a key={`k${k}`} href={q("kind", k)} className={(kind || "") === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter" style={{ alignItems: "center" }}>{[["", "Sections"], ["board", "Board"]].map(([k, l]) =>
         <a key={`v${k}`} href={q("view", k)} className={(view || "") === k ? "on" : ""}>{l}</a>)}
-        <a href={`/admin/board/export${(() => { const p = new URLSearchParams(); if (who) p.set("who", who); if (kind) p.set("kind", kind); const x = p.toString(); return x ? `?${x}` : ""; })()}`} className="btn sm" style={{ marginLeft: "auto" }} download>Export to Excel</a></div>
+        <a href={`/admin/board/export${(() => { const p = new URLSearchParams(); if (who) p.set("who", who); if (kind) p.set("kind", kind); if (find) p.set("s", find); const x = p.toString(); return x ? `?${x}` : ""; })()}`} className="btn sm" style={{ marginLeft: "auto" }} download>Export to Excel</a></div>
       {!board && <div className="pl-sections">
         {ACTIVE_STAGES.map((s) => { const cs = list.filter((d) => d.pipelineStage === s.id); return (
           <section key={s.id} className={`pl-sec pl-${s.id}${cs.length ? "" : " empty"}`} aria-label={s.label}>

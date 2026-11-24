@@ -17,11 +17,13 @@ export async function GET(req: NextRequest) {
   if (!isDesk(me)) return NextResponse.json({ error: "Desk only" }, { status: 403 });
   const sp = req.nextUrl.searchParams;
   const who = sp.get("who"), kind = sp.get("kind"), withArchived = sp.get("archived") === "1";
+  const terms = (sp.get("s") || "").toLowerCase().split(/\s+/).filter(Boolean);
   const ownerFilter = who === "me" ? me!.id : who === "none" ? null : who ? Number(who) : undefined;
   const [all, members] = await Promise.all([deskDeals(), deskMembers()]);
   const list = all.filter((d) => (withArchived || d.pipelineStage !== "archived")
     && (ownerFilter === undefined || d.ownerId === ownerFilter)
-    && (!kind || (kind === "listed" ? d.listed : kind === "debt" ? d.debt : !d.listed && !d.debt)));
+    && (!kind || (kind === "listed" ? d.listed : kind === "debt" ? d.debt : !d.listed && !d.debt))
+    && terms.every((t) => [d.company, d.title, d.category, d.headline, d.listingLabel, d.preMoney, JSON.stringify(d.debtInfo ?? {})].join(" ").toLowerCase().includes(t)));
   const ids = list.map((d) => d.id);
   const db = await getDb();
   const today = istDay();
