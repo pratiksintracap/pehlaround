@@ -6,11 +6,14 @@ import { setDealStage, setDealOwner, saveDeskNote, saveDeskFile } from "@/lib/de
 import { DEAL_STAGES, stageLabel } from "@/lib/stages";
 import { can } from "@/lib/perm";
 import { Changes, TaskRow, TaskForm, fmtT } from "@/components/DeskBits";
+import { CHANNELS, INTEREST_STATUS, channelLabel, interestLabel, interestOn, interestSummary, isWarm, type Interest } from "@/lib/deal-interest";
+import { saveInterest } from "@/lib/deal-interest-actions";
+import { istDay } from "@/lib/stages";
 
 type Me = { id: number; role: string };
 
 export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back: string }) {
-  const [ws, members, nm] = await Promise.all([workspace(d.id, me), deskMembers(), names(me)]);
+  const [ws, members, nm, interest] = await Promise.all([workspace(d.id, me), deskMembers(), names(me), interestOn(d.id)]);
   const work = can(me, "workflow"), del = can(me, "delete");
   const opts = { members: members.map((m) => ({ id: m.id, name: m.name })), deals: [...nm.deal.values()].map((x) => ({ id: x.id, name: x.company })), offices: [...nm.office.entries()].map(([id, name]) => ({ id, name })) };
   const open = ws.tasks.filter((t) => t.status === "open");
@@ -30,6 +33,21 @@ export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back
             <button className="btn sm" type="submit">Set</button></form>
           <span className="fine">{d.stageAt ? `At this stage since ${fmtT(d.stageAt)}. ` : ""}The stage is the desk&apos;s own; it does not publish or open anything.</span>
         </div>}
+      </div>
+
+      <div className="chart" id="desk-interest" style={{ marginBottom: 16 }}>
+        <span className="k">Interest · {interest.length ? interestSummary(interest) : "nobody yet"}</span>
+        <p className="fine" style={{ margin: "2px 0 8px" }}>Who has been pitched and where they stand, including what happens on the phone, WhatsApp and email. Desk only.</p>
+        {interest.length > 0 && <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Who</th><th>Status</th><th>Amount</th><th>How</th><th>Last contact</th><th>Note</th>{work && <th></th>}</tr></thead>
+          <tbody>{interest.map((x) => (
+            <tr key={x.id} style={x.status === "passed" ? { opacity: 0.6 } : undefined}>
+              <th scope="row">{x.name}{x.firm && x.firm.toLowerCase() !== x.name.toLowerCase() ? <span className="fine"> · {x.firm}</span> : null}{x.contact ? <div className="fine">{x.contact}</div> : null}</th>
+              <td><span className={`pill${isWarm(x.status) ? " ok" : ""}`}>{interestLabel(x.status)}</span></td>
+              <td>{x.amountCr ? `₹${x.amountCr} Cr` : "—"}</td><td>{channelLabel(x.channel) || "—"}</td><td>{x.lastOn ?? "—"}</td>
+              <td className="fine" style={{ maxWidth: 280 }}>{x.note}</td>
+              {work && <td><details className="dt-edit"><summary>Edit</summary><InterestForm d={d.id} back={back} x={x} del={del} /></details></td>}
+            </tr>))}</tbody></table></div>}
+        {work && <details className="ws-add"><summary className="btn sm">+ Add who is interested</summary><InterestForm d={d.id} back={back} /></details>}
       </div>
 
       <div className="two ws-grid">
@@ -86,4 +104,26 @@ export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back
       </div>
     </section>
   );
+}
+
+function InterestForm({ d, back, x, del }: { d: number; back: string; x?: Interest; del?: boolean }) {
+  return (<>
+    <form action={saveInterest} className="form">
+      <input type="hidden" name="dealId" value={d} /><input type="hidden" name="back" value={`${back}#desk-interest`} />{x && <input type="hidden" name="id" value={x.id} />}
+      <div className="row"><label>Name<input name="name" required maxLength={160} defaultValue={x?.name} placeholder="Person or firm" /></label><label>Firm<input name="firm" maxLength={160} defaultValue={x?.firm ?? ""} placeholder="Optional" /></label></div>
+      <div className="row">
+        <label>Status<select name="status" defaultValue={x?.status ?? "interested"}>{INTEREST_STATUS.map((st) => <option key={st.id} value={st.id}>{st.label}</option>)}</select></label>
+        <label>Amount (₹ Cr)<input name="amountCr" inputMode="decimal" defaultValue={x?.amountCr ?? ""} placeholder="Optional" /></label>
+      </div>
+      <div className="row">
+        <label>How<select name="channel" defaultValue={x?.channel ?? "phone"}>{CHANNELS.map((c) => <option key={c} value={c}>{channelLabel(c)}</option>)}</select></label>
+        <label>Last contact<input type="date" name="lastOn" defaultValue={x?.lastOn ?? istDay()} max={istDay()} /></label>
+      </div>
+      <label>Phone or email<input name="contact" maxLength={160} defaultValue={x?.contact ?? ""} placeholder="Optional" /></label>
+      <label>Note<input name="note" maxLength={2000} defaultValue={x?.note ?? ""} placeholder="What they said, what they need, next step" /></label>
+      <div><button className="btn sm primary" type="submit">{x ? "Save" : "Add"}</button></div>
+    </form>
+    {x && del && <form action={saveInterest}><input type="hidden" name="id" value={x.id} /><input type="hidden" name="dealId" value={d} /><input type="hidden" name="delete" value="on" /><input type="hidden" name="back" value={`${back}#desk-interest`} />
+      <button className="btn sm ghost" type="submit">Remove</button></form>}
+  </>);
 }

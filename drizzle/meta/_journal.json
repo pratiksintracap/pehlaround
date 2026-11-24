@@ -358,6 +358,13 @@
       "when": 1795411134139,
       "tag": "0050_private_credit",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1795411234139,
+      "tag": "0051_deal_interest",
+      "breakpoints": true
     }
   ]
 }

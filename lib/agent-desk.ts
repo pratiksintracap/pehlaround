@@ -139,6 +139,37 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     try { const { revalidateTag } = await import("next/cache"); const { PUBLIC_TAG } = await import("@/lib/cache"); revalidateTag(PUBLIC_TAG); } catch { /* refreshes on its own */ }
     return ({ ok: true, company: d.company });
   }
+  // { action: "interest", company, name, firm?, status?, amountCr?, channel?, contact?, note?, lastOn? } — records who is
+  // interested in a deal (as Pratik relays it from calls, WhatsApp, email). Matched by deal + name, so a resend updates.
+  if (b.action === "interest") {
+    const { dealInterest } = await import("@/db/schema");
+    const { CHANNELS, interestLabel, isInterestStatus } = await import("@/lib/deal-interest");
+    const d = await findDeal(s(b.company, 120));
+    if (!d || d === "ambiguous") return ({ error: "Name one deal." });
+    const name = s(b.name, 160);
+    if (!name) return ({ error: "Give a name." });
+    const amt = parseFloat(String(b.amountCr ?? "").replace(/[₹,\s]/g, ""));
+    const chan = s(b.channel, 20).toLowerCase();
+    const vals = {
+      ...(b.firm !== undefined ? { firm: s(b.firm, 160) || null } : {}),
+      ...(isInterestStatus(b.status) ? { status: String(b.status) } : {}),
+      ...(b.amountCr !== undefined ? { amountCr: isFinite(amt) && amt > 0 ? amt : null } : {}),
+      ...((CHANNELS as readonly string[]).includes(chan) ? { channel: chan } : {}),
+      ...(b.contact !== undefined ? { contact: s(b.contact, 160) || null } : {}),
+      ...(b.note !== undefined ? { note: s(b.note, 2000) || null } : {}),
+      lastOn: /^\d{4}-\d{2}-\d{2}$/.test(s(b.lastOn, 10)) ? s(b.lastOn, 10) : istDay(),
+    };
+    const [prev] = await db.select().from(dealInterest).where(and(eq(dealInterest.dealId, d.id), sql`lower(${dealInterest.name}) = ${name.toLowerCase()}`));
+    if (prev) {
+      await db.update(dealInterest).set({ ...vals, updatedAt: new Date() }).where(eq(dealInterest.id, prev.id));
+      const st = (vals as { status?: string }).status;
+      await log(WHO, `Assistant interest · ${prev.name}${st && st !== prev.status ? `: ${interestLabel(prev.status)} → ${interestLabel(st)}` : " updated"}`, d.id, { entity: "interest", entityId: prev.id });
+      return ({ ok: true, updated: true, company: d.company, name: prev.name });
+    }
+    const [row] = await db.insert(dealInterest).values({ dealId: d.id, name, status: "pitched", ...vals, createdBy: WHO.name }).returning({ id: dealInterest.id, status: dealInterest.status });
+    await log(WHO, `Assistant interest · ${name}: ${interestLabel(row.status)}`, d.id, { entity: "interest", entityId: row.id });
+    return ({ ok: true, added: true, company: d.company, name });
+  }
   // { action: "art", company, key } — sets a deal's card picture to one of the built-in drawings (lib/deal-art.json).
   // A picture the desk uploaded is never replaced this way.
   if (b.action === "art") {

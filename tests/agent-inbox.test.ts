@@ -101,3 +101,18 @@ test("the assistant can set an owner and remove only an empty deal", async () =>
   assert.equal((await deskAction({ action: "remove_empty", id: a.id })).ok, true);
   assert.equal((await db.select().from(deals).where(eq(deals.id, a.id as number))).length, 0);
 });
+
+test("the assistant records who is interested in a deal, and a resend updates the same entry", async () => {
+  const a = await deskAction({ action: "debt_new", company: "Oberon Interest Test Ltd" });
+  const r1 = await deskAction({ action: "interest", company: "Oberon Interest Test", name: "3A Capital", status: "pitched", channel: "email" });
+  assert.equal(r1.added, true);
+  const r2 = await deskAction({ action: "interest", company: "Oberon Interest Test", name: "3a capital", status: "soft", amountCr: "2.5" });
+  assert.equal(r2.updated, true);
+  const { interestOn, interestSummary } = await import("@/lib/deal-interest");
+  const l = await interestOn(a.id as number);
+  assert.equal(l.length, 1);
+  assert.deepEqual([l[0].status, l[0].amountCr, l[0].channel], ["soft", 2.5, "email"]);
+  assert.match(interestSummary(l), /1 interested · ₹2.5 Cr soft or committed/);
+  const db = await getDb();
+  await db.update(deals).set({ pipelineStage: "archived" }).where(eq(deals.id, a.id as number));
+});

@@ -755,3 +755,22 @@ export const dealImages = pgTable("deal_images", {
   createdBy: text("created_by"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("deal_images_deal_idx").on(t.dealId)]);
+
+// Who is interested in a deal, as the desk hears it: on the phone, on WhatsApp, by email or in a meeting, as well as on the
+// portal. Desk only. One row per person or firm per deal; officeId links it to a registered investor when there is one.
+export const dealInterest = pgTable("deal_interest", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  name: text("name").notNull(),                 // the person or firm, as the desk calls them
+  firm: text("firm"),
+  contact: text("contact"),                     // phone or email, optional
+  channel: text("channel"),                     // phone | whatsapp | email | meeting | portal | other
+  status: text("status").notNull().default("pitched"),   // pitched | interested | meeting | soft | committed | passed
+  amountCr: doublePrecision("amount_cr"),
+  note: text("note"),
+  officeId: integer("office_id"),
+  lastOn: text("last_on"),                      // YYYY-MM-DD (IST) of the last contact
+  createdBy: text("created_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("deal_interest_deal_idx").on(t.dealId)]);

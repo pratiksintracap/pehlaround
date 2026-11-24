@@ -7,7 +7,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const DESK_ONLY = [/^app\/admin\//, /^lib\/admin-actions\.ts$/, /^lib\/desk(-actions)?\.ts$/, /^lib\/task-reminders\.ts$/, /^lib\/desk-weekly\.ts$/, /^lib\/peer-draft\.ts$/, /^lib\/call-list\.ts$/, /^app\/desk\//, /^lib\/pipeline\.ts$/, /^lib\/db\.ts$/,
-  /^lib\/deal-guard\.ts$/, /^lib\/agent-dealcheck\.ts$/, /^lib\/day-report\.ts$/, /^components\/(DeskWorkspace|DeskBits|AdminNav|AdminBits)\.tsx$/];
+  /^lib\/deal-guard\.ts$/, /^lib\/agent-dealcheck\.ts$/, /^lib\/day-report\.ts$/, /^lib\/pipeline-pdf\.ts$/, /^lib\/deal-interest\.ts$/, /^components\/(DeskWorkspace|DeskBits|AdminNav|AdminBits)\.tsx$/];
 const walk = (dir: string): string[] => readdirSync(path.join(root, dir)).flatMap((f) => {
   const p = path.join(dir, f);
   return statSync(path.join(root, p)).isDirectory() ? walk(p) : /\.(ts|tsx)$/.test(f) ? [p.split(path.sep).join("/")] : [];
