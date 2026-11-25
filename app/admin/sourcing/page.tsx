@@ -1,11 +1,11 @@
 // Sourcing: companies the assistant finds every morning that may suit the desk, and where the outreach to each stands.
 // The flow: found > draft ready (in the desk mailbox) > emailed > interested (call task for the banker) > on the pipeline.
 // Desk only; nothing here reaches any investor page.
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { requireDesk } from "@/lib/auth";
 import { can } from "@/lib/perm";
 import { getDb } from "@/lib/db";
-import { prospects } from "@/db/schema";
+import { emailLog, prospects } from "@/db/schema";
 import { deskMembers } from "@/lib/desk";
 import { PROSPECT_STATUS, prospectLabel } from "@/lib/prospects";
 import { addProspectByHand, approveAllProspectEmails, approveProspectEmail, prospectToDeal, saveProspectEmail, setProspect } from "@/lib/sourcing-actions";
@@ -18,16 +18,55 @@ const OPEN = ["new", "drafted", "approved", "emailed", "interested"];
 const KIND: Record<string, string> = { equity: "Pre-IPO equity", debt: "Debt", both: "Equity or debt" };
 const cr = (v: number | null) => (v == null ? "—" : `₹${v.toLocaleString("en-IN", { maximumFractionDigits: 1 })} Cr`);
 
-export default async function Sourcing({ searchParams }: { searchParams: Promise<{ status?: string; kind?: string }> }) {
+// How engaged a company is, from what the desk can see: a reply, then link clicks and opens of the desk's emails
+// (from the email provider's delivery status), then how recently it was written to. Higher is more active.
+type Act = { score: number; label: string; tone: "ok" | "mid" | "off" | "" };
+function activity(p: typeof prospects.$inferSelect, ev: { opened: number; clicked: number; bounced: number } | undefined, now: number): Act {
+  const days = (d: Date | null) => (d ? Math.floor((now - +d) / 864e5) : null);
+  if (p.status === "interested" || p.status === "added") return { score: 100, label: p.repliedAt ? `Replied with interest ${fmtT(p.repliedAt)}` : "Interested", tone: "ok" };
+  if (p.status === "declined") return { score: 30, label: p.repliedAt ? `Replied: not now (${fmtT(p.repliedAt)})` : "Replied: not now", tone: "off" };
+  if (p.repliedAt) return { score: 90, label: `Replied ${fmtT(p.repliedAt)}`, tone: "ok" };
+  if (ev?.bounced && !ev.opened && !ev.clicked) return { score: 5, label: "Email bounced: check the address", tone: "off" };
+  if (ev?.clicked) return { score: 70 + Math.min(ev.clicked, 5), label: `Clicked the link${ev.clicked > 1 ? ` (${ev.clicked} emails)` : ""}, no reply yet`, tone: "mid" };
+  if (ev?.opened) return { score: 50 + Math.min(ev.opened, 5), label: `Opened${ev.opened > 1 ? ` (${ev.opened} emails)` : ""}, no reply yet`, tone: "mid" };
+  if (p.emailedAt) { const d = days(p.emailedAt) ?? 0; return { score: 20 - Math.min(d, 15), label: `Emailed ${d === 0 ? "today" : `${d} day${d === 1 ? "" : "s"} ago`}${p.sends > 1 ? ` (${p.sends} emails)` : ""}, no response`, tone: "" }; }
+  if (p.status === "approved") return { score: 10, label: "Approved, goes at 9 AM", tone: "" };
+  if (p.status === "drafted") return { score: 8, label: "Draft waiting for approval", tone: "" };
+  return { score: 0, label: "Not contacted", tone: "" };
+}
+const SORTS = [["active", "Most active"], ["revenue", "Revenue"], ["pat", "Profit"], ["growth", "Growth"], ["new", "Newest found"], ["emailed", "Recently emailed"], ["az", "A–Z"]] as const;
+const REACH = [["", "Any outreach"], ["yes", "Reached out"], ["no", "Not reached out"]] as const;
+const RESP = [["", "Any response"], ["replied", "Replied"], ["engaged", "Opened or clicked, no reply"], ["none", "Emailed, no response"], ["bounced", "Bounced"]] as const;
+const BANDS = [["", "Any revenue"], ["50-100", "₹50–100 Cr"], ["100-250", "₹100–250 Cr"], ["250-500", "₹250–500 Cr"], ["500-", "₹500 Cr +"]] as const;
+
+export default async function Sourcing({ searchParams }: { searchParams: Promise<{ status?: string; kind?: string; sort?: string; reach?: string; resp?: string; rev?: string; s?: string }> }) {
   const me = await requireDesk();
-  const { status = "open", kind = "" } = await searchParams;
+  const { status = "open", kind = "", sort = "active", reach = "", resp = "", rev = "", s: find = "" } = await searchParams;
   const db = await getDb();
-  const [all, members] = await Promise.all([db.select().from(prospects).orderBy(desc(prospects.createdAt)), deskMembers()]);
+  const [all, members, mails] = await Promise.all([db.select().from(prospects).orderBy(desc(prospects.createdAt)), deskMembers(),
+    db.select({ to: emailLog.to, ev: emailLog.lastEvent }).from(emailLog).where(eq(emailLog.kind, "sourcing"))]);
   const who = new Map(members.map((m) => [m.id, m.name]));
-  const list = all.filter((p) => (status === "all" ? true : status === "open" ? OPEN.includes(p.status) : p.status === status) && (!kind || p.kind === kind || (kind !== "both" && p.kind === "both")));
+  // Delivery status per address: how many of the desk's emails to it were opened, clicked or bounced.
+  const evBy = new Map<string, { opened: number; clicked: number; bounced: number }>();
+  for (const m of mails) { const k = m.to.toLowerCase(), e = (m.ev ?? "").toLowerCase(), x = evBy.get(k) ?? { opened: 0, clicked: 0, bounced: 0 };
+    if (e.includes("click")) { x.clicked++; x.opened++; } else if (e.includes("open")) x.opened++; else if (e.includes("bounce")) x.bounced++; evBy.set(k, x); }
+  const now = Date.now();
+  const act = new Map(all.map((p) => [p.id, activity(p, p.contactEmail ? evBy.get(p.contactEmail.toLowerCase()) : undefined, now)]));
+  const terms = find.toLowerCase().split(/\s+/).filter(Boolean);
+  const [lo, hi] = rev ? rev.split("-").map((x) => (x ? Number(x) : null)) : [null, null];
+  const list = all.filter((p) => (status === "all" ? true : status === "open" ? OPEN.includes(p.status) : p.status === status) && (!kind || p.kind === kind || (kind !== "both" && p.kind === "both"))
+    && (!reach || (reach === "yes" ? p.sends > 0 || !!p.emailedAt : !(p.sends > 0 || p.emailedAt)))
+    && (!resp || (() => { const a = act.get(p.id)!; return resp === "replied" ? !!p.repliedAt || ["interested", "declined", "added"].includes(p.status)
+      : resp === "engaged" ? a.tone === "mid" : resp === "bounced" ? a.label.startsWith("Email bounced") : !!p.emailedAt && !p.repliedAt && a.tone === ""; })())
+    && (!rev || (p.revenueCr != null && (lo == null || p.revenueCr >= lo) && (hi == null || p.revenueCr < hi)))
+    && terms.every((t) => [p.company, p.sector, p.city, p.why, p.contactName, p.rating, ...(p.signals ?? [])].join(" ").toLowerCase().includes(t)));
+  const num = (v: number | null) => (v == null ? -Infinity : v);
+  list.sort((a, b) => sort === "revenue" ? num(b.revenueCr) - num(a.revenueCr) : sort === "pat" ? num(b.patCr) - num(a.patCr) : sort === "growth" ? num(b.growthPct) - num(a.growthPct)
+    : sort === "new" ? +b.createdAt - +a.createdAt : sort === "emailed" ? +(b.emailedAt ?? 0) - +(a.emailedAt ?? 0) : sort === "az" ? a.company.localeCompare(b.company)
+    : act.get(b.id)!.score - act.get(a.id)!.score || num(b.revenueCr) - num(a.revenueCr));
   const count = (st: string) => all.filter((p) => p.status === st).length;
   const edit = can(me, "deals.edit");
-  const q = (o: Record<string, string>) => { const u = new URLSearchParams({ ...(status !== "open" ? { status } : {}), ...(kind ? { kind } : {}), ...o }); for (const [k, v] of [...u]) if (!v || (k === "status" && v === "open")) u.delete(k); const t = u.toString(); return `/admin/sourcing${t ? `?${t}` : ""}`; };
+  const q = (o: Record<string, string>) => { const u = new URLSearchParams({ ...(status !== "open" ? { status } : {}), ...(kind ? { kind } : {}), ...(sort !== "active" ? { sort } : {}), ...(reach ? { reach } : {}), ...(resp ? { resp } : {}), ...(rev ? { rev } : {}), ...(find ? { s: find } : {}), ...o }); for (const [k, v] of [...u]) if (!v || (k === "status" && v === "open") || (k === "sort" && v === "active")) u.delete(k); const t = u.toString(); return `/admin/sourcing${t ? `?${t}` : ""}`; };
   const back = q({});
   return (
     <>
@@ -44,6 +83,17 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
         <a key={k} href={q({ status: k })} className={status === k ? "on" : ""}>{l}</a>)}</div>
       <div className="adm-filter">{[["", "Equity and debt"], ["equity", "Pre-IPO equity"], ["debt", "Debt"]].map(([k, l]) =>
         <a key={k} href={q({ kind: k })} className={kind === k ? "on" : ""}>{l}</a>)}</div>
+      <form action="/admin/sourcing" className="adm-filter" role="search" style={{ alignItems: "center" }}>
+        {Object.entries({ status: status !== "open" ? status : "", kind, sort: sort !== "active" ? sort : "", reach, resp, rev }).filter(([, v]) => v).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
+        <input type="search" name="s" defaultValue={find} placeholder="Search: company, sector, city, contact…" aria-label="Search companies" style={{ flex: "1 1 240px", maxWidth: 380 }} />
+        <button className="btn sm" type="submit">Search</button>
+        {find && <a href={q({ s: "" })}>Clear</a>}
+      </form>
+      <div className="adm-filter" style={{ alignItems: "center" }}><span className="fine">Sort</span>{SORTS.map(([k, l]) => <a key={k} href={q({ sort: k })} className={sort === k ? "on" : ""}>{l}</a>)}</div>
+      <div className="adm-filter">{REACH.map(([k, l]) => <a key={`r${k}`} href={q({ reach: k })} className={reach === k ? "on" : ""}>{l}</a>)}
+        <span className="fine" style={{ margin: "0 4px" }}>·</span>{RESP.map(([k, l]) => <a key={`p${k}`} href={q({ resp: k })} className={resp === k ? "on" : ""}>{l}</a>)}</div>
+      <div className="adm-filter">{BANDS.map(([k, l]) => <a key={`b${k}`} href={q({ rev: k })} className={rev === k ? "on" : ""}>{l}</a>)}</div>
+      <p className="fine" style={{ margin: "0 0 10px" }}>{list.length} compan{list.length === 1 ? "y" : "ies"}{sort === "active" ? ", most active first: replies, then link clicks and opens of the desk's emails, then the most recently emailed" : ""}. A company that replies with interest moves to the deal pipeline on its own, with its call task.</p>
       {list.length ? <div className="cmpwrap"><table className="cmp plain src-t"><thead><tr><th>Company</th><th>Revenue</th><th>PAT</th><th>Growth</th><th>Need</th><th>Why it fits</th><th>Contact</th><th>Stage</th>{edit && <th />}</tr></thead><tbody>
         {list.map((p) => (
           <tr key={p.id}>
@@ -69,7 +119,8 @@ export default async function Sourcing({ searchParams }: { searchParams: Promise
               {p.notes && <details style={{ marginTop: 4 }}><summary className="fine">Notes</summary><pre className="fine" style={{ whiteSpace: "pre-wrap", margin: 0 }}>{p.notes}</pre></details>}</td>
             <td>{p.contactName || "—"}{p.contactRole ? <small className="fine" style={{ display: "block" }}>{p.contactRole}</small> : null}{p.contactEmail ? <small className="mono" style={{ display: "block" }}>{p.contactEmail}</small> : null}</td>
             <td><span className={`pill ${p.status === "interested" || p.status === "added" ? "ok" : p.status === "declined" || p.status === "passed" ? "off" : ""}`}>{prospectLabel(p.status)}</span>
-              <small className="fine" style={{ display: "block" }}>{p.emailedAt ? `Emailed ${fmtT(p.emailedAt)}` : p.draftedAt ? `Drafted ${fmtT(p.draftedAt)}` : `Found ${fmtT(p.createdAt)}`}</small>
+              {(() => { const a = act.get(p.id)!; return <small style={{ display: "block", marginTop: 4, fontWeight: a.tone ? 600 : 400, color: a.tone === "ok" ? "var(--ok, #1e7d4f)" : a.tone === "mid" ? "#b26a00" : a.tone === "off" ? "#b42318" : undefined }} className={a.tone ? "" : "fine"}>{a.label}</small>; })()}
+              <small className="fine" style={{ display: "block" }}>Found {fmtT(p.createdAt)}</small>
               {p.taskId ? <small style={{ display: "block" }}><a href="/admin/tasks">Call task{p.assigneeId ? `: ${who.get(p.assigneeId) ?? ""}` : ""}</a></small> : null}
               {p.dealId ? <small style={{ display: "block" }}><a href={p.kind === "debt" ? `/admin/debt/${p.dealId}` : `/admin/deals/${p.dealId}`}>Open the deal</a></small> : null}</td>
             {edit && <td style={{ minWidth: 190 }}>

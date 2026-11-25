@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { tasks } from "@/db/schema";
+import { deals, tasks } from "@/db/schema";
 import { deskAction } from "@/lib/agent-desk";
 import { nextWorkingDay, normCompany } from "@/lib/prospects";
 
@@ -34,11 +34,19 @@ test("a prospect moves from found to interested, and only then gets a call task"
   const db = await getDb();
   const [t] = await db.select().from(tasks).where(eq(tasks.id, yes.taskId as number));
   assert.match(t.title, /^Call Zeta/);
+  // Interest puts the company on the deal pipeline at Sourced (desk only, pre-IPO for "equity or debt"), with the call task on it.
+  assert.ok(yes.dealId);
+  assert.equal(yes.to, "added");
+  const [d] = await db.select().from(deals).where(eq(deals.id, yes.dealId as number));
+  assert.deepEqual([d.company, d.pipelineStage, d.debt, d.published], ["Zeta Sourcing Test Industries Pvt Ltd", "sourced", false, false]);
+  assert.equal((await db.select().from(tasks).where(eq(tasks.id, yes.taskId as number)))[0].dealId, d.id);
   const again = await deskAction({ action: "prospect_update", company: "Zeta Sourcing Test Industries", status: "interested" });
   assert.equal("taskId" in again, false); // one call task, not two
+  assert.equal("dealId" in again, false); // and one deal
   const list = await deskAction({ action: "prospects" });
   const row = (list.prospects as { company: string; status: string }[]).find((p) => p.company.startsWith("Zeta"));
-  assert.equal(row?.status, "interested");
+  assert.equal(row?.status, "added");
+  await db.update(deals).set({ pipelineStage: "archived" }).where(eq(deals.id, d.id));
   assert.ok((await deskAction({ action: "prospect_update", company: "Nobody Here", status: "emailed" })).error);
 });
 

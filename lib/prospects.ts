@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { prospects, tasks, users } from "@/db/schema";
+import { deals, prospects, tasks, users } from "@/db/schema";
 import { istDay } from "@/lib/stages";
 import { emailReady, esc, sendRaw } from "@/lib/email";
 import { DESK_EMAIL, SITE_URL } from "@/lib/site";
@@ -97,8 +97,10 @@ export async function updateProspect(b: Record<string, unknown>, by: string) {
   const name = s(b.company, 200);
   const [p] = await db.select().from(prospects).where(eq(prospects.norm, normCompany(name)));
   if (!p) return { error: `No prospect called ${name}.` };
-  const status = b.status ? asProspectStatus(s(b.status, 20)) : null;
+  let status = b.status ? asProspectStatus(s(b.status, 20)) : null;
   if (b.status && !status) return { error: "Unknown status." };
+  // Already on the deal pipeline: marking it interested again changes nothing.
+  if (p.dealId && status === "interested") status = null;
   const now = new Date();
   const set: Partial<typeof prospects.$inferInsert> = { updatedAt: now };
   const email = s(b.contactEmail, 200).toLowerCase();
@@ -134,7 +136,35 @@ export async function updateProspect(b: Record<string, unknown>, by: string) {
     }
   }
   await db.update(prospects).set(set).where(eq(prospects.id, p.id));
-  return { ok: true, company: p.company, from: p.status, to: status ?? p.status, ...(taskId ? { taskId } : {}) };
+  // A company that replies with interest goes straight onto the deal pipeline (desk only), with the call task on it.
+  let dealId: number | null = null;
+  if (status === "interested" && !p.dealId) {
+    const [fresh] = await db.select().from(prospects).where(eq(prospects.id, p.id));
+    dealId = await prospectDeal(fresh, p.kind === "debt" ? "debt" : "equity", set.assigneeId ?? p.assigneeId ?? null);
+  }
+  return { ok: true, company: p.company, from: p.status, to: dealId ? "added" : status ?? p.status, ...(taskId ? { taskId } : {}), ...(dealId ? { dealId, kind: p.kind } : {}) };
+}
+
+/**
+ * Makes a deal at Sourced (desk only) from a prospect and marks the prospect "On the pipeline". Used by the Pre-IPO / Debt
+ * buttons and automatically when a company replies with interest. A company that needs "equity or debt" goes to Before
+ * the Bell unless debt is asked for.
+ */
+export async function prospectDeal(p: typeof prospects.$inferSelect, as: "equity" | "debt", ownerId: number | null) {
+  const db = await getDb();
+  const room = { lede: "", why: "", round: "", ticket: "", snapshot: [], risks: [], feed: [], multiples: [], terms: [], path: [], checks: [], mine: [],
+    interest: { min: 0, max: 0, step: 0, def: 0, note: "" }, alerts: [], passReasons: [] };
+  const tag = Date.now().toString(36);
+  const summary = [p.why, p.revenueCr != null && `Revenue ₹${p.revenueCr} Cr${p.fy ? ` (${p.fy})` : ""}`, p.patCr != null && `PAT ₹${p.patCr} Cr`].filter(Boolean).join(" · ").slice(0, 600);
+  const [row] = await db.insert(deals).values(as === "debt"
+    ? { slug: `debt-${tag}`, company: p.company, title: p.sector || "Debt", category: "Debt", headline: summary, listingLabel: "Debt", phase: "preparing",
+        debt: true, debtInfo: { borrowerType: "Company", sector: p.sector ?? undefined, source: "Sourcing" }, sort: 600, pipelineStage: "sourced", stageAt: new Date(), ownerId: p.assigneeId || ownerId, room }
+    : { slug: `${p.norm.replace(/\s+/g, "-").slice(0, 40)}-${tag}`, company: p.company, title: p.sector || "Pre-IPO", category: "Pre-IPO primary", headline: summary,
+        listingLabel: "To be set", phase: "preparing", sort: 200, pipelineStage: "sourced", stageAt: new Date(), ownerId: p.assigneeId || ownerId, room })
+    .returning({ id: deals.id });
+  if (p.taskId) await db.update(tasks).set({ dealId: row.id }).where(eq(tasks.id, p.taskId));
+  await db.update(prospects).set({ status: "added", dealId: row.id, updatedAt: new Date() }).where(eq(prospects.id, p.id));
+  return row.id;
 }
 
 /** Monday to Saturday, 9 AM to 7 PM IST: the hours in which the desk's outreach goes out. */
