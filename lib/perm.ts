@@ -43,5 +43,5 @@ export function can(u: Who, p: Perm, opts?: { analystContacts?: boolean }) {
 }
 
 /** Which admin pages each role sees (the menu and the page guards use the same list). */
-export const SUPER_ONLY_PAGES = ["/admin/settings", "/admin/emails", "/admin/invites", "/admin/team"];
+export const SUPER_ONLY_PAGES = ["/admin/settings", "/admin/emails", "/admin/invites", "/admin/team", "/admin/one-pager"];
 export const mask = (s?: string | null) => (s ? s.replace(/^(.{2}).*?(@|.{2}$)/, (_m, a, b) => `${a}•••${b === "@" ? "@" : b}`) : s);

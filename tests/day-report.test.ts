@@ -81,3 +81,15 @@ test("sign-ins and page loads are not counted as updates", async () => {
   assert.equal(r.counts.find((c) => c.label === "Updates")!.n, 1);
   await db.update(users).set({ disabled: true }).where(eq(users.id, u.id));
 });
+
+test("the one-pager covers the period since the previous one-pager day and renders", async () => {
+  const { previousDay, buildOnePager, onePagerPdf, onePagerHtml, runOnePager } = await import("@/lib/onepager");
+  assert.equal(previousDay("2026-11-25", [1, 3, 5, 6]), "2026-11-23");   // Wed -> Mon
+  assert.equal(previousDay("2026-11-30", [1, 3, 5, 6]), "2026-11-28");   // Mon -> Sat
+  const p = await buildOnePager("2026-11-25");
+  assert.equal(p.since, "2026-11-23");
+  assert.ok(p.numbers.length >= 4 && p.sections.some((s) => s.title === "Needs attention"));
+  assert.match(onePagerHtml(p), /Desk one-pager/);
+  assert.equal(Buffer.from((await onePagerPdf(p)).slice(0, 5)).toString(), "%PDF-");
+  assert.deepEqual(await runOnePager(new Date("2026-11-24T04:00:00Z")), { skipped: "not a one-pager day" });   // a Tuesday
+});

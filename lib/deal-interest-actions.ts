@@ -49,3 +49,23 @@ export async function saveInterest(f: FormData) {
   await log(me, `Desk interest · ${name}: ${interestLabel(status)}${vals.amountCr ? ` (₹${vals.amountCr} Cr)` : ""}`, dealId, { entity: "interest", entityId: row.id });
   return backTo(`Added ${name}.`);
 }
+
+/** From "Who to pitch": puts a registered investor on the deal's interest list as Pitched, linked to its office. */
+export async function addMatchToInterest(f: FormData) {
+  const me = await requirePerm("workflow");
+  const db = await getDb();
+  const dealId = Number(f.get("dealId")) || 0, officeId = Number(f.get("officeId")) || 0;
+  const fallback = `/admin/deals/${dealId}#desk-interest`;
+  if (!dealId || !officeId || !(await deskDeal(dealId))) return fail(deskBack(f, fallback), "Deal or investor not found.");
+  const { offices, users } = await import("@/db/schema");
+  const { and } = await import("drizzle-orm");
+  const [o] = await db.select().from(offices).where(eq(offices.id, officeId));
+  if (!o) return fail(deskBack(f, fallback), "Investor not found.");
+  const [dup] = await db.select({ id: dealInterest.id }).from(dealInterest).where(and(eq(dealInterest.dealId, dealId), eq(dealInterest.officeId, officeId)));
+  if (dup) return done(deskBack(f, fallback), `${o.name} is already on the interest list.`);
+  const [u] = await db.select({ name: users.name, email: users.email }).from(users).where(and(eq(users.officeId, officeId), eq(users.disabled, false)));
+  const [row] = await db.insert(dealInterest).values({ dealId, officeId, name: o.name, firm: null, contact: u?.email ?? o.contactEmail ?? null,
+    status: "pitched", note: u?.name || o.contactName ? `Contact: ${u?.name ?? o.contactName}` : null, lastOn: istDay(), createdBy: me.name }).returning({ id: dealInterest.id });
+  await log(me, `Desk interest · ${o.name}: Pitched (from Who to pitch)`, dealId, { entity: "interest", entityId: row.id });
+  return done(deskBack(f, fallback), `${o.name} added as Pitched. Update the status as the conversation moves.`);
+}

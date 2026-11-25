@@ -9,6 +9,7 @@ import { runPartnerDigest } from "@/lib/partner-digest";
 import { runWatchAlerts } from "@/lib/watch-alerts";
 import { runProspectSends } from "@/lib/prospects";
 import { runDayReportEmails } from "@/lib/day-report";
+import { runOnePager } from "@/lib/onepager";
 
 // Vercel calls this daily at 03:30 UTC (09:00 IST); see vercel.json. Protected by CRON_SECRET.
 // Sends each desk member's start-of-day report to the report recipients (lib/day-report.ts), the onboarding emails that are due, desk task reminders, the Monday desk summary, the Monday note to partner firms, IPO news on companies offices follow, the Monday articles digest, the one invitation reminder (3 days on), and refreshes delivery status for recent emails.
@@ -26,6 +27,7 @@ export async function GET(req: NextRequest) {
   const watch = await runWatchAlerts().catch((e) => ({ error: String(e) }));
   const sourcing = await runProspectSends().catch((e) => ({ error: String(e) }));
   const dayReport = await runDayReportEmails("start").catch((e) => ({ error: String(e) }));
+  const onePager = await runOnePager().catch((e) => ({ error: String(e) }));
   const status = await refreshEmailStatus().catch((e) => ({ error: String(e) }));
-  return Response.json({ onboarding, digest, followups, tasks, weekly, partners, watch, sourcing, dayReport, status });
+  return Response.json({ onboarding, digest, followups, tasks, weekly, partners, watch, sourcing, dayReport, onePager, status });
 }

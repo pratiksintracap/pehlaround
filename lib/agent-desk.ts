@@ -193,6 +193,16 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
     try { const { revalidateTag } = await import("next/cache"); const { PUBLIC_TAG } = await import("@/lib/cache"); revalidateTag(PUBLIC_TAG); } catch { /* refreshes on its own */ }
     return ({ ok: true, company: d.company, field: where[0] });
   }
+  // { action: "match", company } — registered investors ranked by fit for a deal (lib/investor-match.ts), for outreach.
+  if (b.action === "match") {
+    const d = await findDeal(s(b.company, 120));
+    if (!d || d === "ambiguous") return ({ error: "Name one deal." });
+    const [cur] = (await deskDeals()).filter((x) => x.id === d.id);
+    const { matchInvestors } = await import("@/lib/investor-match");
+    const m = cur ? await matchInvestors(cur, Math.min(Number(b.n) || 15, 30)) : [];
+    return ({ ok: true, company: d.company, matches: m.map((x) => ({ office: x.name, type: x.type, city: x.city, ticket: x.ticket, score: x.score, reasons: x.reasons, flags: x.flags,
+      contactName: x.contact.name, contactEmail: x.contact.email, inRoom: x.inRoom, onInterestList: x.onList, approved: x.approval === "approved" })) });
+  }
   // { action: "art", company, key } — sets a deal's card picture to one of the built-in drawings (lib/deal-art.json).
   // A picture the desk uploaded is never replaced this way.
   if (b.action === "art") {

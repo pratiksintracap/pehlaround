@@ -20,7 +20,7 @@ export const SECTORS: [string, RegExp][] = [
   ["Healthcare and pharma", /health|pharma|hospital|diagnost|medic/i],
   ["Chemicals and materials", /chemical|polymer|material|specialty/i],
   ["Logistics and infrastructure", /logistic|infra|warehous|port|rail/i],
-  ["Real estate", /real estate|realty|housing|land/i],
+  ["Real estate", /real estate|realty|\bhousing|\bland\b/i],
 ];
 
 type OfficeLike = { category?: string | null; residency?: string | null; ticket?: string | null; aum?: string | null; city?: string | null;

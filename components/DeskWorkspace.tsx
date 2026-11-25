@@ -7,13 +7,14 @@ import { DEAL_STAGES, stageLabel } from "@/lib/stages";
 import { can } from "@/lib/perm";
 import { Changes, TaskRow, TaskForm, fmtT } from "@/components/DeskBits";
 import { CHANNELS, INTEREST_STATUS, channelLabel, interestLabel, interestOn, interestSummary, isWarm, type Interest } from "@/lib/deal-interest";
-import { saveInterest } from "@/lib/deal-interest-actions";
+import { saveInterest, addMatchToInterest } from "@/lib/deal-interest-actions";
+import { matchInvestors } from "@/lib/investor-match";
 import { istDay } from "@/lib/stages";
 
 type Me = { id: number; role: string };
 
 export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back: string }) {
-  const [ws, members, nm, interest] = await Promise.all([workspace(d.id, me), deskMembers(), names(me), interestOn(d.id)]);
+  const [ws, members, nm, interest, matches] = await Promise.all([workspace(d.id, me), deskMembers(), names(me), interestOn(d.id), d.debt ? Promise.resolve([]) : matchInvestors(d, 10)]);
   const work = can(me, "workflow"), del = can(me, "delete");
   const opts = { members: members.map((m) => ({ id: m.id, name: m.name })), deals: [...nm.deal.values()].map((x) => ({ id: x.id, name: x.company })), offices: [...nm.office.entries()].map(([id, name]) => ({ id, name })) };
   const open = ws.tasks.filter((t) => t.status === "open");
@@ -49,6 +50,21 @@ export async function DeskWorkspace({ d, me, back }: { d: DeskDeal; me: Me; back
             </tr>))}</tbody></table></div>}
         {work && <details className="ws-add"><summary className="btn sm">+ Add who is interested</summary><InterestForm d={d.id} back={back} /></details>}
       </div>
+
+      {!d.debt && <details className="chart" id="who-to-pitch" style={{ marginBottom: 16 }} open={matches.some((m) => !m.onList)}>
+        <summary className="k" style={{ cursor: "pointer" }}>Who to pitch · {matches.filter((m) => !m.onList).length ? `${matches.filter((m) => !m.onList).length} investors on the platform fit this deal` : "no new matches"}</summary>
+        <p className="fine" style={{ margin: "4px 0 8px" }}>Registered and desk-added investors ranked by fit: the sectors, ticket and structures they gave us, and what they have done on the platform (views, saves, NDAs, allocation requests). Offices that passed on this deal are left out. Desk only.</p>
+        {matches.length ? <div className="cmpwrap"><table className="cmp plain"><thead><tr><th>Investor</th><th>Fit</th><th>Why</th><th>Contact</th>{work && <th></th>}</tr></thead>
+          <tbody>{matches.map((m) => (
+            <tr key={m.officeId} style={m.onList ? { opacity: 0.6 } : undefined}>
+              <th scope="row"><a href={`/admin/offices/${m.officeId}`}>{m.name}</a><div className="fine">{[m.type, m.city, m.ticket].filter(Boolean).join(" · ")}</div></th>
+              <td><b>{m.score}</b><span className="fine">/100</span></td>
+              <td className="fine" style={{ maxWidth: 360 }}>{m.reasons.join(" · ") || "Profile is thin; no activity yet"}{m.flags.length > 0 && <div style={{ color: "#b26a00" }}>{m.flags.join(" · ")}</div>}</td>
+              <td className="fine">{m.contact.name}{m.contact.email && <div className="mono">{m.contact.email}</div>}</td>
+              {work && <td>{m.onList ? <span className="pill">On the interest list</span> : <form action={addMatchToInterest}><input type="hidden" name="dealId" value={d.id} /><input type="hidden" name="officeId" value={m.officeId} /><input type="hidden" name="back" value={`${back}#desk-interest`} /><button className="btn sm" type="submit">Add as pitched</button></form>}</td>}
+            </tr>))}</tbody></table></div>
+          : <p className="fine">No registered investor fits yet. Investors who fill in their sectors and ticket on their profile show up here.</p>}
+      </details>}
 
       <div className="two ws-grid">
         <div className="chart" id="tasks"><span className="k">Tasks · {open.length} open</span>
