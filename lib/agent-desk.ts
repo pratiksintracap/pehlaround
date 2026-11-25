@@ -248,6 +248,16 @@ export async function deskAction(b: Record<string, any>): Promise<Record<string,
   }
   // Deal sourcing (lib/prospects.ts): list what is already logged, add a find, or move one along.
   if (b.action === "prospects") return ({ ok: true, prospects: await prospectNames() });
+  // { action: "prospect_details", status? } — the full rows (email sent, why it fits, contact) for writing follow-ups.
+  if (b.action === "prospect_details") {
+    const { prospects } = await import("@/db/schema");
+    const st = s(b.status, 20) || "emailed";
+    const rows = await db.select({ company: prospects.company, status: prospects.status, kind: prospects.kind, sector: prospects.sector, city: prospects.city,
+      revenueCr: prospects.revenueCr, patCr: prospects.patCr, fy: prospects.fy, why: prospects.why, contactName: prospects.contactName, contactRole: prospects.contactRole,
+      contactEmail: prospects.contactEmail, website: prospects.website, emailSubject: prospects.emailSubject, emailBody: prospects.emailBody, sends: prospects.sends,
+      emailedAt: prospects.emailedAt, repliedAt: prospects.repliedAt, notes: prospects.notes }).from(prospects).where(eq(prospects.status, st));
+    return ({ ok: true, count: rows.length, prospects: rows });
+  }
   // The sourcing pool (lib/pool.ts): the next companies to check, and marking one skipped with the reason.
   // Loading the pool: rows as an array, or gzipped JSON in base64 so a large file fits in a few sealed requests.
   if (b.action === "pool_load") {
